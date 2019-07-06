@@ -9,9 +9,12 @@ elixir:
 otp_release:
   - 21.0
 
+matrix:
+  - TESTS=1
+  - DIALYZER=1
+
 script:
-  - mix test
-  - mix dialyzer --halt-exit-status
+  - if [ $TESTS -eq "1" ]; then mix test; else mix dialyzer --halt-exit-status; fi
 
 cache:
   directories:
