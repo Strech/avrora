@@ -21,7 +21,7 @@ defmodule Avrora.SchemaRegistry do
 
       Avrora.SchemaRegistry.version("my.subject.name", 1)
   """
-  @spec version(String.t(), integer()) :: {:ok, map()} | {:error, any()}
+  @spec version(String.t(), integer() | String.t()) :: {:ok, map()} | {:error, any()}
   def version(subject, version),
     do: http_client().get("subjects/#{subject}/versions/#{version}")
 
