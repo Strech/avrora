@@ -1,4 +1,7 @@
-# Avrora
+<p align="center">
+  <img width=200 src="/misc/logo.png"/>
+  <h1 align="center">Avrora</h1>
+</p>
 
 [![Build Status](https://travis-ci.org/Strech/avrora.svg?branch=master)](https://travis-ci.org/Strech/avrora)
 
