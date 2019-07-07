@@ -4,6 +4,7 @@ use Mix.Config
 
 config :avrora,
   http_client: Avrora.HttpClient,
+  schemas_path: Path.expand("./priv/schemas"),
   registry_url: nil
 
 # This configuration is loaded before any dependency and is restricted
