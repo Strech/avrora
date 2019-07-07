@@ -32,14 +32,14 @@ defmodule Avrora.FileStorage do
       iex> schema.schema.qualified_names
       ["io.confluent.examples.Payment"]
   """
-  def get(name) when is_binary(name) do
-    with {:ok, body} <- Path.join(schemas_path(), name_to_filename(name)) |> File.read() do
+  def get(key) when is_binary(key) do
+    with {:ok, body} <- Path.join(schemas_path(), name_to_filename(key)) |> File.read() do
       AvroEx.Schema.parse(body)
     end
   end
 
-  def get(id) when is_integer(id), do: {:error, :unsupported}
-  def put(_id, _schema), do: {:error, :unsupported}
+  def get(key) when is_integer(key), do: {:error, :unsupported}
+  def put(_key, _value), do: {:error, :unsupported}
 
   defp name_to_filename(name), do: String.replace(name, ".", "/") <> @extension
   defp schemas_path, do: Application.get_env(:avrora, :schemas_path)
