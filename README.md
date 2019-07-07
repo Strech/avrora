@@ -1,5 +1,7 @@
 # Avrora
 
+[![Build Status](https://travis-ci.org/Strech/avrora.svg?branch=master)](https://travis-ci.org/Strech/avrora)
+
 **THIS LIBRARY IS UNDER A HEAVY DEVELOPMENT**
 
 ## Installation
