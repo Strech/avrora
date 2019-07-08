@@ -17,15 +17,18 @@ defmodule Avrora.RegistryStorage.HttpClient do
   end
 
   @doc false
+  @spec post(String.t(), map()) :: {:ok, map()} | {:error, any()}
+  def post(path, payload) when is_map(payload) do
+    with {:ok, schema} <- Jason.encode(payload), do: post(path, schema)
+  end
+
+  @doc false
   @spec post(String.t(), String.t()) :: {:ok, map()} | {:error, any()}
-  def post(path, payload) do
-    with {:ok, schema} <- Jason.encode(payload),
-         {:ok, body} <- Jason.encode(%{"schema" => schema}),
+  def post(path, payload) when is_binary(payload) do
+    with {:ok, body} <- Jason.encode(%{"schema" => payload}),
          {:ok, {_, status, _}, _, body} =
            :httpc.request(:post, {url(path), [], [@content_type], [body]}, [], []) do
       handle(status, body)
-    else
-      err -> err
     end
   end
 

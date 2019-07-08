@@ -45,22 +45,6 @@ defmodule Avrora.MemoryStorage do
   end
 
   @doc """
-  Stores a value with a given key. If the value is already exists it will be replaced.
-
-  ## Examples
-      iex> {:ok, _} = Avrora.MemoryStorage.start_link()
-      iex> avro = %Avrora.Schema{id: nil, schema: %AvroEx.Schema{}, raw_schema: %{"k" => "v"}}
-      iex> Avrora.MemoryStorage.put("my-key", avro)
-      {:ok, %Avrora.Schema{id: nil, schema: %AvroEx.Schema{}, raw_schema: %{"k" => "v"}}}
-  """
-  def put(key, value), do: put(__MODULE__, key, value)
-
-  @doc false
-  @spec put(pid() | atom(), String.t() | integer(), Avrora.Schema.t()) ::
-          {:ok, Avrora.Schema.t()} | {:error, term()}
-  def put(pid, key, value), do: {GenServer.cast(pid, {:put, key, value}), value}
-
-  @doc """
   Retrieve a value by a given key.
 
   ## Examples
@@ -78,4 +62,20 @@ defmodule Avrora.MemoryStorage do
   @spec get(pid() | atom(), String.t() | integer()) ::
           {:ok, nil | Avrora.Schema.t()} | {:error, term()}
   def get(pid, key), do: {:ok, GenServer.call(pid, {:get, key})}
+
+  @doc """
+  Stores a value with a given key. If the value is already exists it will be replaced.
+
+  ## Examples
+      iex> {:ok, _} = Avrora.MemoryStorage.start_link()
+      iex> avro = %Avrora.Schema{id: nil, schema: %AvroEx.Schema{}, raw_schema: %{"k" => "v"}}
+      iex> Avrora.MemoryStorage.put("my-key", avro)
+      {:ok, %Avrora.Schema{id: nil, schema: %AvroEx.Schema{}, raw_schema: %{"k" => "v"}}}
+  """
+  def put(key, value), do: put(__MODULE__, key, value)
+
+  @doc false
+  @spec put(pid() | atom(), String.t() | integer(), Avrora.Schema.t()) ::
+          {:ok, Avrora.Schema.t()} | {:error, term()}
+  def put(pid, key, value), do: {GenServer.cast(pid, {:put, key, value}), value}
 end
