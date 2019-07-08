@@ -49,13 +49,15 @@ defmodule Avrora.MemoryStorage do
 
   ## Examples
       iex> {:ok, _} = Avrora.MemoryStorage.start_link()
-      iex> Avrora.MemoryStorage.put("my-key", %{"hello" => "world"})
-      {:ok, %{"hello" => "world"}}
+      iex> avro = %Avrora.Schema{id: nil, schema: %AvroEx.Schema{}, raw_schema: %{"k" => "v"}}
+      iex> Avrora.MemoryStorage.put("my-key", avro)
+      {:ok, %Avrora.Schema{id: nil, schema: %AvroEx.Schema{}, raw_schema: %{"k" => "v"}}}
   """
   def put(key, value), do: put(__MODULE__, key, value)
 
   @doc false
-  @spec put(pid() | atom(), String.t() | integer(), term()) :: {:ok, term()} | {:error, term()}
+  @spec put(pid() | atom(), String.t() | integer(), Avrora.Schema.t()) ::
+          {:ok, Avrora.Schema.t()} | {:error, term()}
   def put(pid, key, value), do: {GenServer.cast(pid, {:put, key, value}), value}
 
   @doc """
@@ -70,10 +72,10 @@ defmodule Avrora.MemoryStorage do
       iex> Avrora.MemoryStorage.get("unknown-key")
       {:ok, nil}
   """
-  @spec get(String.t() | integer()) :: nil | term()
   def get(key), do: get(__MODULE__, key)
 
   @doc false
-  @spec get(pid() | atom(), String.t() | integer()) :: {:ok, term()} | {:error, term()}
+  @spec get(pid() | atom(), String.t() | integer()) ::
+          {:ok, nil | Avrora.Schema.t()} | {:error, term()}
   def get(pid, key), do: {:ok, GenServer.call(pid, {:get, key})}
 end
