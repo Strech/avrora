@@ -56,6 +56,7 @@ defmodule Avrora.MemoryStorage do
       iex> Avrora.MemoryStorage.get("unknown-key")
       {:ok, nil}
   """
+  @impl true
   def get(key), do: get(__MODULE__, key)
 
   @doc false
@@ -72,6 +73,7 @@ defmodule Avrora.MemoryStorage do
       iex> Avrora.MemoryStorage.put("my-key", avro)
       {:ok, %Avrora.Schema{id: nil, schema: %AvroEx.Schema{}, raw_schema: %{"k" => "v"}}}
   """
+  @impl true
   def put(key, value), do: put(__MODULE__, key, value)
 
   @doc false

@@ -37,7 +37,7 @@ defmodule Avrora.FileStorage do
   def get(key) when is_binary(key) do
     with filepath <- Path.join(schemas_path(), name_to_filename(key)),
          {:ok, body} <- File.read(filepath) do
-      Avrora.Schema.parse(body)
+      Schema.parse(body)
     end
   end
 
