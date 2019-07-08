@@ -31,8 +31,9 @@ defmodule Avrora.MixProject do
     [
       {:jason, "~> 1.1"},
       {:avro_ex, git: "https://github.com/beam-community/avro_ex.git", sha: " 9a02fd6"},
-      {:dialyxir, "~> 1.0.0-rc.6", only: [:dev], runtime: false},
-      {:mox, "~> 0.5", only: :test}
+      {:mox, "~> 0.5", only: :test},
+      {:dialyxir, "~> 1.0.0-rc.6", only: :dev, runtime: false},
+      {:credo, "~> 1.0.0", only: :dev, runtime: false}
     ]
   end
 end

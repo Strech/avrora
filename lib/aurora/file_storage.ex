@@ -35,7 +35,8 @@ defmodule Avrora.FileStorage do
       ["io.confluent.examples.Payment"]
   """
   def get(key) when is_binary(key) do
-    with {:ok, body} <- Path.join(schemas_path(), name_to_filename(key)) |> File.read() do
+    with filepath <- Path.join(schemas_path(), name_to_filename(key)),
+         {:ok, body} <- File.read(filepath) do
       Avrora.Schema.parse(body)
     end
   end

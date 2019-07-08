@@ -1,4 +1,9 @@
 defmodule Avrora.RegistryStorage.HttpClient do
+  @moduledoc """
+  Minimalistic HTTP client with a get/post functionality and built-in
+  JSON encode/decode behaviour.
+  """
+
   @callback get(String.t()) :: {:ok, map()} | {:error, any()}
   @callback post(String.t(), String.t()) :: {:ok, map()} | {:error, any()}
 
