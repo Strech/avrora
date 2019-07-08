@@ -5,8 +5,9 @@ defmodule Avrora.Storage do
   """
 
   @callback get(key :: String.t() | integer()) ::
-              {:ok, schema :: AvroEx.Schema.t()} | {:error, reason :: term()}
+              {:ok, schema :: Avrora.Schema.t()} | {:error, reason :: term()}
 
-  @callback put(key :: String.t() | integer(), value :: map() | AvroEx.Schema.t()) ::
+  # FIXME: Clarify result type
+  @callback put(key :: String.t() | integer(), value :: Avrora.Schema.t()) ::
               {:ok, result :: term()} | {:error, reason :: term()}
 end

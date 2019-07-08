@@ -6,21 +6,22 @@ defmodule Avrora.FileStorageTest do
 
   describe "get/1" do
     test "when schema file was found" do
-      {:ok, avro} = FileStorage.get("io.confluent.examples.Payment")
+      {:ok, avro} = FileStorage.get("io.confluent.Payment")
 
-      assert %AvroEx.Schema{} = avro
-      assert avro.schema.qualified_names == ["io.confluent.examples.Payment"]
-      assert length(avro.schema.fields) == 2
+      assert %Avrora.Schema{} = avro
+      assert avro.schema.schema.qualified_names == ["io.confluent.Payment"]
+      assert length(avro.schema.schema.fields) == 2
+      assert length(Map.get(avro.raw_schema, "fields")) == 2
     end
 
     test "when schema file is not a valid json" do
-      {:error, reason} = FileStorage.get("io.confluent.examples.Wrong")
+      {:error, reason} = FileStorage.get("io.confluent.Wrong")
 
       assert %Jason.DecodeError{} = reason
     end
 
     test "when schema file was not found" do
-      {:error, reason} = FileStorage.get("io.confluent.examples.Unknown")
+      {:error, reason} = FileStorage.get("io.confluent.Unknown")
 
       assert :enoent = reason
     end
@@ -32,7 +33,7 @@ defmodule Avrora.FileStorageTest do
 
   describe "put/2" do
     test "when tries to store the schema" do
-      assert FileStorage.put(42, %AvroEx.Schema{}) == {:error, :unsupported}
+      assert FileStorage.put(42, %Avrora.Schema{}) == {:error, :unsupported}
     end
   end
 end
