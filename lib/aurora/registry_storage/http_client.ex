@@ -13,7 +13,7 @@ defmodule Avrora.RegistryStorage.HttpClient do
   @spec get(String.t()) :: {:ok, map()} | {:error, any()}
   def get(path) do
     case :httpc.request(:get, {url(path), []}, [], []) do
-      {:ok, {_, status, _}, _, body} ->
+      {:ok, {{_, status, _}, _, body}} ->
         handle(status, body)
 
       {:error, reason} ->
@@ -31,7 +31,7 @@ defmodule Avrora.RegistryStorage.HttpClient do
   @spec post(String.t(), String.t()) :: {:ok, map()} | {:error, any()}
   def post(path, payload) when is_binary(payload) do
     with {:ok, body} <- Jason.encode(%{"schema" => payload}),
-         {:ok, {_, status, _}, _, body} =
+         {:ok, {{_, status, _}, _, body}} =
            :httpc.request(:post, {url(path), [], [@content_type], [body]}, [], []) do
       handle(status, body)
     end

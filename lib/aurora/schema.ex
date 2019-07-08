@@ -4,10 +4,11 @@ defmodule Avrora.Schema do
   convinient use.
   """
 
-  defstruct [:id, :schema, :raw_schema]
+  defstruct [:id, :version, :schema, :raw_schema]
 
   @type t :: %__MODULE__{
           id: nil | integer(),
+          version: nil | integer(),
           schema: AvroEx.Schema.t(),
           raw_schema: map()
         }
@@ -52,6 +53,7 @@ defmodule Avrora.Schema do
         :ok,
         %__MODULE__{
           id: nil,
+          version: nil,
           schema: %AvroEx.Schema{schema: schema, context: context},
           raw_schema: payload
         }

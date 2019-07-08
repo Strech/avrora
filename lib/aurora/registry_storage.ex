@@ -22,7 +22,7 @@ defmodule Avrora.RegistryStorage do
          {:ok, version} <- Map.fetch(response, "version"),
          {:ok, schema} <- Map.fetch(response, "schema"),
          {:ok, schema} <- Schema.parse(schema) do
-      {:ok, %{schema | id: version}}
+      {:ok, %{schema | version: version}}
     end
   end
 

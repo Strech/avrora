@@ -3,7 +3,7 @@
 use Mix.Config
 
 config :avrora,
-  http_client: Avrora.HttpClient,
+  http_client: Avrora.RegistryStorage.HttpClient,
   schemas_path: Path.expand("./priv/schemas"),
   registry_url: nil
 
