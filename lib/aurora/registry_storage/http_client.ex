@@ -1,4 +1,4 @@
-defmodule Avrora.SchemaRegistry.HttpClient do
+defmodule Avrora.RegistryStorage.HttpClient do
   @callback get(String.t()) :: {:ok, map()} | {:error, any()}
   @callback post(String.t(), String.t()) :: {:ok, map()} | {:error, any()}
 

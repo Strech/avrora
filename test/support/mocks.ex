@@ -1,1 +1,1 @@
-Mox.defmock(Avrora.SchemaRegistry.HttpClientMock, for: Avrora.SchemaRegistry.HttpClient)
+Mox.defmock(Avrora.RegistryStorage.HttpClientMock, for: Avrora.RegistryStorage.HttpClient)

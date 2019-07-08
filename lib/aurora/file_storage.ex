@@ -28,8 +28,8 @@ defmodule Avrora.FileStorage do
 
   ## Examples
 
-      iex> {:ok, schema} = Avrora.FileStorage.get("io.confluent.examples.Payment")
-      iex> schema.schema.qualified_names
+      iex> {:ok, avro} = Avrora.FileStorage.get("io.confluent.examples.Payment")
+      iex> avro.schema.qualified_names
       ["io.confluent.examples.Payment"]
   """
   def get(key) when is_binary(key) do
@@ -38,7 +38,9 @@ defmodule Avrora.FileStorage do
     end
   end
 
+  @doc false
   def get(key) when is_integer(key), do: {:error, :unsupported}
+  @doc false
   def put(_key, _value), do: {:error, :unsupported}
 
   defp name_to_filename(name), do: String.replace(name, ".", "/") <> @extension
