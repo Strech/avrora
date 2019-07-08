@@ -32,7 +32,7 @@ defmodule Avrora.RegistryStorage.HttpClient do
   def post(path, payload) when is_binary(payload) do
     with {:ok, body} <- Jason.encode(%{"schema" => payload}),
          {:ok, {{_, status, _}, _, body}} =
-           :httpc.request(:post, {url(path), [], [@content_type], [body]}, [], []) do
+           :httpc.request(:post, {url(path), [], [@content_type], body}, [], []) do
       handle(status, body)
     end
   end
