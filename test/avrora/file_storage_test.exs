@@ -9,8 +9,8 @@ defmodule Avrora.FileStorageTest do
       {:ok, avro} = FileStorage.get("io.confluent.Payment")
 
       assert %Avrora.Schema{} = avro
-      assert avro.schema.schema.qualified_names == ["io.confluent.Payment"]
-      assert length(avro.schema.schema.fields) == 2
+      assert avro.ex_schema.schema.qualified_names == ["io.confluent.Payment"]
+      assert length(avro.ex_schema.schema.fields) == 2
       assert length(Map.get(avro.raw_schema, "fields")) == 2
     end
 

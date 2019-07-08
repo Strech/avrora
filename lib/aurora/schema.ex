@@ -4,12 +4,12 @@ defmodule Avrora.Schema do
   convinient use.
   """
 
-  defstruct [:id, :version, :schema, :raw_schema]
+  defstruct [:id, :version, :ex_schema, :raw_schema]
 
   @type t :: %__MODULE__{
           id: nil | integer(),
           version: nil | integer(),
-          schema: AvroEx.Schema.t(),
+          ex_schema: AvroEx.Schema.t(),
           raw_schema: map()
         }
 
@@ -21,7 +21,7 @@ defmodule Avrora.Schema do
 
       iex> json = ~s({"namespace":"io.confluent","type":"record","name":"Payment","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
       iex> {:ok, avro} = Avrora.Schema.parse(json)
-      iex> avro.schema.schema.qualified_names
+      iex> avro.ex_schema.schema.qualified_names
       ["io.confluent.Payment"]
       iex> Map.get(avro.raw_schema, "name")
       "Payment"
@@ -39,7 +39,7 @@ defmodule Avrora.Schema do
 
       iex> payload = %{"namespace" => "io.confluent", "type" => "record", "name" => "Payment", "fields" => [%{"name" => "id", "type" => "string"}, %{"name" => "amount", "type" => "double"}]}
       iex> {:ok, avro} = Avrora.Schema.parse(payload)
-      iex> avro.schema.schema.qualified_names
+      iex> avro.ex_schema.schema.qualified_names
       ["io.confluent.Payment"]
       iex> Map.get(avro.raw_schema, "name")
       "Payment"
@@ -54,7 +54,7 @@ defmodule Avrora.Schema do
         %__MODULE__{
           id: nil,
           version: nil,
-          schema: %AvroEx.Schema{schema: schema, context: context},
+          ex_schema: %AvroEx.Schema{schema: schema, context: context},
           raw_schema: payload
         }
       }

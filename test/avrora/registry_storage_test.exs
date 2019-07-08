@@ -25,8 +25,8 @@ defmodule Avrora.RegistryStorageTest do
 
       {:ok, avro} = RegistryStorage.get("io.confluent.Payment")
 
-      assert avro.schema.schema.qualified_names == ["io.confluent.Payment"]
-      assert length(avro.schema.schema.fields) == 2
+      assert avro.ex_schema.schema.qualified_names == ["io.confluent.Payment"]
+      assert length(avro.ex_schema.schema.fields) == 2
       assert length(Map.get(avro.raw_schema, "fields")) == 2
     end
 
@@ -52,8 +52,8 @@ defmodule Avrora.RegistryStorageTest do
 
       {:ok, avro} = RegistryStorage.get(1)
 
-      assert avro.schema.schema.qualified_names == ["io.confluent.Payment"]
-      assert length(avro.schema.schema.fields) == 2
+      assert avro.ex_schema.schema.qualified_names == ["io.confluent.Payment"]
+      assert length(avro.ex_schema.schema.fields) == 2
       assert length(Map.get(avro.raw_schema, "fields")) == 2
     end
 
@@ -86,7 +86,7 @@ defmodule Avrora.RegistryStorageTest do
       {:ok, avro} = RegistryStorage.put("io.confluent.Payment", parsed_payment_schema())
 
       assert avro.id == 1
-      assert avro.schema.schema.qualified_names == ["io.confluent.Payment"]
+      assert avro.ex_schema.schema.qualified_names == ["io.confluent.Payment"]
       assert avro.raw_schema == parsed_payment_schema()
     end
 
@@ -105,7 +105,7 @@ defmodule Avrora.RegistryStorageTest do
       {:ok, avro} = RegistryStorage.put("io.confluent.Payment", payment_schema())
 
       assert avro.id == 1
-      assert avro.schema.schema.qualified_names == ["io.confluent.Payment"]
+      assert avro.ex_schema.schema.qualified_names == ["io.confluent.Payment"]
       assert avro.raw_schema == parsed_payment_schema()
     end
 

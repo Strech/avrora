@@ -69,9 +69,9 @@ defmodule Avrora.MemoryStorage do
 
   ## Examples
       iex> {:ok, _} = Avrora.MemoryStorage.start_link()
-      iex> avro = %Avrora.Schema{id: nil, schema: %AvroEx.Schema{}, raw_schema: %{"k" => "v"}}
+      iex> avro = %Avrora.Schema{id: nil, ex_schema: %AvroEx.Schema{}, raw_schema: %{"k" => "v"}}
       iex> Avrora.MemoryStorage.put("my-key", avro)
-      {:ok, %Avrora.Schema{id: nil, schema: %AvroEx.Schema{}, raw_schema: %{"k" => "v"}}}
+      {:ok, %Avrora.Schema{id: nil, ex_schema: %AvroEx.Schema{}, raw_schema: %{"k" => "v"}}}
   """
   @impl true
   def put(key, value), do: put(__MODULE__, key, value)

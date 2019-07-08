@@ -18,6 +18,7 @@ defmodule Avrora.RegistryStorage do
       ["io.confluent.Payment"]
   """
   def get(key) when is_binary(key) do
+    # TODO: add split for `key:version`
     with {:ok, response} <- http_client().get("subjects/#{key}/versions/latest"),
          {:ok, version} <- Map.fetch(response, "version"),
          {:ok, schema} <- Map.fetch(response, "schema"),

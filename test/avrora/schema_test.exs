@@ -8,16 +8,16 @@ defmodule Avrora.SchemaTest do
     test "when payload is a valid avro json string" do
       {:ok, avro} = Schema.parse(payment_schema())
 
-      assert avro.schema.schema.qualified_names == ["io.confluent.Payment"]
-      assert length(avro.schema.schema.fields) == 2
+      assert avro.ex_schema.schema.qualified_names == ["io.confluent.Payment"]
+      assert length(avro.ex_schema.schema.fields) == 2
       assert avro.raw_schema == parsed_payment_schema()
     end
 
     test "when payload is a valid avro mapped to elixir map" do
       {:ok, avro} = Schema.parse(parsed_payment_schema())
 
-      assert avro.schema.schema.qualified_names == ["io.confluent.Payment"]
-      assert length(avro.schema.schema.fields) == 2
+      assert avro.ex_schema.schema.qualified_names == ["io.confluent.Payment"]
+      assert length(avro.ex_schema.schema.fields) == 2
       assert avro.raw_schema == parsed_payment_schema()
     end
 

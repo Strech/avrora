@@ -42,8 +42,8 @@ defmodule Avrora.MemoryStorageTest do
   defp put(pid, key, value), do: MemoryStorage.put(pid, key, value)
 
   defp schema,
-    do: %Avrora.Schema{id: 1, schema: %AvroEx.Schema{}, raw_schema: %{"hello" => "world"}}
+    do: %Avrora.Schema{id: 1, ex_schema: %AvroEx.Schema{}, raw_schema: %{"hello" => "world"}}
 
   defp new_schema,
-    do: %Avrora.Schema{id: 1, schema: %AvroEx.Schema{}, raw_schema: %{"one" => "two"}}
+    do: %Avrora.Schema{id: 1, ex_schema: %AvroEx.Schema{}, raw_schema: %{"one" => "two"}}
 end
