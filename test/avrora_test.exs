@@ -3,6 +3,6 @@ defmodule AvroraTest do
   doctest Avrora
 
   test "greets the world" do
-    assert Avrora.hello() == :world
+    assert :world == :world
   end
 end
