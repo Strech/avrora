@@ -88,6 +88,15 @@ defmodule Avrora.RegistryStorageTest do
 
       assert RegistryStorage.get(1) == {:error, :unknown_version}
     end
+
+    test "when registry url is unconfigured" do
+      registry_url = Application.get_env(:avrora, :registry_url)
+      Application.put_env(:avrora, :registry_url, nil)
+
+      assert RegistryStorage.get("anything") == {:error, :unconfigured_registry_url}
+
+      Application.put_env(:avrora, :registry_url, registry_url)
+    end
   end
 
   describe "put/2" do
@@ -140,6 +149,16 @@ defmodule Avrora.RegistryStorageTest do
 
       assert RegistryStorage.put("io.confluent.Payment", %{"type" => "string"}) ==
                {:error, :conflict}
+    end
+
+    test "when registry url is unconfigured" do
+      registry_url = Application.get_env(:avrora, :registry_url)
+      Application.put_env(:avrora, :registry_url, nil)
+
+      assert RegistryStorage.put("anything", %{"type" => "string"}) ==
+               {:error, :unconfigured_registry_url}
+
+      Application.put_env(:avrora, :registry_url, registry_url)
     end
   end
 

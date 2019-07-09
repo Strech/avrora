@@ -24,7 +24,7 @@ defmodule Avrora.RegistryStorage do
         [name, version] -> {name, version}
       end
 
-    with {:ok, response} <- http_get("subjects/#{name}/versions/#{version}"),
+    with {:ok, response} <- http_client_get("subjects/#{name}/versions/#{version}"),
          {:ok, version} <- Map.fetch(response, "version"),
          {:ok, schema} <- Map.fetch(response, "schema"),
          {:ok, schema} <- Schema.parse(schema) do
@@ -44,7 +44,7 @@ defmodule Avrora.RegistryStorage do
       ["io.confluent.examples.Payment"]
   """
   def get(key) when is_integer(key) do
-    with {:ok, response} <- http_get("schemas/ids/#{key}"),
+    with {:ok, response} <- http_client_get("schemas/ids/#{key}"),
          {:ok, schema} <- Map.fetch(response, "schema"),
          {:ok, schema} <- Schema.parse(schema) do
       {:ok, %{schema | id: key}}
@@ -62,7 +62,7 @@ defmodule Avrora.RegistryStorage do
       ["io.confluent.Payment"]
   """
   def put(key, value) when is_binary(key) and (is_map(value) or is_binary(value)) do
-    with {:ok, response} <- http_post("subjects/#{key}/versions", value),
+    with {:ok, response} <- http_client_post("subjects/#{key}/versions", value),
          {:ok, id} <- Map.fetch(response, "id"),
          {:ok, schema} <- Schema.parse(value) do
       {:ok, %{schema | id: id}}
@@ -72,11 +72,23 @@ defmodule Avrora.RegistryStorage do
   @doc false
   def put(_key, _value), do: {:error, :unsupported}
 
-  defp http_get(path), do: path |> to_url() |> http_client().get() |> handle()
-  defp http_post(path, payload), do: path |> to_url() |> http_client().post(payload) |> handle()
-  defp to_url(path), do: "#{Application.get_env(:avrora, :registry_url)}/#{path}"
+  @doc false
+  @spec configured?() :: true | false
+  def configured?, do: !is_nil(Application.get_env(:avrora, :registry_url))
 
-  defp handle({:ok, _payload} = response), do: response
+  defp http_client_get(path) do
+    if configured?(),
+      do: path |> to_url() |> http_client().get() |> handle(),
+      else: {:error, :unconfigured_registry_url}
+  end
+
+  defp http_client_post(path, payload) do
+    if configured?(),
+      do: path |> to_url() |> http_client().post(payload) |> handle(),
+      else: {:error, :unconfigured_registry_url}
+  end
+
+  defp to_url(path), do: "#{Application.get_env(:avrora, :registry_url)}/#{path}"
 
   defp handle({:error, payload} = _response) when is_map(payload) do
     reason =
