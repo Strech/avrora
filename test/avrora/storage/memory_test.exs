@@ -1,11 +1,11 @@
-defmodule Avrora.MemoryStorageTest do
+defmodule Avrora.Storage.MemoryTest do
   use ExUnit.Case, async: true
-  doctest Avrora.MemoryStorage
+  doctest Avrora.Storage.Memory
 
-  alias Avrora.MemoryStorage
+  alias Avrora.Storage.Memory
 
   setup do
-    pid = start_supervised!({MemoryStorage, name: :test_schema_storage})
+    pid = start_supervised!({Memory, name: :test_schema_storage})
 
     %{schema_storage: pid}
   end
@@ -38,8 +38,8 @@ defmodule Avrora.MemoryStorageTest do
     end
   end
 
-  defp get(pid, key), do: MemoryStorage.get(pid, key)
-  defp put(pid, key, value), do: MemoryStorage.put(pid, key, value)
+  defp get(pid, key), do: Memory.get(pid, key)
+  defp put(pid, key, value), do: Memory.put(pid, key, value)
 
   defp schema,
     do: %Avrora.Schema{id: 1, ex_schema: %AvroEx.Schema{}, raw_schema: %{"hello" => "world"}}

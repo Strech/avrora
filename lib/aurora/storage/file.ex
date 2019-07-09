@@ -1,4 +1,4 @@
-defmodule Avrora.FileStorage do
+defmodule Avrora.Storage.File do
   @moduledoc """
   Reads and parse schema from the disk with conventional name resoltion.
 
@@ -30,7 +30,7 @@ defmodule Avrora.FileStorage do
 
   ## Examples
 
-      iex> {:ok, avro} = Avrora.FileStorage.get("io.confluent.examples.Payment")
+      iex> {:ok, avro} = Avrora.Storage.File.get("io.confluent.examples.Payment")
       iex> avro.schema.schema.qualified_names
       ["io.confluent.examples.Payment"]
   """

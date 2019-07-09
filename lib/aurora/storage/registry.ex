@@ -1,4 +1,4 @@
-defmodule Avrora.RegistryStorage do
+defmodule Avrora.Storage.Registry do
   @moduledoc """
   A small wrapper for [Confluent Schema Registry](https://docs.confluent.io/current/schema-registry/develop/api.html),
   with as less as possible functionality. Inspired by [Schemex](https://github.com/bencebalogh/schemex).
@@ -14,7 +14,7 @@ defmodule Avrora.RegistryStorage do
 
   ## Examples
 
-      iex> {:ok, avro} = Avrora.RegistryStorage.get("io.confluent.Payment")
+      iex> {:ok, avro} = Avrora.Storage.Registry.get("io.confluent.Payment")
       iex> avro.schema.schema.qualified_names
       ["io.confluent.Payment"]
   """
@@ -40,7 +40,7 @@ defmodule Avrora.RegistryStorage do
 
   ## Examples
 
-      {:ok, avro} = Avrora.RegistryStorage.get(1)
+      {:ok, avro} = Avrora.Storage.Registry.get(1)
       avro.schema.schema.qualified_names
       ["io.confluent.examples.Payment"]
   """
@@ -58,7 +58,7 @@ defmodule Avrora.RegistryStorage do
   ## Examples
 
       iex> schema = %{"namespace" => "io.confluent", "type" => "record", "name" => "Payment", "fields" => [%{"name" => "id", "type" => "string"}, %{"name" => "amount", "type" => "double"}]}
-      iex> {:ok, avro} = Avrora.RegistryStorage.put("io.confluent.examples.Payment", schema)
+      iex> {:ok, avro} = Avrora.Storage.Registry.put("io.confluent.examples.Payment", schema)
       iex> avro.schema.schema.qualified_names
       ["io.confluent.Payment"]
   """

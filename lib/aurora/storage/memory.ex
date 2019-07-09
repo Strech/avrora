@@ -1,4 +1,4 @@
-defmodule Avrora.MemoryStorage do
+defmodule Avrora.Storage.Memory do
   @moduledoc """
   Fast in-memory storage of schemas with access by global id or full name.
   """
@@ -48,12 +48,12 @@ defmodule Avrora.MemoryStorage do
   Retrieve a value by a given key.
 
   ## Examples
-      iex> {:ok, _} = Avrora.MemoryStorage.start_link()
-      iex> Avrora.MemoryStorage.put("my-key", %{"hello" => "world"})
+      iex> {:ok, _} = Avrora.Storage.Memory.start_link()
+      iex> Avrora.Storage.Memory.put("my-key", %{"hello" => "world"})
       {:ok, %{"hello" => "world"}}
-      iex> Avrora.MemoryStorage.get("my-key")
+      iex> Avrora.Storage.Memory.get("my-key")
       {:ok, %{"hello" => "world"}}
-      iex> Avrora.MemoryStorage.get("unknown-key")
+      iex> Avrora.Storage.Memory.get("unknown-key")
       {:ok, nil}
   """
   @impl true
@@ -68,9 +68,9 @@ defmodule Avrora.MemoryStorage do
   Stores a value with a given key. If the value is already exists it will be replaced.
 
   ## Examples
-      iex> {:ok, _} = Avrora.MemoryStorage.start_link()
+      iex> {:ok, _} = Avrora.Storage.Memory.start_link()
       iex> avro = %Avrora.Schema{id: nil, ex_schema: %AvroEx.Schema{}, raw_schema: %{"k" => "v"}}
-      iex> Avrora.MemoryStorage.put("my-key", avro)
+      iex> Avrora.Storage.Memory.put("my-key", avro)
       {:ok, %Avrora.Schema{id: nil, ex_schema: %AvroEx.Schema{}, raw_schema: %{"k" => "v"}}}
   """
   @impl true

@@ -1,9 +1,9 @@
-defmodule Avrora.RegistryStorageTest do
+defmodule Avrora.Storage.RegistryTest do
   use ExUnit.Case, async: true
-  doctest Avrora.RegistryStorage
+  doctest Avrora.Storage.Registry
 
   import Mox
-  alias Avrora.RegistryStorage
+  alias Avrora.Storage.Registry
 
   setup :verify_on_exit!
 
@@ -23,7 +23,7 @@ defmodule Avrora.RegistryStorageTest do
         }
       end)
 
-      {:ok, avro} = RegistryStorage.get("io.confluent.Payment")
+      {:ok, avro} = Registry.get("io.confluent.Payment")
 
       assert avro.ex_schema.schema.qualified_names == ["io.confluent.Payment"]
       assert length(avro.ex_schema.schema.fields) == 2
@@ -45,7 +45,7 @@ defmodule Avrora.RegistryStorageTest do
         }
       end)
 
-      {:ok, avro} = RegistryStorage.get("io.confluent.Payment:10")
+      {:ok, avro} = Registry.get("io.confluent.Payment:10")
 
       assert avro.ex_schema.schema.qualified_names == ["io.confluent.Payment"]
       assert length(avro.ex_schema.schema.fields) == 2
@@ -60,7 +60,7 @@ defmodule Avrora.RegistryStorageTest do
         {:error, subject_not_found_parsed_error()}
       end)
 
-      assert RegistryStorage.get("io.confluent.Payment") == {:error, :unknown_subject}
+      assert Registry.get("io.confluent.Payment") == {:error, :unknown_subject}
     end
 
     test "when request by global ID was successful" do
@@ -71,7 +71,7 @@ defmodule Avrora.RegistryStorageTest do
         {:ok, %{"schema" => payment_schema()}}
       end)
 
-      {:ok, avro} = RegistryStorage.get(1)
+      {:ok, avro} = Registry.get(1)
 
       assert avro.ex_schema.schema.qualified_names == ["io.confluent.Payment"]
       assert length(avro.ex_schema.schema.fields) == 2
@@ -86,14 +86,14 @@ defmodule Avrora.RegistryStorageTest do
         {:error, version_not_found_parsed_error()}
       end)
 
-      assert RegistryStorage.get(1) == {:error, :unknown_version}
+      assert Registry.get(1) == {:error, :unknown_version}
     end
 
     test "when registry url is unconfigured" do
       registry_url = Application.get_env(:avrora, :registry_url)
       Application.put_env(:avrora, :registry_url, nil)
 
-      assert RegistryStorage.get("anything") == {:error, :unconfigured_registry_url}
+      assert Registry.get("anything") == {:error, :unconfigured_registry_url}
 
       Application.put_env(:avrora, :registry_url, registry_url)
     end
@@ -112,7 +112,7 @@ defmodule Avrora.RegistryStorageTest do
         }
       end)
 
-      {:ok, avro} = RegistryStorage.put("io.confluent.Payment", parsed_payment_schema())
+      {:ok, avro} = Registry.put("io.confluent.Payment", parsed_payment_schema())
 
       assert avro.id == 1
       assert avro.ex_schema.schema.qualified_names == ["io.confluent.Payment"]
@@ -131,7 +131,7 @@ defmodule Avrora.RegistryStorageTest do
         }
       end)
 
-      {:ok, avro} = RegistryStorage.put("io.confluent.Payment", payment_schema())
+      {:ok, avro} = Registry.put("io.confluent.Payment", payment_schema())
 
       assert avro.id == 1
       assert avro.ex_schema.schema.qualified_names == ["io.confluent.Payment"]
@@ -147,15 +147,14 @@ defmodule Avrora.RegistryStorageTest do
         {:error, schema_incompatible_parsed_error()}
       end)
 
-      assert RegistryStorage.put("io.confluent.Payment", %{"type" => "string"}) ==
-               {:error, :conflict}
+      assert Registry.put("io.confluent.Payment", %{"type" => "string"}) == {:error, :conflict}
     end
 
     test "when registry url is unconfigured" do
       registry_url = Application.get_env(:avrora, :registry_url)
       Application.put_env(:avrora, :registry_url, nil)
 
-      assert RegistryStorage.put("anything", %{"type" => "string"}) ==
+      assert Registry.put("anything", %{"type" => "string"}) ==
                {:error, :unconfigured_registry_url}
 
       Application.put_env(:avrora, :registry_url, registry_url)
