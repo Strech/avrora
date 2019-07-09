@@ -8,7 +8,7 @@ defmodule Avrora.RegistryStorageTest do
   setup :verify_on_exit!
 
   describe "get/1" do
-    test "when request by subject name was successful" do
+    test "when request by subject name without version was successful" do
       RegistryStorage.HttpClientMock
       |> expect(:get, fn url ->
         assert url == "subjects/io.confluent.Payment/versions/latest"
@@ -24,6 +24,28 @@ defmodule Avrora.RegistryStorageTest do
       end)
 
       {:ok, avro} = RegistryStorage.get("io.confluent.Payment")
+
+      assert avro.ex_schema.schema.qualified_names == ["io.confluent.Payment"]
+      assert length(avro.ex_schema.schema.fields) == 2
+      assert length(Map.get(avro.raw_schema, "fields")) == 2
+    end
+
+    test "when request by subject name with version was successful" do
+      RegistryStorage.HttpClientMock
+      |> expect(:get, fn url ->
+        assert url == "subjects/io.confluent.Payment/versions/10"
+
+        {
+          :ok,
+          %{
+            "name" => "io.confluent.Payment",
+            "version" => 10,
+            "schema" => payment_schema()
+          }
+        }
+      end)
+
+      {:ok, avro} = RegistryStorage.get("io.confluent.Payment:10")
 
       assert avro.ex_schema.schema.qualified_names == ["io.confluent.Payment"]
       assert length(avro.ex_schema.schema.fields) == 2

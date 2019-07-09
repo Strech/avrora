@@ -4,7 +4,7 @@ defmodule Avrora.RegistryStorage do
   with as less as possible functionality. Inspired by [Schemex](https://github.com/bencebalogh/schemex).
   """
 
-  alias Avrora.Schema
+  alias Avrora.{Schema, HttpClient}
 
   @behaviour Avrora.Storage
 
@@ -18,8 +18,13 @@ defmodule Avrora.RegistryStorage do
       ["io.confluent.Payment"]
   """
   def get(key) when is_binary(key) do
-    # TODO: add split for `key:version`
-    with {:ok, response} <- http_client().get("subjects/#{key}/versions/latest"),
+    {name, version} =
+      case String.split(key, ":", parts: 2) do
+        [name] -> {name, "latest"}
+        [name, version] -> {name, version}
+      end
+
+    with {:ok, response} <- http_client().get("subjects/#{name}/versions/#{version}"),
          {:ok, version} <- Map.fetch(response, "version"),
          {:ok, schema} <- Map.fetch(response, "schema"),
          {:ok, schema} <- Schema.parse(schema) do
@@ -67,5 +72,5 @@ defmodule Avrora.RegistryStorage do
   @doc false
   def put(_key, _value), do: {:error, :unsupported}
 
-  defp http_client, do: Application.get_env(:avrora, :http_client)
+  defp http_client, do: Application.get_env(:avrora, :http_client, HttpClient)
 end

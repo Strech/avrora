@@ -46,7 +46,5 @@ defmodule Avrora.RegistryStorage.HttpClient do
     end
   end
 
-  defp url(path) do
-    '#{Application.get_env(:avrora, :registry_url)}/#{path}'
-  end
+  defp url(path), do: '#{Application.get_env(:avrora, :registry_url)}/#{path}'
 end
