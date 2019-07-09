@@ -24,7 +24,7 @@ defmodule Avrora.RegistryStorage do
         [name, version] -> {name, version}
       end
 
-    with {:ok, response} <- http_client().get("subjects/#{name}/versions/#{version}"),
+    with {:ok, response} <- http_get("subjects/#{name}/versions/#{version}"),
          {:ok, version} <- Map.fetch(response, "version"),
          {:ok, schema} <- Map.fetch(response, "schema"),
          {:ok, schema} <- Schema.parse(schema) do
@@ -44,7 +44,7 @@ defmodule Avrora.RegistryStorage do
       ["io.confluent.examples.Payment"]
   """
   def get(key) when is_integer(key) do
-    with {:ok, response} <- http_client().get("schemas/ids/#{key}"),
+    with {:ok, response} <- http_get("schemas/ids/#{key}"),
          {:ok, schema} <- Map.fetch(response, "schema"),
          {:ok, schema} <- Schema.parse(schema) do
       {:ok, %{schema | id: key}}
@@ -62,7 +62,7 @@ defmodule Avrora.RegistryStorage do
       ["io.confluent.Payment"]
   """
   def put(key, value) when is_binary(key) and (is_map(value) or is_binary(value)) do
-    with {:ok, response} <- http_client().post("subjects/#{key}/versions", value),
+    with {:ok, response} <- http_post("subjects/#{key}/versions", value),
          {:ok, id} <- Map.fetch(response, "id"),
          {:ok, schema} <- Schema.parse(value) do
       {:ok, %{schema | id: id}}
@@ -71,6 +71,28 @@ defmodule Avrora.RegistryStorage do
 
   @doc false
   def put(_key, _value), do: {:error, :unsupported}
+
+  defp http_get(path), do: http_client().get(url(path)) |> handle()
+  defp http_post(path, payload), do: http_client().post(url(path), payload) |> handle()
+  defp url(path), do: "#{Application.get_env(:avrora, :registry_url)}/#{path}"
+
+  defp handle({:ok, payload} = response), do: response
+
+  defp handle({:error, payload} = response) when is_map(payload) do
+    reason =
+      case Map.get(payload, "error_code") do
+        40401 -> :unknown_subject
+        40402 -> :unknown_version
+        40403 -> :unknown_schema
+        409 -> :conflict
+        422 -> :unprocessable
+        _ -> payload
+      end
+
+    {:error, reason}
+  end
+
+  defp handle(response), do: response
 
   defp http_client, do: Application.get_env(:avrora, :http_client, HttpClient)
 end

@@ -11,8 +11,8 @@ defmodule Avrora.RegistryStorage.HttpClient do
 
   @doc false
   @spec get(String.t()) :: {:ok, map()} | {:error, any()}
-  def get(path) do
-    case :httpc.request(:get, {url(path), []}, [], []) do
+  def get(url) do
+    case :httpc.request(:get, {'#{url}', []}, [], []) do
       {:ok, {{_, status, _}, _, body}} ->
         handle(status, body)
 
@@ -23,16 +23,16 @@ defmodule Avrora.RegistryStorage.HttpClient do
 
   @doc false
   @spec post(String.t(), map()) :: {:ok, map()} | {:error, any()}
-  def post(path, payload) when is_map(payload) do
-    with {:ok, schema} <- Jason.encode(payload), do: post(path, schema)
+  def post(url, payload) when is_map(payload) do
+    with {:ok, schema} <- Jason.encode(payload), do: post(url, schema)
   end
 
   @doc false
   @spec post(String.t(), String.t()) :: {:ok, map()} | {:error, any()}
-  def post(path, payload) when is_binary(payload) do
+  def post(url, payload) when is_binary(payload) do
     with {:ok, body} <- Jason.encode(%{"schema" => payload}),
          {:ok, {{_, status, _}, _, body}} =
-           :httpc.request(:post, {url(path), [], [@content_type], body}, [], []) do
+           :httpc.request(:post, {'#{url}', [], [@content_type], body}, [], []) do
       handle(status, body)
     end
   end
@@ -45,6 +45,4 @@ defmodule Avrora.RegistryStorage.HttpClient do
       {:error, _} -> {:error, {status, body}}
     end
   end
-
-  defp url(path), do: '#{Application.get_env(:avrora, :registry_url)}/#{path}'
 end

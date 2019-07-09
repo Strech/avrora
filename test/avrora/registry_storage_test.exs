@@ -11,7 +11,7 @@ defmodule Avrora.RegistryStorageTest do
     test "when request by subject name without version was successful" do
       RegistryStorage.HttpClientMock
       |> expect(:get, fn url ->
-        assert url == "subjects/io.confluent.Payment/versions/latest"
+        assert url == "http://reg.loc/subjects/io.confluent.Payment/versions/latest"
 
         {
           :ok,
@@ -33,7 +33,7 @@ defmodule Avrora.RegistryStorageTest do
     test "when request by subject name with version was successful" do
       RegistryStorage.HttpClientMock
       |> expect(:get, fn url ->
-        assert url == "subjects/io.confluent.Payment/versions/10"
+        assert url == "http://reg.loc/subjects/io.confluent.Payment/versions/10"
 
         {
           :ok,
@@ -55,19 +55,18 @@ defmodule Avrora.RegistryStorageTest do
     test "when request by subject name was unsuccessful" do
       RegistryStorage.HttpClientMock
       |> expect(:get, fn url ->
-        assert url == "subjects/io.confluent.Payment/versions/latest"
+        assert url == "http://reg.loc/subjects/io.confluent.Payment/versions/latest"
 
         {:error, subject_not_found_parsed_error()}
       end)
 
-      {:error, response} = RegistryStorage.get("io.confluent.Payment")
-      assert response == %{"error_code" => 40401, "message" => "Subject not found!"}
+      assert RegistryStorage.get("io.confluent.Payment") == {:error, :unknown_subject}
     end
 
     test "when request by global ID was successful" do
       RegistryStorage.HttpClientMock
       |> expect(:get, fn url ->
-        assert url == "schemas/ids/1"
+        assert url == "http://reg.loc/schemas/ids/1"
 
         {:ok, %{"schema" => payment_schema()}}
       end)
@@ -82,13 +81,12 @@ defmodule Avrora.RegistryStorageTest do
     test "when request by global ID was unsuccessful" do
       RegistryStorage.HttpClientMock
       |> expect(:get, fn url ->
-        assert url == "schemas/ids/1"
+        assert url == "http://reg.loc/schemas/ids/1"
 
         {:error, version_not_found_parsed_error()}
       end)
 
-      {:error, response} = RegistryStorage.get(1)
-      assert response == %{"error_code" => 40402, "message" => "Subject version not found!"}
+      assert RegistryStorage.get(1) == {:error, :unknown_version}
     end
   end
 
@@ -96,7 +94,7 @@ defmodule Avrora.RegistryStorageTest do
     test "when value is parsed json and request was successful" do
       RegistryStorage.HttpClientMock
       |> expect(:post, fn url, payload ->
-        assert url == "subjects/io.confluent.Payment/versions"
+        assert url == "http://reg.loc/subjects/io.confluent.Payment/versions"
         assert payload == parsed_payment_schema()
 
         {
@@ -115,7 +113,7 @@ defmodule Avrora.RegistryStorageTest do
     test "when value is raw json and request was successful" do
       RegistryStorage.HttpClientMock
       |> expect(:post, fn url, payload ->
-        assert url == "subjects/io.confluent.Payment/versions"
+        assert url == "http://reg.loc/subjects/io.confluent.Payment/versions"
         assert payload == payment_schema()
 
         {
@@ -134,15 +132,14 @@ defmodule Avrora.RegistryStorageTest do
     test "when request was unsuccessful" do
       RegistryStorage.HttpClientMock
       |> expect(:post, fn url, payload ->
-        assert url == "subjects/io.confluent.Payment/versions"
+        assert url == "http://reg.loc/subjects/io.confluent.Payment/versions"
         assert payload == %{"type" => "string"}
 
         {:error, schema_incompatible_parsed_error()}
       end)
 
-      {:error, reason} = RegistryStorage.put("io.confluent.Payment", %{"type" => "string"})
-
-      assert reason == %{"error_code" => 409, "message" => "Schema is incompatible!"}
+      assert RegistryStorage.put("io.confluent.Payment", %{"type" => "string"}) ==
+               {:error, :conflict}
     end
   end
 
