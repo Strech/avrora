@@ -72,13 +72,13 @@ defmodule Avrora.RegistryStorage do
   @doc false
   def put(_key, _value), do: {:error, :unsupported}
 
-  defp http_get(path), do: http_client().get(url(path)) |> handle()
-  defp http_post(path, payload), do: http_client().post(url(path), payload) |> handle()
-  defp url(path), do: "#{Application.get_env(:avrora, :registry_url)}/#{path}"
+  defp http_get(path), do: path |> to_url() |> http_client().get() |> handle()
+  defp http_post(path, payload), do: path |> to_url() |> http_client().post(payload) |> handle()
+  defp to_url(path), do: "#{Application.get_env(:avrora, :registry_url)}/#{path}"
 
-  defp handle({:ok, payload} = response), do: response
+  defp handle({:ok, _payload} = response), do: response
 
-  defp handle({:error, payload} = response) when is_map(payload) do
+  defp handle({:error, payload} = _response) when is_map(payload) do
     reason =
       case Map.get(payload, "error_code") do
         40401 -> :unknown_subject
