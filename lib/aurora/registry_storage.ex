@@ -4,10 +4,10 @@ defmodule Avrora.RegistryStorage do
   with as less as possible functionality. Inspired by [Schemex](https://github.com/bencebalogh/schemex).
   """
 
-  alias Avrora.RegistryStorage.HttpClient
-  alias Avrora.Schema
+  alias Avrora.{HttpClient, Schema}
 
   @behaviour Avrora.Storage
+  @content_type "application/vnd.schemaregistry.v1+json"
 
   @doc """
   Fetch the latest version of the schema registered under a subject name.
@@ -84,9 +84,11 @@ defmodule Avrora.RegistryStorage do
   end
 
   defp http_client_post(path, payload) do
-    if configured?(),
-      do: path |> to_url() |> http_client().post(payload) |> handle(),
-      else: {:error, :unconfigured_registry_url}
+    if configured?() do
+      path |> to_url() |> http_client().post(payload, content_type: @content_type) |> handle()
+    else
+      {:error, :unconfigured_registry_url}
+    end
   end
 
   defp to_url(path), do: "#{Application.get_env(:avrora, :registry_url)}/#{path}"

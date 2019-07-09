@@ -1,13 +1,11 @@
-defmodule Avrora.RegistryStorage.HttpClient do
+defmodule Avrora.HttpClient do
   @moduledoc """
   Minimalistic HTTP client with a get/post functionality and built-in
   JSON encode/decode behaviour.
   """
 
   @callback get(String.t()) :: {:ok, map()} | {:error, any()}
-  @callback post(String.t(), String.t()) :: {:ok, map()} | {:error, any()}
-
-  @content_type "application/vnd.schemaregistry.v1+json"
+  @callback post(String.t(), String.t(), keyword(String.t())) :: {:ok, map()} | {:error, any()}
 
   @doc false
   @spec get(String.t()) :: {:ok, map()} | {:error, any()}
@@ -22,17 +20,17 @@ defmodule Avrora.RegistryStorage.HttpClient do
   end
 
   @doc false
-  @spec post(String.t(), map()) :: {:ok, map()} | {:error, any()}
-  def post(url, payload) when is_map(payload) do
-    with {:ok, schema} <- Jason.encode(payload), do: post(url, schema)
+  @spec post(String.t(), map(), keyword(String.t())) :: {:ok, map()} | {:error, any()}
+  def post(url, payload, content_type: content_type) when is_map(payload) do
+    with {:ok, schema} <- Jason.encode(payload), do: post(url, schema, content_type: content_type)
   end
 
   @doc false
-  @spec post(String.t(), String.t()) :: {:ok, map()} | {:error, any()}
-  def post(url, payload) when is_binary(payload) do
+  @spec post(String.t(), String.t(), keyword(String.t())) :: {:ok, map()} | {:error, any()}
+  def post(url, payload, content_type: content_type) when is_binary(payload) do
     with {:ok, body} <- Jason.encode(%{"schema" => payload}),
          {:ok, {{_, status, _}, _, body}} =
-           :httpc.request(:post, {'#{url}', [], [@content_type], body}, [], []) do
+           :httpc.request(:post, {'#{url}', [], [content_type], body}, [], []) do
       handle(status, body)
     end
   end

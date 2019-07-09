@@ -9,7 +9,7 @@ defmodule Avrora.RegistryStorageTest do
 
   describe "get/1" do
     test "when request by subject name without version was successful" do
-      RegistryStorage.HttpClientMock
+      Avrora.HttpClientMock
       |> expect(:get, fn url ->
         assert url == "http://reg.loc/subjects/io.confluent.Payment/versions/latest"
 
@@ -31,7 +31,7 @@ defmodule Avrora.RegistryStorageTest do
     end
 
     test "when request by subject name with version was successful" do
-      RegistryStorage.HttpClientMock
+      Avrora.HttpClientMock
       |> expect(:get, fn url ->
         assert url == "http://reg.loc/subjects/io.confluent.Payment/versions/10"
 
@@ -53,7 +53,7 @@ defmodule Avrora.RegistryStorageTest do
     end
 
     test "when request by subject name was unsuccessful" do
-      RegistryStorage.HttpClientMock
+      Avrora.HttpClientMock
       |> expect(:get, fn url ->
         assert url == "http://reg.loc/subjects/io.confluent.Payment/versions/latest"
 
@@ -64,7 +64,7 @@ defmodule Avrora.RegistryStorageTest do
     end
 
     test "when request by global ID was successful" do
-      RegistryStorage.HttpClientMock
+      Avrora.HttpClientMock
       |> expect(:get, fn url ->
         assert url == "http://reg.loc/schemas/ids/1"
 
@@ -79,7 +79,7 @@ defmodule Avrora.RegistryStorageTest do
     end
 
     test "when request by global ID was unsuccessful" do
-      RegistryStorage.HttpClientMock
+      Avrora.HttpClientMock
       |> expect(:get, fn url ->
         assert url == "http://reg.loc/schemas/ids/1"
 
@@ -101,8 +101,8 @@ defmodule Avrora.RegistryStorageTest do
 
   describe "put/2" do
     test "when value is parsed json and request was successful" do
-      RegistryStorage.HttpClientMock
-      |> expect(:post, fn url, payload ->
+      Avrora.HttpClientMock
+      |> expect(:post, fn url, payload, _ ->
         assert url == "http://reg.loc/subjects/io.confluent.Payment/versions"
         assert payload == parsed_payment_schema()
 
@@ -120,8 +120,8 @@ defmodule Avrora.RegistryStorageTest do
     end
 
     test "when value is raw json and request was successful" do
-      RegistryStorage.HttpClientMock
-      |> expect(:post, fn url, payload ->
+      Avrora.HttpClientMock
+      |> expect(:post, fn url, payload, _ ->
         assert url == "http://reg.loc/subjects/io.confluent.Payment/versions"
         assert payload == payment_schema()
 
@@ -139,8 +139,8 @@ defmodule Avrora.RegistryStorageTest do
     end
 
     test "when request was unsuccessful" do
-      RegistryStorage.HttpClientMock
-      |> expect(:post, fn url, payload ->
+      Avrora.HttpClientMock
+      |> expect(:post, fn url, payload, _ ->
         assert url == "http://reg.loc/subjects/io.confluent.Payment/versions"
         assert payload == %{"type" => "string"}
 
