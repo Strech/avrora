@@ -3,7 +3,7 @@ defmodule Avrora.Resolver do
   TODO: Make RegistryStorage optional
   """
 
-  alias Avrora.{Schema, FileStorage, MemoryStorage, RegistryStorage}
+  alias Avrora.{FileStorage, MemoryStorage, RegistryStorage, Schema}
 
   @doc """
   Resolves schema by a global ID.

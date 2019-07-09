@@ -4,7 +4,8 @@ defmodule Avrora.RegistryStorage do
   with as less as possible functionality. Inspired by [Schemex](https://github.com/bencebalogh/schemex).
   """
 
-  alias Avrora.{Schema, HttpClient}
+  alias Avrora.RegistryStorage.HttpClient
+  alias Avrora.Schema
 
   @behaviour Avrora.Storage
 
