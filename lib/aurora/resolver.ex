@@ -51,12 +51,12 @@ defmodule Avrora.Resolver do
       ["io.confluent.Paymen"]
   """
   @spec resolve(String.t()) :: {:ok, Avrora.Schema.t()} | {:error, term()}
-  def resolve(schema_name) when is_binary(schema_name) do
-    name = Schema.parse_subject(schema_name)
-    version = Schema.parse_version(schema_name)
+  def resolve(subject) when is_binary(subject) do
+    name = Schema.parse_subject(subject)
+    version = Schema.parse_version(subject)
 
-    with {:ok, nil} <- memory_storage().get(schema_name) do
-      case registry_storage().get(schema_name) do
+    with {:ok, nil} <- memory_storage().get(subject) do
+      case registry_storage().get(subject) do
         {:ok, avro} ->
           with {:ok, avro} <- memory_storage().put(name, avro) do
             name = if is_nil(version), do: "#{name}:#{avro.version}", else: name
