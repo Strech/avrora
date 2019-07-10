@@ -46,7 +46,10 @@ defmodule Avrora.MixProject do
     [
       maintainers: ["Sergey Fedorov"],
       licenses: ["MIT"],
-      links: %{GitHub: "https://github.com/Strech/avrora"}
+      links: %{
+        GitHub: "https://github.com/Strech/avrora",
+        Docs: "https://hexdocs.pm/avrora"
+      }
     ]
   end
 
