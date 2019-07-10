@@ -1,5 +1,5 @@
 <p align="center">
-  <img width=200 src="assets/logo.png"/>
+  <img width=200 src="/assets/logo.png"/>
   <h1 align="center">Avrora</h1>
 </p>
 
