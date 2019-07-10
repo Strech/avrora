@@ -50,7 +50,14 @@ defmodule Avrora.MixProject do
       links: %{
         GitHub: "https://github.com/Strech/avrora",
         Docs: "https://hexdocs.pm/avrora"
-      }
+      },
+      files: [
+        "lib",
+        "assets",
+        "mix.exs",
+        "README.md",
+        "LICENCE.md"
+      ]
     ]
   end
 
