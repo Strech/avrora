@@ -22,6 +22,6 @@ script:
 
 cache:
   directories:
-#    - priv/plts
+    - priv/plts
     - _build
     - deps
