@@ -4,7 +4,8 @@ defmodule Avrora.MixProject do
   def project do
     [
       app: :avrora,
-      version: "0.1.0",
+      # Unfortunately, avro_ex is beta dependency
+      version: "0.1.0-beta",
       elixir: "~> 1.6",
       description: description(),
       package: package(),
@@ -67,9 +68,7 @@ defmodule Avrora.MixProject do
   defp deps do
     [
       {:jason, "~> 1.1"},
-      # This is a preferred dependency state, but impossible to use with hex.pm
-      # {:avro_ex, git: "https://github.com/beam-community/avro_ex.git", sha: " 9a02fd6"},
-      {:avro_ex, "~> 0.1.0-beta.6"},
+      {:avro_ex, git: "https://github.com/beam-community/avro_ex.git", sha: " 9a02fd6"},
       {:mox, "~> 0.5", only: :test},
       {:ex_doc, "~> 0.13", only: :dev},
       {:dialyxir, "~> 1.0.0-rc.6", only: :dev, runtime: false},
