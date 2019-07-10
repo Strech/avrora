@@ -6,7 +6,8 @@ defmodule Avrora.Storage.File do
   `namespace/namespace/name.avsc` path.
   """
 
-  alias Avrora.Schema
+  require Logger
+  alias Avrora.{Name, Schema}
 
   @behaviour Avrora.Storage
   @extension ".avsc"
@@ -35,8 +36,15 @@ defmodule Avrora.Storage.File do
       ["io.confluent.examples.Payment"]
   """
   def get(key) when is_binary(key) do
-    with filepath <- Path.join(schemas_path(), name_to_filename(key)),
+    with {:ok, schema_name} <- Name.parse(key),
+         filepath <- Path.join(schemas_path(), name_to_filename(schema_name.name)),
          {:ok, body} <- File.read(filepath) do
+      unless is_nil(schema_name.version) do
+        Logger.warn(
+          "file reading schema with version is not allowed, `#{schema_name.name}` used instead"
+        )
+      end
+
       Schema.parse(body)
     end
   end

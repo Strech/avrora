@@ -142,13 +142,16 @@ defmodule Avrora.Storage.RegistryTest do
         {:ok, %{"id" => 1}}
       end)
 
-      capture_log(fn ->
-        {:ok, avro} = Registry.put("io.confluent.Payment:42", parsed_payment_schema())
+      output =
+        capture_log(fn ->
+          {:ok, avro} = Registry.put("io.confluent.Payment:42", parsed_payment_schema())
 
-        assert avro.id == 1
-        assert avro.ex_schema.schema.qualified_names == ["io.confluent.Payment"]
-        assert avro.raw_schema == parsed_payment_schema()
-      end) =~ "schema with version is not allowed"
+          assert avro.id == 1
+          assert avro.ex_schema.schema.qualified_names == ["io.confluent.Payment"]
+          assert avro.raw_schema == parsed_payment_schema()
+        end)
+
+      assert output =~ "schema with version is not allowed"
     end
 
     test "when request was unsuccessful" do

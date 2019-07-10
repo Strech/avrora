@@ -1,10 +1,11 @@
 defmodule Avrora.Resolver do
   @moduledoc """
-  TODO: Make RegistryStorage optional
+  Resolves schema names or global ID's to a specific schema files while keeping
+  memory and registry storage up to date.
   """
 
   alias Avrora.{FileStorage, MemoryStorage, RegistryStorage}
-  alias Avrora.{Name, Schema}
+  alias Avrora.Name
 
   @doc """
   Resolves schema by a global ID.
@@ -62,7 +63,7 @@ defmodule Avrora.Resolver do
           end
 
         {:error, :unconfigured_registry_url} ->
-          with {:ok, avro} <- file_storage().get(schema_name.name),
+          with {:ok, avro} <- file_storage().get(name),
                do: memory_storage().put(schema_name.name, avro)
 
         {:error, :unknown_subject} ->

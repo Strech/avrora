@@ -1,4 +1,4 @@
 Mox.defmock(Avrora.HttpClientMock, for: Avrora.HttpClient)
-Mox.defmock(Avrora.FileStorageMock, for: Avrora.Storage)
-Mox.defmock(Avrora.MemoryStorageMock, for: Avrora.Storage)
-Mox.defmock(Avrora.RegistryStorageMock, for: Avrora.Storage)
+Mox.defmock(Avrora.Storage.FileMock, for: Avrora.Storage)
+Mox.defmock(Avrora.Storage.MemoryMock, for: Avrora.Storage)
+Mox.defmock(Avrora.Storage.RegistryMock, for: Avrora.Storage)
