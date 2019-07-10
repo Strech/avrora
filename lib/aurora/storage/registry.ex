@@ -38,9 +38,9 @@ defmodule Avrora.Storage.Registry do
 
   ## Examples
 
-      {:ok, avro} = Avrora.Storage.Registry.get(1)
-      avro.schema.schema.qualified_names
-      ["io.confluent.examples.Payment"]
+      ...> {:ok, avro} = Avrora.Storage.Registry.get(1)
+      ...> avro.schema.schema.qualified_names
+      ...> ["io.confluent.examples.Payment"]
   """
   def get(key) when is_integer(key) do
     with {:ok, response} <- http_client_get("schemas/ids/#{key}"),

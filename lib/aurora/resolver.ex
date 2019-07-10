@@ -40,15 +40,15 @@ defmodule Avrora.Resolver do
 
   ## Examples
 
-      > {:ok, avro1} = Avrora.Resolver.resolve("io.confluent.Payment")
-      > {:ok, avro2} = Avrora.Resolver.resolve("io.confluent.Payment:42")
-      > avro1.version
+      ...> {:ok, avro1} = Avrora.Resolver.resolve("io.confluent.Payment")
+      ...> {:ok, avro2} = Avrora.Resolver.resolve("io.confluent.Payment:42")
+      ...> avro1.version
       42
-      > avro2.version
+      ...> avro2.version
       42
-      > avro1.ex_schema.schema.qualified_names
+      ...> avro1.ex_schema.schema.qualified_names
       ["io.confluent.Paymen"]
-      > avro2.ex_schema.schema.qualified_names
+      ...> avro2.ex_schema.schema.qualified_names
       ["io.confluent.Paymen"]
   """
   @spec resolve(String.t()) :: {:ok, Avrora.Schema.t()} | {:error, term()}
