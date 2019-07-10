@@ -10,6 +10,9 @@ otp_release:
   - 21.0
 
 matrix:
+  allow_failures:
+    - elixir: '1.6'
+      otp_release: '19.0'
   include:
     - elixir: '1.6'
       otp_release: '19.0'
