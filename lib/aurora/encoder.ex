@@ -22,7 +22,7 @@ defmodule Avrora.Encoder do
       {:ok, %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}}
   """
   @spec decode(binary(), keyword(String.t())) :: {:ok, map()} | {:error, term()}
-  def decode(payload, schema_name: schema_name) do
+  def decode(payload, schema_name: schema_name) when is_binary(payload) do
     with {:ok, schema_name} <- Name.parse(schema_name) do
       unless is_nil(schema_name.version) do
         Logger.warn(
@@ -55,7 +55,7 @@ defmodule Avrora.Encoder do
             48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 48, 48, 48, 48, 48,
             48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64>>}
   """
-  @spec encode(map(), keyword(String.t())) :: {:ok, binary} | {:error, term()}
+  @spec encode(map(), keyword(String.t())) :: {:ok, binary()} | {:error, term()}
   def encode(payload, schema_name: schema_name) when is_map(payload) do
     with {:ok, schema_name} <- Name.parse(schema_name),
          {:ok, avro} <- Resolver.resolve(schema_name.name),

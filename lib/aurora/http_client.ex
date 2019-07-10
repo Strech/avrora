@@ -4,11 +4,11 @@ defmodule Avrora.HttpClient do
   JSON encode/decode behaviour.
   """
 
-  @callback get(String.t()) :: {:ok, map()} | {:error, any()}
-  @callback post(String.t(), String.t(), keyword(String.t())) :: {:ok, map()} | {:error, any()}
+  @callback get(String.t()) :: {:ok, map()} | {:error, term()}
+  @callback post(String.t(), String.t(), keyword(String.t())) :: {:ok, map()} | {:error, term()}
 
   @doc false
-  @spec get(String.t()) :: {:ok, map()} | {:error, any()}
+  @spec get(String.t()) :: {:ok, map()} | {:error, term()}
   def get(url) do
     case :httpc.request(:get, {'#{url}', []}, [], []) do
       {:ok, {{_, status, _}, _, body}} ->
@@ -20,13 +20,13 @@ defmodule Avrora.HttpClient do
   end
 
   @doc false
-  @spec post(String.t(), map(), keyword(String.t())) :: {:ok, map()} | {:error, any()}
+  @spec post(String.t(), map(), keyword(String.t())) :: {:ok, map()} | {:error, term()}
   def post(url, payload, content_type: content_type) when is_map(payload) do
     with {:ok, schema} <- Jason.encode(payload), do: post(url, schema, content_type: content_type)
   end
 
   @doc false
-  @spec post(String.t(), String.t(), keyword(String.t())) :: {:ok, map()} | {:error, any()}
+  @spec post(String.t(), String.t(), keyword(String.t())) :: {:ok, map()} | {:error, term()}
   def post(url, payload, content_type: content_type) when is_binary(payload) do
     with {:ok, body} <- Jason.encode(%{"schema" => payload}),
          {:ok, {{_, status, _}, _, body}} =
