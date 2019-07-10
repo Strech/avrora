@@ -53,7 +53,8 @@ defmodule Avrora.MixProject do
   defp docs do
     [
       main: "readme",
-      logo: "misc/logo.png",
+      logo: "assets/logo.png",
+      source_url: "https://github.com/Strech/avrora",
       extras: [
         "README.md"
       ]
