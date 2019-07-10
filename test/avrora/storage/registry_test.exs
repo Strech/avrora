@@ -3,6 +3,7 @@ defmodule Avrora.Storage.RegistryTest do
   doctest Avrora.Storage.Registry
 
   import Mox
+  import ExUnit.CaptureLog
   alias Avrora.Storage.Registry
 
   setup :verify_on_exit!
@@ -106,10 +107,7 @@ defmodule Avrora.Storage.RegistryTest do
         assert url == "http://reg.loc/subjects/io.confluent.Payment/versions"
         assert payload == parsed_payment_schema()
 
-        {
-          :ok,
-          %{"id" => 1}
-        }
+        {:ok, %{"id" => 1}}
       end)
 
       {:ok, avro} = Registry.put("io.confluent.Payment", parsed_payment_schema())
@@ -125,10 +123,7 @@ defmodule Avrora.Storage.RegistryTest do
         assert url == "http://reg.loc/subjects/io.confluent.Payment/versions"
         assert payload == payment_schema()
 
-        {
-          :ok,
-          %{"id" => 1}
-        }
+        {:ok, %{"id" => 1}}
       end)
 
       {:ok, avro} = Registry.put("io.confluent.Payment", payment_schema())
@@ -136,6 +131,24 @@ defmodule Avrora.Storage.RegistryTest do
       assert avro.id == 1
       assert avro.ex_schema.schema.qualified_names == ["io.confluent.Payment"]
       assert avro.raw_schema == parsed_payment_schema()
+    end
+
+    test "when value is parsed json and key contains version and request was successful" do
+      Avrora.HttpClientMock
+      |> expect(:post, fn url, payload, _ ->
+        assert url == "http://reg.loc/subjects/io.confluent.Payment/versions"
+        assert payload == parsed_payment_schema()
+
+        {:ok, %{"id" => 1}}
+      end)
+
+      capture_log(fn ->
+        {:ok, avro} = Registry.put("io.confluent.Payment:42", parsed_payment_schema())
+
+        assert avro.id == 1
+        assert avro.ex_schema.schema.qualified_names == ["io.confluent.Payment"]
+        assert avro.raw_schema == parsed_payment_schema()
+      end) =~ "schema with version is not allowed"
     end
 
     test "when request was unsuccessful" do

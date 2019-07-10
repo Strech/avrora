@@ -34,30 +34,6 @@ defmodule Avrora.SchemaTest do
     end
   end
 
-  describe "parse_subject/1" do
-    test "when only name part is present" do
-      assert Schema.parse_subject("hello") == "hello"
-      assert Schema.parse_subject("io.hello.world") == "io.hello.world"
-    end
-
-    test "when name and version parts are present" do
-      assert Schema.parse_subject("hello:6") == "hello"
-      assert Schema.parse_subject("io.hello.world:42") == "io.hello.world"
-    end
-  end
-
-  describe "parse_version/1" do
-    test "when only name part is present" do
-      assert is_nil(Schema.parse_version("hello"))
-      assert is_nil(Schema.parse_version("io.hello.world"))
-    end
-
-    test "when name and version parts are present" do
-      assert Schema.parse_version("hello:6") == 6
-      assert Schema.parse_version("io.hello.world:42") == 42
-    end
-  end
-
   defp parsed_payment_schema do
     %{
       "namespace" => "io.confluent",

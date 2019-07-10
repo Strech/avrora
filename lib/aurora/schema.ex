@@ -60,45 +60,4 @@ defmodule Avrora.Schema do
       }
     end
   end
-
-  @doc """
-  Parse the given string and extract only the subject part from it. The format is
-  `subject:version`.
-
-  ## Examples
-
-      iex> Avrora.Schema.parse_subject("Payment")
-      "Payment"
-      iex> Avrora.Schema.parse_subject("io.confluent.Payment")
-      "io.confluent.Payment"
-  """
-  @spec parse_subject(String.t()) :: String.t()
-  def parse_subject(payload) when is_binary(payload) do
-    payload |> String.split(":", parts: 2) |> Enum.at(0)
-  end
-
-  @doc """
-  Parse the given string and extract only the version part from it. The format is
-  `subject:version`.
-
-  ## Examples
-
-      iex> Avrora.Schema.parse_version("Payment")
-      nil
-      iex> Avrora.Schema.parse_version("io.confluent.Payment:42")
-      42
-  """
-  @spec parse_version(String.t()) :: nil | integer()
-  def parse_version(payload) when is_binary(payload) do
-    case payload |> String.split(":", parts: 2) |> Enum.at(1) do
-      nil ->
-        nil
-
-      version ->
-        case Integer.parse(version) do
-          {version, _} -> version
-          _ -> nil
-        end
-    end
-  end
 end

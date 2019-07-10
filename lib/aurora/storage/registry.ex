@@ -4,7 +4,9 @@ defmodule Avrora.Storage.Registry do
   with as less as possible functionality. Inspired by [Schemex](https://github.com/bencebalogh/schemex).
   """
 
-  alias Avrora.{HttpClient, Schema}
+  require Logger
+
+  alias Avrora.{HttpClient, Name, Schema}
 
   @behaviour Avrora.Storage
   @content_type "application/vnd.schemaregistry.v1+json"
@@ -19,13 +21,9 @@ defmodule Avrora.Storage.Registry do
       ["io.confluent.Payment"]
   """
   def get(key) when is_binary(key) do
-    {name, version} =
-      case String.split(key, ":", parts: 2) do
-        [name] -> {name, "latest"}
-        [name, version] -> {name, version}
-      end
-
-    with {:ok, response} <- http_client_get("subjects/#{name}/versions/#{version}"),
+    with {:ok, schema_name} <- Name.parse(key),
+         {name, version} <- {schema_name.name, schema_name.version || "latest"},
+         {:ok, response} <- http_client_get("subjects/#{name}/versions/#{version}"),
          {:ok, version} <- Map.fetch(response, "version"),
          {:ok, schema} <- Map.fetch(response, "schema"),
          {:ok, schema} <- Schema.parse(schema) do
@@ -63,9 +61,16 @@ defmodule Avrora.Storage.Registry do
       ["io.confluent.Payment"]
   """
   def put(key, value) when is_binary(key) and (is_map(value) or is_binary(value)) do
-    with {:ok, response} <- http_client_post("subjects/#{key}/versions", value),
+    with {:ok, schema_name} <- Name.parse(key),
+         {:ok, response} <- http_client_post("subjects/#{schema_name.name}/versions", value),
          {:ok, id} <- Map.fetch(response, "id"),
          {:ok, schema} <- Schema.parse(value) do
+      unless is_nil(schema_name.version) do
+        Logger.warn(
+          "storing schema with version is not allowed, `#{schema_name.name}` used instead"
+        )
+      end
+
       {:ok, %{schema | id: id}}
     end
   end

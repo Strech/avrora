@@ -3,7 +3,8 @@ defmodule Avrora.Resolver do
   TODO: Make RegistryStorage optional
   """
 
-  alias Avrora.{FileStorage, MemoryStorage, RegistryStorage, Schema}
+  alias Avrora.{FileStorage, MemoryStorage, RegistryStorage}
+  alias Avrora.{Name, Schema}
 
   @doc """
   Resolves schema by a global ID.
@@ -51,27 +52,24 @@ defmodule Avrora.Resolver do
       ["io.confluent.Paymen"]
   """
   @spec resolve(String.t()) :: {:ok, Avrora.Schema.t()} | {:error, term()}
-  def resolve(subject) when is_binary(subject) do
-    name = Schema.parse_subject(subject)
-    version = Schema.parse_version(subject)
-
-    with {:ok, nil} <- memory_storage().get(subject) do
-      case registry_storage().get(subject) do
+  def resolve(name) when is_binary(name) do
+    with {:ok, schema_name} = Name.parse(name),
+         {:ok, nil} <- memory_storage().get(name) do
+      case registry_storage().get(name) do
         {:ok, avro} ->
-          with {:ok, avro} <- memory_storage().put(name, avro) do
-            name = if is_nil(version), do: "#{name}:#{avro.version}", else: name
-            memory_storage().put(name, avro)
+          with {:ok, avro} <- memory_storage().put(schema_name.name, avro) do
+            memory_storage().put("#{schema_name.name}:#{avro.version}", avro)
           end
 
         {:error, :unconfigured_registry_url} ->
-          with {:ok, avro} <- file_storage().get(name), do: memory_storage().put(name, avro)
+          with {:ok, avro} <- file_storage().get(schema_name.name),
+               do: memory_storage().put(schema_name.name, avro)
 
         {:error, :unknown_subject} ->
-          with {:ok, avro} <- file_storage().get(name),
-               {:ok, avro} <- registry_storage().put(name, avro.raw_schema),
-               {:ok, avro} <- memory_storage().put(name, avro) do
-            name = if is_nil(version), do: "#{name}:#{avro.version}", else: name
-            memory_storage().put(name, avro)
+          with {:ok, avro} <- file_storage().get(schema_name.name),
+               {:ok, avro} <- registry_storage().put(schema_name.name, avro.raw_schema),
+               {:ok, avro} <- memory_storage().put(schema_name.name, avro) do
+            memory_storage().put("#{schema_name.name}:#{avro.version}", avro)
           end
 
         {:error, reason} ->
