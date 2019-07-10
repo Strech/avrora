@@ -1,5 +1,5 @@
 defmodule Avrora do
-  @moduledoc File.read!("README.md")
+  @moduledoc File.read!("README.md") |> String.replace("/assets", "assets")
 
   use Supervisor
 
