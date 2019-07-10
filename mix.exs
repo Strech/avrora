@@ -56,7 +56,7 @@ defmodule Avrora.MixProject do
         "assets",
         "mix.exs",
         "README.md",
-        "LICENCE.md"
+        "LICENSE.md"
       ]
     ]
   end
