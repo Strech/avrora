@@ -39,7 +39,7 @@ defmodule Avrora.MixProject do
   defp description do
     """
     Avrora is an Elixir library for convenient work with AVRO messages and schemas.
-    It is highly inspired by AvroTurf Ruby gem and has just a few dependencies.
+    It was influenced by [AvroTurf](https://github.com/dasch/avro_turf) Ruby gem.
     """
   end
 
