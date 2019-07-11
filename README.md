@@ -15,6 +15,7 @@ What is not implemented/working yet:
 1. [Avro OCF](https://avro.apache.org/docs/1.8.1/spec.html#Object+Container+Files) encoding/decoding
 2. Stable packag version
 3. Debug logging
+4. `Avrora.start/2` to support `extra_applications` in `mix.exs`
 
 ## Add Avrora to your project
 
