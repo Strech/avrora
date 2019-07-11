@@ -66,6 +66,14 @@ defmodule Avrora.MixProject do
       main: "readme",
       logo: "assets/logo.png",
       source_url: "https://github.com/Strech/avrora",
+      before_closing_body_tag: fn _format ->
+        """
+        <script type="text/javascript">
+          var image = document.getElementById("avroraLogo");
+          image.src = image.getAttribute("src").replace("/assets", "assets");
+        </script>
+        """
+      end,
       extras: [
         "README.md"
       ]
