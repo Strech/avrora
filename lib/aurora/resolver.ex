@@ -4,8 +4,7 @@ defmodule Avrora.Resolver do
   memory and registry storage up to date.
   """
 
-  alias Avrora.Name
-  alias Avrora.Storage.{File, Memory, Registry}
+  alias Avrora.{Config, Name}
 
   @doc """
   Resolves schema by a global ID.
@@ -79,7 +78,7 @@ defmodule Avrora.Resolver do
     end
   end
 
-  defp file_storage, do: Application.get_env(:avrora, :file_storage, File)
-  defp memory_storage, do: Application.get_env(:avrora, :memory_storage, Memory)
-  defp registry_storage, do: Application.get_env(:avrora, :registry_storage, Registry)
+  defp file_storage, do: Config.file_storage()
+  defp memory_storage, do: Config.memory_storage()
+  defp registry_storage, do: Config.registry_storage()
 end

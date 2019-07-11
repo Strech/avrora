@@ -7,7 +7,7 @@ defmodule Avrora.Storage.File do
   """
 
   require Logger
-  alias Avrora.{Name, Schema}
+  alias Avrora.{Config, Name, Schema}
 
   @behaviour Avrora.Storage
   @extension ".avsc"
@@ -55,5 +55,5 @@ defmodule Avrora.Storage.File do
   def put(_key, _value), do: {:error, :unsupported}
 
   defp name_to_filename(name), do: String.replace(name, ".", "/") <> @extension
-  defp schemas_path, do: Application.get_env(:avrora, :schemas_path)
+  defp schemas_path, do: Config.schemas_path()
 end

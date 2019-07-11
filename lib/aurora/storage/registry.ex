@@ -6,7 +6,7 @@ defmodule Avrora.Storage.Registry do
 
   require Logger
 
-  alias Avrora.{HttpClient, Name, Schema}
+  alias Avrora.{Config, Name, Schema}
 
   @behaviour Avrora.Storage
   @content_type "application/vnd.schemaregistry.v1+json"
@@ -80,7 +80,7 @@ defmodule Avrora.Storage.Registry do
 
   @doc false
   @spec configured?() :: true | false
-  def configured?, do: !is_nil(Application.get_env(:avrora, :registry_url))
+  def configured?, do: !is_nil(Config.registry_url())
 
   defp http_client_get(path) do
     if configured?(),
@@ -96,7 +96,7 @@ defmodule Avrora.Storage.Registry do
     end
   end
 
-  defp to_url(path), do: "#{Application.get_env(:avrora, :registry_url)}/#{path}"
+  defp to_url(path), do: "#{Config.registry_url()}/#{path}"
 
   defp handle({:error, payload} = _response) when is_map(payload) do
     reason =
@@ -114,5 +114,5 @@ defmodule Avrora.Storage.Registry do
 
   defp handle(response), do: response
 
-  defp http_client, do: Application.get_env(:avrora, :http_client, HttpClient)
+  defp http_client, do: Config.http_client()
 end
