@@ -21,13 +21,13 @@ defmodule Avrora.Schema do
 
       iex> json = ~s({"namespace":"io.confluent","type":"record","name":"Payment","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
       iex> {:ok, avro} = Avrora.Schema.parse(json)
-      iex> {type, _, _, _, _, full_name, _} = avro.schema
-      iex> full_name <> " of " <> type
-      "io.confluent.Payment of :avro_record_type"
+      iex> {_, _, _, _, _, _, full_name, _} = avro.schema
+      iex> full_name
+      "io.confluent.Payment"
   """
   @spec parse(String.t()) :: {:ok, t()} | {:error, term()}
   def parse(payload) when is_binary(payload) do
-    with {:ok, schema} <- do_decode(payload) do
+    with {:ok, schema} <- do_parse(payload) do
       {
         :ok,
         %__MODULE__{
@@ -40,7 +40,7 @@ defmodule Avrora.Schema do
     end
   end
 
-  defp do_decode(payload) do
+  defp do_parse(payload) do
     try do
       {:ok, :avro_json_decoder.decode_schema(payload)}
     rescue

@@ -14,11 +14,13 @@ defmodule Avrora.ResolverTest do
       end)
 
       {:ok, avro} = Resolver.resolve(1)
+      {type, _, _, _, _, fields, full_name, _} = avro.schema
 
       assert avro.id == 1
       assert is_nil(avro.version)
-      assert avro.ex_schema.schema.qualified_names == ["io.confluent.Payment"]
-      assert Map.get(avro.raw_schema, "name") == "Payment"
+      assert type == :avro_record_type
+      assert full_name == "io.confluent.Payment"
+      assert length(fields) == 2
     end
 
     test "when global ID is given and it was not found in a memory" do
@@ -40,11 +42,13 @@ defmodule Avrora.ResolverTest do
       end)
 
       {:ok, avro} = Resolver.resolve(1)
+      {type, _, _, _, _, fields, full_name, _} = avro.schema
 
       assert avro.id == 1
       assert is_nil(avro.version)
-      assert avro.ex_schema.schema.qualified_names == ["io.confluent.Payment"]
-      assert Map.get(avro.raw_schema, "name") == "Payment"
+      assert type == :avro_record_type
+      assert full_name == "io.confluent.Payment"
+      assert length(fields) == 2
     end
 
     test "when global ID is given and it was not found in a memory and in a registry" do
@@ -91,11 +95,13 @@ defmodule Avrora.ResolverTest do
       end)
 
       {:ok, avro} = Resolver.resolve("io.confluent.Payment")
+      {type, _, _, _, _, fields, full_name, _} = avro.schema
 
       assert is_nil(avro.id)
       assert avro.version == 42
-      assert avro.ex_schema.schema.qualified_names == ["io.confluent.Payment"]
-      assert Map.get(avro.raw_schema, "name") == "Payment"
+      assert type == :avro_record_type
+      assert full_name == "io.confluent.Payment"
+      assert length(fields) == 2
     end
 
     test "when schema name is given and it was not found in a memory and in a registry" do
@@ -139,11 +145,13 @@ defmodule Avrora.ResolverTest do
       end)
 
       {:ok, avro} = Resolver.resolve("io.confluent.Payment")
+      {type, _, _, _, _, fields, full_name, _} = avro.schema
 
       assert is_nil(avro.id)
       assert avro.version == 42
-      assert avro.ex_schema.schema.qualified_names == ["io.confluent.Payment"]
-      assert Map.get(avro.raw_schema, "name") == "Payment"
+      assert type == :avro_record_type
+      assert full_name == "io.confluent.Payment"
+      assert length(fields) == 2
     end
 
     test "when schema name with version is given and it was not found in a memory and in a registry" do
@@ -193,11 +201,13 @@ defmodule Avrora.ResolverTest do
       end)
 
       {:ok, avro} = Resolver.resolve("io.confluent.Payment")
+      {type, _, _, _, _, fields, full_name, _} = avro.schema
 
       assert is_nil(avro.id)
       assert is_nil(avro.version)
-      assert avro.ex_schema.schema.qualified_names == ["io.confluent.Payment"]
-      assert Map.get(avro.raw_schema, "name") == "Payment"
+      assert type == :avro_record_type
+      assert full_name == "io.confluent.Payment"
+      assert length(fields) == 2
     end
 
     test "when schema name:version is given and it was not found in a memory and registry is not configured" do
@@ -226,11 +236,13 @@ defmodule Avrora.ResolverTest do
       end)
 
       {:ok, avro} = Resolver.resolve("io.confluent.Payment:42")
+      {type, _, _, _, _, fields, full_name, _} = avro.schema
 
       assert is_nil(avro.id)
       assert is_nil(avro.version)
-      assert avro.ex_schema.schema.qualified_names == ["io.confluent.Payment"]
-      assert Map.get(avro.raw_schema, "name") == "Payment"
+      assert type == :avro_record_type
+      assert full_name == "io.confluent.Payment"
+      assert length(fields) == 2
     end
   end
 
@@ -238,7 +250,7 @@ defmodule Avrora.ResolverTest do
     %Avrora.Schema{
       id: nil,
       version: nil,
-      ex_schema: ex_schema(),
+      schema: erlavro_schema(),
       raw_schema: raw_schema()
     }
   end
@@ -247,7 +259,7 @@ defmodule Avrora.ResolverTest do
     %Avrora.Schema{
       id: 1,
       version: nil,
-      ex_schema: ex_schema(),
+      schema: erlavro_schema(),
       raw_schema: raw_schema()
     }
   end
@@ -256,24 +268,16 @@ defmodule Avrora.ResolverTest do
     %Avrora.Schema{
       id: nil,
       version: 42,
-      ex_schema: ex_schema(),
+      schema: erlavro_schema(),
       raw_schema: raw_schema()
     }
   end
 
-  defp ex_schema do
-    AvroEx.Schema.parse!(Jason.encode!(raw_schema()))
+  defp erlavro_schema do
+    :avro_json_decoder.decode_schema(raw_schema())
   end
 
   defp raw_schema do
-    %{
-      "namespace" => "io.confluent",
-      "type" => "record",
-      "name" => "Payment",
-      "fields" => [
-        %{"name" => "id", "type" => "string"},
-        %{"name" => "amount", "type" => "double"}
-      ]
-    }
+    ~s({"namespace":"io.confluent","type":"record","name":"Payment","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
   end
 end

@@ -15,8 +15,9 @@ defmodule Avrora.Resolver do
   ## Examples
 
       iex> {:ok, avro} = Avrora.Resolver.resolve(1)
-      iex> avro.ex_schema.schema.qualified_names
-      ["io.confluent.Paymen"]
+      iex> {_, _, _, _, _, _, full_name, _} = avro.schema
+      iex> full_name
+      "io.confluent.Payment"
   """
   @spec resolve(integer()) :: {:ok, Avrora.Schema.t()} | {:error, term()}
   def resolve(id) when is_integer(id) do
@@ -46,10 +47,12 @@ defmodule Avrora.Resolver do
       42
       ...> avro2.version
       42
-      ...> avro1.ex_schema.schema.qualified_names
-      ["io.confluent.Paymen"]
-      ...> avro2.ex_schema.schema.qualified_names
-      ["io.confluent.Paymen"]
+      ...> {_, _, _, _, _, _, full_name1, _} = avro1.schema
+      ...> full_name1
+      "io.confluent.Payment"
+      ...> {_, _, _, _, _, _, full_name2, _} = avro2.schema
+      ...> full_name2
+      "io.confluent.Payment"
   """
   @spec resolve(String.t()) :: {:ok, Avrora.Schema.t()} | {:error, term()}
   def resolve(name) when is_binary(name) do
