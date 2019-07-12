@@ -19,16 +19,17 @@ defmodule Avrora.Storage.RegistryTest do
           %{
             "name" => "io.confluent.Payment",
             "version" => 1,
-            "schema" => payment_schema()
+            "schema" => json_schema()
           }
         }
       end)
 
       {:ok, avro} = Registry.get("io.confluent.Payment")
+      {type, _, _, _, _, fields, full_name, _} = avro.schema
 
-      assert avro.ex_schema.schema.qualified_names == ["io.confluent.Payment"]
-      assert length(avro.ex_schema.schema.fields) == 2
-      assert length(Map.get(avro.raw_schema, "fields")) == 2
+      assert type == :avro_record_type
+      assert full_name == "io.confluent.Payment"
+      assert length(fields) == 2
     end
 
     test "when request by subject name with version was successful" do
@@ -41,16 +42,17 @@ defmodule Avrora.Storage.RegistryTest do
           %{
             "name" => "io.confluent.Payment",
             "version" => 10,
-            "schema" => payment_schema()
+            "schema" => json_schema()
           }
         }
       end)
 
       {:ok, avro} = Registry.get("io.confluent.Payment:10")
+      {type, _, _, _, _, fields, full_name, _} = avro.schema
 
-      assert avro.ex_schema.schema.qualified_names == ["io.confluent.Payment"]
-      assert length(avro.ex_schema.schema.fields) == 2
-      assert length(Map.get(avro.raw_schema, "fields")) == 2
+      assert type == :avro_record_type
+      assert full_name == "io.confluent.Payment"
+      assert length(fields) == 2
     end
 
     test "when request by subject name was unsuccessful" do
@@ -69,14 +71,15 @@ defmodule Avrora.Storage.RegistryTest do
       |> expect(:get, fn url ->
         assert url == "http://reg.loc/schemas/ids/1"
 
-        {:ok, %{"schema" => payment_schema()}}
+        {:ok, %{"schema" => json_schema()}}
       end)
 
       {:ok, avro} = Registry.get(1)
+      {type, _, _, _, _, fields, full_name, _} = avro.schema
 
-      assert avro.ex_schema.schema.qualified_names == ["io.confluent.Payment"]
-      assert length(avro.ex_schema.schema.fields) == 2
-      assert length(Map.get(avro.raw_schema, "fields")) == 2
+      assert type == :avro_record_type
+      assert full_name == "io.confluent.Payment"
+      assert length(fields) == 2
     end
 
     test "when request by global ID was unsuccessful" do
@@ -101,54 +104,42 @@ defmodule Avrora.Storage.RegistryTest do
   end
 
   describe "put/2" do
-    test "when value is parsed json and request was successful" do
+    test "when request was successful" do
       Avrora.HttpClientMock
       |> expect(:post, fn url, payload, _ ->
         assert url == "http://reg.loc/subjects/io.confluent.Payment/versions"
-        assert payload == parsed_payment_schema()
+        assert payload == json_schema()
 
         {:ok, %{"id" => 1}}
       end)
 
-      {:ok, avro} = Registry.put("io.confluent.Payment", parsed_payment_schema())
+      {:ok, avro} = Registry.put("io.confluent.Payment", json_schema())
+      {type, _, _, _, _, fields, full_name, _} = avro.schema
 
       assert avro.id == 1
-      assert avro.ex_schema.schema.qualified_names == ["io.confluent.Payment"]
-      assert avro.raw_schema == parsed_payment_schema()
+      assert type == :avro_record_type
+      assert full_name == "io.confluent.Payment"
+      assert length(fields) == 2
     end
 
-    test "when value is raw json and request was successful" do
+    test "when key contains version and request was successful" do
       Avrora.HttpClientMock
       |> expect(:post, fn url, payload, _ ->
         assert url == "http://reg.loc/subjects/io.confluent.Payment/versions"
-        assert payload == payment_schema()
-
-        {:ok, %{"id" => 1}}
-      end)
-
-      {:ok, avro} = Registry.put("io.confluent.Payment", payment_schema())
-
-      assert avro.id == 1
-      assert avro.ex_schema.schema.qualified_names == ["io.confluent.Payment"]
-      assert avro.raw_schema == parsed_payment_schema()
-    end
-
-    test "when value is parsed json and key contains version and request was successful" do
-      Avrora.HttpClientMock
-      |> expect(:post, fn url, payload, _ ->
-        assert url == "http://reg.loc/subjects/io.confluent.Payment/versions"
-        assert payload == parsed_payment_schema()
+        assert payload == json_schema()
 
         {:ok, %{"id" => 1}}
       end)
 
       output =
         capture_log(fn ->
-          {:ok, avro} = Registry.put("io.confluent.Payment:42", parsed_payment_schema())
+          {:ok, avro} = Registry.put("io.confluent.Payment:42", json_schema())
+          {type, _, _, _, _, fields, full_name, _} = avro.schema
 
           assert avro.id == 1
-          assert avro.ex_schema.schema.qualified_names == ["io.confluent.Payment"]
-          assert avro.raw_schema == parsed_payment_schema()
+          assert type == :avro_record_type
+          assert full_name == "io.confluent.Payment"
+          assert length(fields) == 2
         end)
 
       assert output =~ "schema with version is not allowed"
@@ -158,19 +149,19 @@ defmodule Avrora.Storage.RegistryTest do
       Avrora.HttpClientMock
       |> expect(:post, fn url, payload, _ ->
         assert url == "http://reg.loc/subjects/io.confluent.Payment/versions"
-        assert payload == %{"type" => "string"}
+        assert payload == ~s({"type":"string"})
 
         {:error, schema_incompatible_parsed_error()}
       end)
 
-      assert Registry.put("io.confluent.Payment", %{"type" => "string"}) == {:error, :conflict}
+      assert Registry.put("io.confluent.Payment", ~s({"type":"string"})) == {:error, :conflict}
     end
 
     test "when registry url is unconfigured" do
       registry_url = Application.get_env(:avrora, :registry_url)
       Application.put_env(:avrora, :registry_url, nil)
 
-      assert Registry.put("anything", %{"type" => "string"}) ==
+      assert Registry.put("anything", ~s({"type":"string"})) ==
                {:error, :unconfigured_registry_url}
 
       Application.put_env(:avrora, :registry_url, registry_url)
@@ -189,19 +180,7 @@ defmodule Avrora.Storage.RegistryTest do
     %{"error_code" => 409, "message" => "Schema is incompatible!"}
   end
 
-  defp parsed_payment_schema do
-    %{
-      "namespace" => "io.confluent",
-      "type" => "record",
-      "name" => "Payment",
-      "fields" => [
-        %{"name" => "id", "type" => "string"},
-        %{"name" => "amount", "type" => "double"}
-      ]
-    }
-  end
-
-  defp payment_schema do
+  defp json_schema do
     ~s({"namespace":"io.confluent","type":"record","name":"Payment","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
   end
 end
