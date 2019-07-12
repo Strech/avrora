@@ -28,7 +28,7 @@ defmodule Avrora.MixProject do
 
   def application do
     [
-      extra_applications: [:logger, :inets, :ssl]
+      extra_applications: [:logger, :inets, :ssl, :erlavro]
     ]
   end
 
@@ -86,6 +86,7 @@ defmodule Avrora.MixProject do
       # This is a preferred dependency state, but impossible to use with hex.pm
       # {:avro_ex, git: "https://github.com/beam-community/avro_ex.git", sha: " 9a02fd6"},
       {:avro_ex, "~> 0.1.0-beta.6"},
+      {:erlavro, "~> 2.8.1"},
       {:mox, "~> 0.5", only: :test},
       {:ex_doc, "~> 0.13", only: :dev},
       {:dialyxir, "~> 1.0.0-rc.6", only: :dev, runtime: false},
