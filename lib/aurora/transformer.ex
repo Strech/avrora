@@ -10,7 +10,8 @@ defmodule Avrora.Transformer do
   ## Examples
 
       iex> Avrora.Transformer.to_tuple(%{"a" => 1, "b" => [nil, 11.1, "three"], "c" => %{"hello" => "world"}})
-       [{"a", 1}, {"b", [nil, 11.1, "three"]}, {"c", [{"hello", "world"}]}]
+      iex> |> Enum.sort_by(fn {key, _} -> key end)
+      [{"a", 1}, {"b", [nil, 11.1, "three"]}, {"c", [{"hello", "world"}]}]
   """
   @spec to_tuple(term()) :: term()
   def to_tuple(value) when is_map(value) do
@@ -32,6 +33,7 @@ defmodule Avrora.Transformer do
   ## Examples
 
       iex> Avrora.Transformer.to_map([{:a, 1}, {"b", [nil, 11.1, "three"]}, {:c, [{:hello, "world"}]}])
+      iex> |> Enum.sort_by(fn {key, _} -> key end) |> Map.new
       %{"a" => 1, "b" => [nil, 11.1, "three"], "c" => %{"hello" => "world"}}
   """
   @spec to_map(term()) :: term()
