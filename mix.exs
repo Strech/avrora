@@ -4,8 +4,7 @@ defmodule Avrora.MixProject do
   def project do
     [
       app: :avrora,
-      # Let's wait for non-beta avro_ex or replace it?
-      version: "0.1.1-beta",
+      version: "0.2.0",
       elixir: "~> 1.6",
       description: description(),
       package: package(),
