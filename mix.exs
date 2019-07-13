@@ -22,7 +22,8 @@ defmodule Avrora.MixProject do
         "coveralls.post": :test,
         "coveralls.html": :test
       ],
-      deps: deps()
+      deps: deps(),
+      aliases: aliases()
     ]
   end
 
@@ -92,6 +93,12 @@ defmodule Avrora.MixProject do
       {:dialyxir, "~> 1.0.0-rc.6", only: :dev, runtime: false},
       {:credo, "~> 1.0.0", only: :dev, runtime: false},
       {:excoveralls, "~> 0.11", only: :test}
+    ]
+  end
+
+  defp aliases do
+    [
+      check: ["cmd mix coveralls", "dialyzer", "credo"]
     ]
   end
 end
