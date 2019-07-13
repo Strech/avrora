@@ -1,4 +1,4 @@
-defmodule Avrora.HttpClient do
+defmodule Avrora.HTTPClient do
   @moduledoc """
   Minimalistic HTTP client with a get/post functionality and built-in
   JSON encode/decode behaviour.
