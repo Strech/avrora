@@ -76,29 +76,25 @@ defmodule Avrora.Encoder do
   end
 
   defp do_decode(schema, payload) do
-    try do
-      decoded =
-        payload
-        |> :avro_binary_decoder.decode(:undefined, fn _ -> schema end)
-        |> Mapper.to_map()
+    decoded =
+      payload
+      |> :avro_binary_decoder.decode(:undefined, fn _ -> schema end)
+      |> Mapper.to_map()
 
-      {:ok, decoded}
-    rescue
-      error in ErlangError -> {:error, error.original}
-    end
+    {:ok, decoded}
+  rescue
+    error in ErlangError -> {:error, error.original}
   end
 
   defp do_encode(schema, payload) do
-    try do
-      encoded =
-        schema
-        |> :avro_record.new(payload)
-        |> :avro_binary_encoder.encode_value()
-        |> :erlang.list_to_binary()
+    encoded =
+      schema
+      |> :avro_record.new(payload)
+      |> :avro_binary_encoder.encode_value()
+      |> :erlang.list_to_binary()
 
-      {:ok, encoded}
-    rescue
-      error in ErlangError -> {:error, error.original}
-    end
+    {:ok, encoded}
+  rescue
+    error in ErlangError -> {:error, error.original}
   end
 end

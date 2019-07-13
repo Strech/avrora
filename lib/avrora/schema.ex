@@ -9,7 +9,7 @@ defmodule Avrora.Schema do
   @type t :: %__MODULE__{
           id: nil | integer(),
           version: nil | integer(),
-          schema: keyword(),
+          schema: :avro.record_type(),
           raw_schema: String.t()
         }
 
@@ -41,11 +41,9 @@ defmodule Avrora.Schema do
   end
 
   defp do_parse(payload) do
-    try do
-      {:ok, :avro_json_decoder.decode_schema(payload)}
-    rescue
-      error in ArgumentError -> {:error, error.message}
-      error in ErlangError -> {:error, error.original}
-    end
+    {:ok, :avro_json_decoder.decode_schema(payload)}
+  rescue
+    error in ArgumentError -> {:error, error.message}
+    error in ErlangError -> {:error, error.original}
   end
 end
