@@ -10,18 +10,19 @@ otp_release:
   - 21.0
 
 matrix:
-  allow_failures:
-    - elixir: '1.6'
-      otp_release: '19.0'
   include:
-    - elixir: '1.6'
-      otp_release: '19.0'
-    - elixir: '1.8'
-      otp_release: '21.0'
+    - elixir: "1.6"
+      otp_release: "19.0"
+    - elixir: "1.8"
+      otp_release: "21.0"
+      env:
+        - DIALYZER=true
+        - CREDO=true
 
 script:
   - mix test
-  - mix dialyzer --halt-exit-status
+  - if [ "$DIALYZER" ]; then mix dialyzer --halt-exit-status; fi
+  - if [ "$CREDO" ]; then mix credo; fi
 
 cache:
   directories:
