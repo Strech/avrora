@@ -71,6 +71,9 @@ defmodule Avrora.MixProject do
         <script type="text/javascript">
           var image = document.getElementById("avroraLogo");
           image.src = image.getAttribute("src").replace("/assets", "assets");
+
+          var build = document.getElementById("travisBuild");
+          build.parentNode.removeChild(build);
         </script>
         """
       end,

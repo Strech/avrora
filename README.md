@@ -1,9 +1,11 @@
 <p align="center">
-  <img width=200 id="avroraLogo" src="/assets/logo.png"/>
-  <h1 align="center">Avrora</h1>
+    <img id="avroraLogo" width=200 src="/assets/logo.png"/>
+    <h1 align="center">Avrora</h1>
 </p>
 
-[![Build Status](https://travis-ci.org/Strech/avrora.svg?branch=master)](https://travis-ci.org/Strech/avrora)
+<a id="travisBuild" href="https://travis-ci.org/Strech/avrora" rel="nofollow">
+    <img src="https://travis-ci.org/Strech/avrora.svg?branch=master" alt="Build Status" data-canonical-src="https://travis-ci.org/Strech/avrora.svg?branch=master" style="max-width:100%;">
+</a>
 
 # Getting Started
 
