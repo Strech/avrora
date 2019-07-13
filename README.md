@@ -3,9 +3,13 @@
     <h1 align="center">Avrora</h1>
 </p>
 
-<a id="travisBuild" href="https://travis-ci.org/Strech/avrora" rel="nofollow">
-    <img src="https://travis-ci.org/Strech/avrora.svg?branch=master" alt="Build Status" data-canonical-src="https://travis-ci.org/Strech/avrora.svg?branch=master" style="max-width:100%;">
-</a>
+<span id="badges">
+
+[![Hex pm](https://img.shields.io/hexpm/v/avrora.svg?style=flat)](https://hex.pm/packages/avrora)
+[![Hex Docs](https://img.shields.io/badge/api-docs-blue.svg?style=flat)](https://hexdocs.pm/avrora)
+[![Build Status](https://travis-ci.org/Strech/avrora.svg?branch=master)](https://travis-ci.org/Strech/avrora)
+
+</span>
 
 # Getting Started
 

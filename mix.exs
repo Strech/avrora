@@ -48,8 +48,7 @@ defmodule Avrora.MixProject do
       maintainers: ["Sergey Fedorov"],
       licenses: ["MIT"],
       links: %{
-        GitHub: "https://github.com/Strech/avrora",
-        Docs: "https://hexdocs.pm/avrora"
+        GitHub: "https://github.com/Strech/avrora"
       },
       files: [
         "lib",
@@ -72,8 +71,8 @@ defmodule Avrora.MixProject do
           var image = document.getElementById("avroraLogo");
           image.src = image.getAttribute("src").replace("/assets", "assets");
 
-          var build = document.getElementById("travisBuild");
-          build.parentNode.removeChild(build);
+          var badges = document.getElementById("badges");
+          badges.parentNode.removeChild(badges);
         </script>
         """
       end,
@@ -97,12 +96,14 @@ defmodule Avrora.MixProject do
 
   defp aliases do
     [
+      docso: ["docs", "cmd open doc/index.html"],
       check: ["cmd mix coveralls", "dialyzer", "credo"],
       release: [
         "check",
         fn _ ->
           version = Keyword.get(project(), :version)
-          Mix.shell().cmd("git tag v#{version}'")
+          Mix.shell().cmd("git tag v#{version}")
+          Mix.shell().cmd("git push --tags")
         end,
         "hex.publish"
       ]
