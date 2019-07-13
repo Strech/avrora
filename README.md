@@ -16,12 +16,6 @@
 Avrora is an Elixir library for convenient work with AVRO messages and schemas.
 It was influenced by [AvroTurf](https://github.com/dasch/avro_turf) Ruby gem.
 
-**What is not implemented/working yet:**
-
-1. [Avro OCF](https://avro.apache.org/docs/1.8.1/spec.html#Object+Container+Files) encoding/decoding
-2. Debug logging
-3. `Avrora.start/2` to support `extra_applications` in `mix.exs`
-
 ## Add Avrora to your project
 
 To use Avrora with your projects, edit your `mix.exs` file and add it as a dependency
@@ -117,3 +111,9 @@ message = <<8, 116, 120, 45, 49, 123, 20, 174, 71, 225, 250, 47, 64>>
 {:ok, decoded} = Avrora.decode(message, schema_name: "io.confluent.Payment")
 %{"id" => "tx-1", "amount" => 15.99}
 ```
+
+## Roadmap
+
+1. Debug logging
+2. `Avrora.start/2` to support `extra_applications` in `mix.exs`
+3. [Avro OCF](https://avro.apache.org/docs/1.8.1/spec.html#Object+Container+Files) encoding/decoding
