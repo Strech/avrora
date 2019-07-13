@@ -97,7 +97,15 @@ defmodule Avrora.MixProject do
 
   defp aliases do
     [
-      check: ["cmd mix coveralls", "dialyzer", "credo"]
+      check: ["cmd mix coveralls", "dialyzer", "credo"],
+      release: [
+        "check",
+        fn _ ->
+          version = Keyword.get(project(), :version)
+          Mix.shell().run("git tag v#{version}")
+        end,
+        "hex.publish"
+      ]
     ]
   end
 end
