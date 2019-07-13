@@ -102,7 +102,7 @@ defmodule Avrora.MixProject do
         "check",
         fn _ ->
           version = Keyword.get(project(), :version)
-          Mix.shell().run("git tag v#{version}")
+          Mix.shell().cmd("git tag v#{version}'")
         end,
         "hex.publish"
       ]
