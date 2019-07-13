@@ -1,4 +1,4 @@
-defmodule Avrora.HttpClient do
+defmodule Avrora.HTTPClient do
   @moduledoc """
   Minimalistic HTTP client with a get/post functionality and built-in
   JSON encode/decode behaviour.
@@ -17,12 +17,6 @@ defmodule Avrora.HttpClient do
       {:error, reason} ->
         {:error, reason}
     end
-  end
-
-  @doc false
-  @spec post(String.t(), map(), keyword(String.t())) :: {:ok, map()} | {:error, term()}
-  def post(url, payload, content_type: content_type) when is_map(payload) do
-    with {:ok, schema} <- Jason.encode(payload), do: post(url, schema, content_type: content_type)
   end
 
   @doc false

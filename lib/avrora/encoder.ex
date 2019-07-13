@@ -5,7 +5,7 @@ defmodule Avrora.Encoder do
   """
 
   require Logger
-  alias Avrora.{Name, Resolver}
+  alias Avrora.{Mapper, Name, Resolver}
 
   @registry_magic_byte <<0::size(8)>>
 
@@ -39,7 +39,7 @@ defmodule Avrora.Encoder do
             {schema_name.name, body}
         end
 
-      with {:ok, avro} <- Resolver.resolve(schema_name), do: AvroEx.decode(avro.ex_schema, body)
+      with {:ok, avro} <- Resolver.resolve(schema_name), do: do_decode(avro.schema, body)
     end
   end
 
@@ -59,7 +59,7 @@ defmodule Avrora.Encoder do
   def encode(payload, schema_name: schema_name) when is_map(payload) do
     with {:ok, schema_name} <- Name.parse(schema_name),
          {:ok, avro} <- Resolver.resolve(schema_name.name),
-         {:ok, body} <- AvroEx.encode(avro.ex_schema, payload) do
+         {:ok, body} <- do_encode(avro.schema, payload) do
       unless is_nil(schema_name.version) do
         Logger.warn(
           "encoding message with schema version is not allowed, `#{schema_name.name}` used instead"
@@ -73,5 +73,28 @@ defmodule Avrora.Encoder do
 
       {:ok, body}
     end
+  end
+
+  defp do_decode(schema, payload) do
+    decoded =
+      payload
+      |> :avro_binary_decoder.decode(:undefined, fn _ -> schema end)
+      |> Mapper.to_map()
+
+    {:ok, decoded}
+  rescue
+    error in ErlangError -> {:error, error.original}
+  end
+
+  defp do_encode(schema, payload) do
+    encoded =
+      schema
+      |> :avro_record.new(payload)
+      |> :avro_binary_encoder.encode_value()
+      |> :erlang.list_to_binary()
+
+    {:ok, encoded}
+  rescue
+    error in ErlangError -> {:error, error.original}
   end
 end

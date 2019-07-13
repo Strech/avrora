@@ -349,7 +349,7 @@ defmodule Avrora.EncoderTest do
     %Avrora.Schema{
       id: nil,
       version: nil,
-      ex_schema: ex_schema(),
+      schema: erlavro_schema(),
       raw_schema: raw_schema()
     }
   end
@@ -358,24 +358,16 @@ defmodule Avrora.EncoderTest do
     %Avrora.Schema{
       id: nil,
       version: 42,
-      ex_schema: ex_schema(),
+      schema: erlavro_schema(),
       raw_schema: raw_schema()
     }
   end
 
-  defp ex_schema do
-    AvroEx.Schema.parse!(Jason.encode!(raw_schema()))
+  defp erlavro_schema do
+    :avro_json_decoder.decode_schema(raw_schema())
   end
 
   defp raw_schema do
-    %{
-      "namespace" => "io.confluent",
-      "type" => "record",
-      "name" => "Payment",
-      "fields" => [
-        %{"name" => "id", "type" => "string"},
-        %{"name" => "amount", "type" => "double"}
-      ]
-    }
+    ~s({"namespace":"io.confluent","type":"record","name":"Payment","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
   end
 end

@@ -31,7 +31,7 @@ defmodule Avrora.Config do
   def registry_storage, do: get_env(:registry_storage, Avrora.Storage.Registry)
 
   @doc false
-  def http_client, do: get_env(:http_client, Avrora.HttpClient)
+  def http_client, do: get_env(:http_client, Avrora.HTTPClient)
 
   defp get_env(name, default), do: Application.get_env(:avrora, name, default)
 end

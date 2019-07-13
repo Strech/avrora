@@ -8,35 +8,33 @@ defmodule Avrora.Storage.FileTest do
   describe "get/1" do
     test "when schema file was found" do
       {:ok, avro} = File.get("io.confluent.Payment")
+      {type, _, _, _, _, fields, full_name, _} = avro.schema
 
-      assert avro.ex_schema.schema.qualified_names == ["io.confluent.Payment"]
-      assert length(avro.ex_schema.schema.fields) == 2
-      assert length(Map.get(avro.raw_schema, "fields")) == 2
+      assert type == :avro_record_type
+      assert full_name == "io.confluent.Payment"
+      assert length(fields) == 2
     end
 
     test "when schema name contains version and when schema file was found" do
       output =
         capture_log(fn ->
           {:ok, avro} = File.get("io.confluent.Payment:42")
+          {type, _, _, _, _, fields, full_name, _} = avro.schema
 
-          assert avro.ex_schema.schema.qualified_names == ["io.confluent.Payment"]
-          assert length(avro.ex_schema.schema.fields) == 2
-          assert length(Map.get(avro.raw_schema, "fields")) == 2
+          assert type == :avro_record_type
+          assert full_name == "io.confluent.Payment"
+          assert length(fields) == 2
         end)
 
       assert output =~ "schema with version is not allowed"
     end
 
     test "when schema file is not a valid json" do
-      {:error, reason} = File.get("io.confluent.Wrong")
-
-      assert %Jason.DecodeError{} = reason
+      assert File.get("io.confluent.Wrong") == {:error, "argument error"}
     end
 
     test "when schema file was not found" do
-      {:error, reason} = File.get("io.confluent.Unknown")
-
-      assert :enoent = reason
+      assert File.get("io.confluent.Unknown") == {:error, :enoent}
     end
 
     test "when schema name was given as a global ID" do

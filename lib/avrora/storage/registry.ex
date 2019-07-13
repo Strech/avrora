@@ -17,8 +17,9 @@ defmodule Avrora.Storage.Registry do
   ## Examples
 
       iex> {:ok, avro} = Avrora.Storage.Registry.get("io.confluent.Payment")
-      iex> avro.schema.schema.qualified_names
-      ["io.confluent.Payment"]
+      iex> {type, _, _, _, _, _, full_name, _} = avro.schema
+      iex> full_name <> " of " <> type
+      "io.confluent.Payment of :avro_record_type"
   """
   def get(key) when is_binary(key) do
     with {:ok, schema_name} <- Name.parse(key),
@@ -39,8 +40,9 @@ defmodule Avrora.Storage.Registry do
   ## Examples
 
       ...> {:ok, avro} = Avrora.Storage.Registry.get(1)
-      ...> avro.schema.schema.qualified_names
-      ...> ["io.confluent.examples.Payment"]
+      ...> {type, _, _, _, _, _, full_name, _} = avro.schema
+      ...> full_name <> " of " <> type
+      "io.confluent.Payment of :avro_record_type"
   """
   def get(key) when is_integer(key) do
     with {:ok, response} <- http_client_get("schemas/ids/#{key}"),
@@ -55,12 +57,13 @@ defmodule Avrora.Storage.Registry do
 
   ## Examples
 
-      iex> schema = %{"namespace" => "io.confluent", "type" => "record", "name" => "Payment", "fields" => [%{"name" => "id", "type" => "string"}, %{"name" => "amount", "type" => "double"}]}
+      iex> schema = ~s({"fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}],"name":"Payment","namespace":"io.confluent","type":"record"})
       iex> {:ok, avro} = Avrora.Storage.Registry.put("io.confluent.examples.Payment", schema)
-      iex> avro.schema.schema.qualified_names
-      ["io.confluent.Payment"]
+      iex> {type, _, _, _, _, _, full_name, _} = avro.schema
+      iex> full_name <> " of " <> type
+      "io.confluent.Payment of :avro_record_type"
   """
-  def put(key, value) when is_binary(key) and (is_map(value) or is_binary(value)) do
+  def put(key, value) when is_binary(key) and is_binary(value) do
     with {:ok, schema_name} <- Name.parse(key),
          {:ok, response} <- http_client_post("subjects/#{schema_name.name}/versions", value),
          {:ok, id} <- Map.fetch(response, "id"),

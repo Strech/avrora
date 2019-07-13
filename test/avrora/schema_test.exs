@@ -5,48 +5,23 @@ defmodule Avrora.SchemaTest do
   alias Avrora.Schema
 
   describe "parse/1" do
-    test "when payload is a valid avro json string" do
-      {:ok, avro} = Schema.parse(payment_schema())
+    test "when payload is a valid json schema" do
+      {:ok, avro} = Schema.parse(payment_json())
+      {type, _, _, _, _, fields, full_name, _} = avro.schema
 
-      assert avro.ex_schema.schema.qualified_names == ["io.confluent.Payment"]
-      assert length(avro.ex_schema.schema.fields) == 2
-      assert avro.raw_schema == parsed_payment_schema()
+      assert type == :avro_record_type
+      assert full_name == "io.confluent.Payment"
+      assert length(fields) == 2
+      assert avro.raw_schema == payment_json()
     end
 
-    test "when payload is a valid avro mapped to elixir map" do
-      {:ok, avro} = Schema.parse(parsed_payment_schema())
-
-      assert avro.ex_schema.schema.qualified_names == ["io.confluent.Payment"]
-      assert length(avro.ex_schema.schema.fields) == 2
-      assert avro.raw_schema == parsed_payment_schema()
-    end
-
-    test "when payload is invalid json string" do
-      {:error, reason} = Schema.parse("hello:world")
-
-      assert %Jason.DecodeError{} = reason
-    end
-
-    test "when payload is invalid elixir map" do
-      {:error, reason} = Schema.parse(%{"type" => "record"})
-
-      assert reason == %{name: ["can't be blank"]}
+    test "when payload is an invalid json shema" do
+      assert Schema.parse("a:b") == {:error, "argument error"}
+      assert Schema.parse("{}") == {:error, {:not_found, "type"}}
     end
   end
 
-  defp parsed_payment_schema do
-    %{
-      "namespace" => "io.confluent",
-      "type" => "record",
-      "name" => "Payment",
-      "fields" => [
-        %{"name" => "id", "type" => "string"},
-        %{"name" => "amount", "type" => "double"}
-      ]
-    }
-  end
-
-  defp payment_schema do
+  defp payment_json do
     ~s({"namespace":"io.confluent","type":"record","name":"Payment","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
   end
 end
