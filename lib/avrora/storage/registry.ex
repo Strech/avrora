@@ -28,6 +28,8 @@ defmodule Avrora.Storage.Registry do
          {:ok, version} <- Map.fetch(response, "version"),
          {:ok, schema} <- Map.fetch(response, "schema"),
          {:ok, schema} <- Schema.parse(schema) do
+      Logger.debug("obtaining schema #{schema_name.name} with version `#{version}`")
+
       {:ok, %{schema | version: version}}
     end
   end
@@ -48,6 +50,8 @@ defmodule Avrora.Storage.Registry do
     with {:ok, response} <- http_client_get("schemas/ids/#{key}"),
          {:ok, schema} <- Map.fetch(response, "schema"),
          {:ok, schema} <- Schema.parse(schema) do
+      Logger.debug("obtaining schema with global id `#{key}`")
+
       {:ok, %{schema | id: key}}
     end
   end
@@ -73,6 +77,8 @@ defmodule Avrora.Storage.Registry do
           "storing schema with version is not allowed, `#{schema_name.name}` used instead"
         )
       end
+
+      Logger.debug("new schema `#{schema_name.name}` stored with global id `#{id}`")
 
       {:ok, %{schema | id: id}}
     end

@@ -46,12 +46,15 @@ defmodule Avrora.Storage.File do
         )
       end
 
+      Logger.debug("reading schema `#{schema_name.name}` from the file #{filepath}")
+
       Schema.parse(body)
     end
   end
 
   @doc false
   def get(key) when is_integer(key), do: {:error, :unsupported}
+
   @doc false
   def put(_key, _value), do: {:error, :unsupported}
 
