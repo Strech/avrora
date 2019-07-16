@@ -13,8 +13,10 @@
 
 # Getting Started
 
-Avrora is an Elixir library for convenient work with AVRO messages and schemas.
-It was influenced by [AvroTurf](https://github.com/dasch/avro_turf) Ruby gem.
+An Elixir library for convenient work with AVRO messages.
+It supports local schema files and Confluent® schema registry.
+
+Many thanks to [AvroTurf](https://github.com/dasch/avro_turf) Ruby gem for an inspiration.
 
 ## Add Avrora to your project
 
@@ -25,6 +27,10 @@ def deps do
   [
     {:avrora, "~> 0.1.0"}
   ]
+end
+
+def applications do
+  [extra_applications: [:avrora]]
 end
 ```
 
@@ -115,7 +121,7 @@ message = <<8, 116, 120, 45, 49, 123, 20, 174, 71, 225, 250, 47, 64>>
 ## Roadmap
 
 1. ~Debug logging~
-2. `Avrora.start/2` to support `extra_applications` in `mix.exs`
+2. ~`Avrora.start/2` to support `extra_applications` in `mix.exs`~
 3. [Avro OCF](https://avro.apache.org/docs/1.8.1/spec.html#Object+Container+Files) encoding/decoding
 4. Add `Avrora.guess_type/1` for detecting encoding type used
 5. Add `type: pristine|registry|ocf` to `Avrora.encode/2` method
