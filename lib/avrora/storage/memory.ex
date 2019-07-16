@@ -48,7 +48,7 @@ defmodule Avrora.Storage.Memory do
   Retrieve a value by a given key.
 
   ## Examples
-      iex> {:ok, _} = Avrora.Storage.Memory.start_link()
+      iex> _ = Avrora.Storage.Memory.start_link()
       iex> Avrora.Storage.Memory.put("my-key", %{"hello" => "world"})
       {:ok, %{"hello" => "world"}}
       iex> Avrora.Storage.Memory.get("my-key")
@@ -68,7 +68,7 @@ defmodule Avrora.Storage.Memory do
   Stores a value with a given key. If the value is already exists it will be replaced.
 
   ## Examples
-      iex> {:ok, _} = Avrora.Storage.Memory.start_link()
+      iex> _ = Avrora.Storage.Memory.start_link()
       iex> avro = %Avrora.Schema{id: nil, schema: [], raw_schema: "{}"}
       iex> Avrora.Storage.Memory.put("my-key", avro)
       {:ok, %Avrora.Schema{id: nil, schema: [], raw_schema: "{}"}}
