@@ -16,7 +16,7 @@ defmodule Avrora.Config do
   """
 
   @doc false
-  def schemas_path, do: get_env(:schemas_path, Path.expand("../../priv/schemas"))
+  def schemas_path, do: get_env(:schemas_path, Path.expand("./priv/schemas"))
 
   @doc false
   def registry_url, do: get_env(:registry_url, nil)
