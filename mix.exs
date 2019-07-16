@@ -4,7 +4,7 @@ defmodule Avrora.MixProject do
   def project do
     [
       app: :avrora,
-      version: "0.2.1",
+      version: "0.2.2",
       elixir: "~> 1.6",
       description: description(),
       package: package(),
@@ -28,6 +28,7 @@ defmodule Avrora.MixProject do
 
   def application do
     [
+      mod: {Avrora, []},
       extra_applications: [:logger, :inets, :ssl, :erlavro]
     ]
   end
@@ -38,8 +39,8 @@ defmodule Avrora.MixProject do
 
   defp description do
     """
-    Avrora is an Elixir library for convenient work with AVRO messages and schemas.
-    It was influenced by AvroTurf Ruby gem.
+    An Elixir library for convenient work with AVRO messages.
+    It supports local schema files and Confluent® schema registry.
     """
   end
 
