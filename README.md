@@ -28,10 +28,6 @@ def deps do
     {:avrora, "~> 0.2"}
   ]
 end
-
-def applications do
-  [extra_applications: [:avrora]]
-end
 ```
 
 ## Configure
