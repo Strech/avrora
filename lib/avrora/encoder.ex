@@ -7,7 +7,8 @@ defmodule Avrora.Encoder do
   require Logger
   alias Avrora.{Mapper, Name, Resolver}
 
-  @registry_magic_byte <<0::size(8)>>
+  @registry_magic_bytes <<0::size(8)>>
+  @object_container_magic_bytes <<"Obj", 1>>
 
   @doc """
   Decodes given message with a schema eather loaded from the local file or from
@@ -32,7 +33,7 @@ defmodule Avrora.Encoder do
 
       {schema_name, body} =
         case payload do
-          <<@registry_magic_byte, <<version::size(32)>>, body::binary>> ->
+          <<@registry_magic_bytes, <<version::size(32)>>, body::binary>> ->
             {"#{schema_name.name}:#{version}", body}
 
           <<body::binary>> ->
@@ -69,7 +70,7 @@ defmodule Avrora.Encoder do
       body =
         if is_nil(avro.version),
           do: body,
-          else: <<@registry_magic_byte, <<avro.version::size(32)>>, body::binary>>
+          else: <<@registry_magic_bytes, <<avro.version::size(32)>>, body::binary>>
 
       {:ok, body}
     end
