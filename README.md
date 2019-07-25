@@ -116,12 +116,8 @@ message = <<8, 116, 120, 45, 49, 123, 20, 174, 71, 225, 250, 47, 64>>
 
 ## Roadmap
 
-1. ~Debug logging~
-2. ~`Avrora.start/2` to support `extra_applications` in `mix.exs`~
-3. [Avro OCF](https://avro.apache.org/docs/1.8.1/spec.html#Object+Container+Files) encoding/decoding
-4. Add `Avrora.guess_type/1` for detecting encoding type used
-5. Add `type: bare|csr|ocf` to `Avrora.encode/2` method
-```
-
-
-```
+- [x] Debug logging
+- [ ] ~`Avrora.start/2` to support `extra_applications` in `mix.exs`~
+- [ ] [Avro OCF](https://avro.apache.org/docs/1.8.1/spec.html#Object+Container+Files) encoding/decoding
+- [ ] ~Add `Avrora.guess_type/1` for detecting encoding type used~
+- [ ] Add `format: bare|csr|ocf` to `Avrora.encode/2` method
