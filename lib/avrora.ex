@@ -3,6 +3,7 @@ defmodule Avrora do
 
   use Supervisor
 
+  defdelegate decode(payload), to: Avrora.Encoder
   defdelegate encode(payload, opts), to: Avrora.Encoder
   defdelegate decode(payload, opts), to: Avrora.Encoder
 

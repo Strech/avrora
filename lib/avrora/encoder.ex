@@ -11,6 +11,32 @@ defmodule Avrora.Encoder do
   @object_container_magic_bytes <<"Obj", 1>>
 
   @doc """
+  Decodes given message with a schema eather loaded from the Object Container File
+  or from the configured schema registry.
+
+  ## Examples
+
+      ...> payload = <<0, 0, 0, 0, 8, 72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48,
+      48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 48,
+      48, 48, 48, 48, 48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64>>
+      ...> Avrora.Encoder.decode(payload)
+      {:ok, %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}}
+  """
+  @spec decode(binary()) :: {:ok, map()} | {:error, term()}
+  def decode(payload) when is_binary(payload) do
+    case payload do
+      <<@registry_magic_bytes, <<version::size(32)>>, body::binary>> ->
+        with {:ok, avro} <- Resolver.resolve(version), do: do_decode(avro.schema, body)
+
+      <<@object_container_magic_bytes, _::binary>> ->
+        do_decode(payload)
+
+      _ ->
+        {:error, :undecodable}
+    end
+  end
+
+  @doc """
   Decodes given message with a schema eather loaded from the local file or from
   the configured schema registry.
 
@@ -74,6 +100,14 @@ defmodule Avrora.Encoder do
 
       {:ok, body}
     end
+  end
+
+  defp do_decode(payload) do
+    {_, _, decoded} = :avro_ocf.decode_binary(payload)
+
+    {:ok, Mapper.to_map(decoded)}
+  rescue
+    error in ErlangError -> {:error, error.original}
   end
 
   defp do_decode(schema, payload) do
