@@ -231,6 +231,18 @@ defmodule Avrora.EncoderTest do
 
       assert output =~ "with schema version is not allowed"
     end
+
+    test "when decoding with schema name OCF message" do
+      output =
+        capture_log(fn ->
+          {:ok, decoded} =
+            Encoder.decode(ocf_magic_message(), schema_name: "io.confluent.Payment")
+
+          assert decoded == [%{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}]
+        end)
+
+      assert output =~ "given schema name will be ignored"
+    end
   end
 
   describe "encode/2" do

@@ -62,11 +62,18 @@ defmodule Avrora.Encoder do
           <<@registry_magic_bytes, <<version::size(32)>>, body::binary>> ->
             {"#{schema_name.name}:#{version}", body}
 
+          <<@object_container_magic_bytes, _::binary>> ->
+            Logger.warn("message contains embeded schema, given schema name will be ignored")
+            {:embeded, payload}
+
           <<body::binary>> ->
             {schema_name.name, body}
         end
 
-      with {:ok, avro} <- Resolver.resolve(schema_name), do: do_decode(avro.schema, body)
+      case schema_name do
+        :embeded -> do_decode(payload)
+        _ -> with {:ok, avro} <- Resolver.resolve(schema_name), do: do_decode(avro.schema, body)
+      end
     end
   end
 
