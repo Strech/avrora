@@ -7,7 +7,34 @@ defmodule Avrora.Encoder do
   require Logger
   alias Avrora.{Mapper, Name, Resolver}
 
-  @registry_magic_byte <<0::size(8)>>
+  @registry_magic_bytes <<0::size(8)>>
+  @object_container_magic_bytes <<"Obj", 1>>
+
+  @doc """
+  Decodes given message with a schema eather loaded from the Object Container File
+  or from the configured schema registry.
+
+  ## Examples
+
+      ...> payload = <<0, 0, 0, 0, 8, 72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48,
+      48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 48,
+      48, 48, 48, 48, 48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64>>
+      ...> Avrora.Encoder.decode(payload)
+      {:ok, %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}}
+  """
+  @spec decode(binary()) :: {:ok, map()} | {:error, term()}
+  def decode(payload) when is_binary(payload) do
+    case payload do
+      <<@registry_magic_bytes, <<version::size(32)>>, body::binary>> ->
+        with {:ok, avro} <- Resolver.resolve(version), do: do_decode(avro.schema, body)
+
+      <<@object_container_magic_bytes, _::binary>> ->
+        do_decode(payload)
+
+      _ ->
+        {:error, :undecodable}
+    end
+  end
 
   @doc """
   Decodes given message with a schema eather loaded from the local file or from
@@ -32,14 +59,21 @@ defmodule Avrora.Encoder do
 
       {schema_name, body} =
         case payload do
-          <<@registry_magic_byte, <<version::size(32)>>, body::binary>> ->
+          <<@registry_magic_bytes, <<version::size(32)>>, body::binary>> ->
             {"#{schema_name.name}:#{version}", body}
+
+          <<@object_container_magic_bytes, _::binary>> ->
+            Logger.warn("message contains embeded schema, given schema name will be ignored")
+            {:embeded, payload}
 
           <<body::binary>> ->
             {schema_name.name, body}
         end
 
-      with {:ok, avro} <- Resolver.resolve(schema_name), do: do_decode(avro.schema, body)
+      case schema_name do
+        :embeded -> do_decode(payload)
+        _ -> with {:ok, avro} <- Resolver.resolve(schema_name), do: do_decode(avro.schema, body)
+      end
     end
   end
 
@@ -69,10 +103,18 @@ defmodule Avrora.Encoder do
       body =
         if is_nil(avro.version),
           do: body,
-          else: <<@registry_magic_byte, <<avro.version::size(32)>>, body::binary>>
+          else: <<@registry_magic_bytes, <<avro.version::size(32)>>, body::binary>>
 
       {:ok, body}
     end
+  end
+
+  defp do_decode(payload) do
+    {_, _, decoded} = :avro_ocf.decode_binary(payload)
+
+    {:ok, Mapper.to_map(decoded)}
+  rescue
+    error in ErlangError -> {:error, error.original}
   end
 
   defp do_decode(schema, payload) do

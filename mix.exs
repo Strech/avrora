@@ -28,7 +28,6 @@ defmodule Avrora.MixProject do
 
   def application do
     [
-      mod: {Avrora, []},
       extra_applications: [:logger, :inets, :ssl, :erlavro]
     ]
   end
