@@ -114,7 +114,7 @@ defmodule Avrora.Encoder do
 
     {:ok, Mapper.to_map(decoded)}
   rescue
-    error in ErlangError -> {:error, error.original}
+    error -> {:error, error}
   end
 
   defp do_decode(schema, payload) do
@@ -125,7 +125,7 @@ defmodule Avrora.Encoder do
 
     {:ok, decoded}
   rescue
-    error in ErlangError -> {:error, error.original}
+    error -> {:error, error}
   end
 
   defp do_encode(schema, payload) do
@@ -137,6 +137,6 @@ defmodule Avrora.Encoder do
 
     {:ok, encoded}
   rescue
-    error in ErlangError -> {:error, error.original}
+    error -> {:error, error}
   end
 end
