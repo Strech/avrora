@@ -13,7 +13,7 @@
 
 # Getting Started
 
-An Elixir library for convenient work with AVRO messages.
+An Elixir library for convenient work with Avro messages.
 It supports local schema files and Confluent® schema registry.
 
 Many thanks to [AvroTurf](https://github.com/dasch/avro_turf) Ruby gem for an inspiration.
