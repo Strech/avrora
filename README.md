@@ -120,7 +120,7 @@ Schema-agnostic method of decoding messages, doesn't require to provide a schema
 name. Instead it relies on artifacts in a message about which schema to use.
 
 It works for messages encoded with [Schema Registry magic bytes](https://docs.confluent.io/current/schema-registry/serializer-formatter.html#wire-format)
-and [Object Container Files](https://avro.apache.org/docs/1.8.1/spec.html#Object+Container+Files) bytes.
+and [Object Container Files bytes](https://avro.apache.org/docs/1.8.1/spec.html#Object+Container+Files).
 In case of Schema Registry it will try to fetch schema from the registry and
 in case of OCF it will usee embeded schema in the message.
 
