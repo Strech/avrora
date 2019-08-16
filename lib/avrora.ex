@@ -7,7 +7,7 @@ defmodule Avrora do
   defdelegate encode(payload, opts), to: Avrora.Encoder
   defdelegate decode(payload, opts), to: Avrora.Encoder
 
-  def start_link(opts \\ []), do: GenServer.start_link(__MODULE__, opts, name: __MODULE__)
+  def start_link(opts \\ []), do: Supervisor.start_link(__MODULE__, opts, name: __MODULE__)
 
   @impl true
   def init(_state \\ []) do
