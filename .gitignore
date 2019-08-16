@@ -26,3 +26,5 @@ avrora-*.tar
 
 /priv/plts/*.plt
 /priv/plts/*.plt.hash
+
+TODO.org

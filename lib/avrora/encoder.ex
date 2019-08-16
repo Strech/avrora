@@ -81,6 +81,13 @@ defmodule Avrora.Encoder do
   Encodes given message with a schema eather loaded from the local file or from
   the configured schema registry.
 
+  You can control formatting with a `:format` option, possible variants are:
+
+  * :guess - behaves like :ocf if can't behave like :registry (default)
+  * :ocf - embeds schema with Object Container File format
+  * :registry - embeds Confluent Schema Registry magic version
+  * :plain - gives nothing, but only encoded message
+
   ## Examples
 
       ...> payload = %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
@@ -109,13 +116,13 @@ defmodule Avrora.Encoder do
             do: do_embed_schema(avro.schema, body),
             else: do_embed_version(avro.version, body)
 
-        :ocf ->
-          do_embed_schema(avro.schema, body)
-
         :registry ->
           if is_nil(avro.version),
             do: {:error, :invalid_schema_version},
             else: do_embed_version(avro.version, body)
+
+        :ocf ->
+          do_embed_schema(avro.schema, body)
 
         :plain ->
           {:ok, body}
