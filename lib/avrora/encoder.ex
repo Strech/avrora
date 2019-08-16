@@ -84,13 +84,16 @@ defmodule Avrora.Encoder do
   ## Examples
 
       ...> payload = %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
-      ...> Avrora.Encoder.encode(payload, schema_name: "io.confluent.Payment")
+      ...> Avrora.Encoder.encode(payload, schema_name: "io.confluent.Payment", format: :plain)
       {:ok, <<72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45,
             48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 48, 48, 48, 48, 48,
             48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64>>}
   """
   @spec encode(map(), keyword(String.t())) :: {:ok, binary()} | {:error, term()}
-  def encode(payload, schema_name: schema_name) when is_map(payload) do
+  def encode(payload, schema_name: schema_name),
+    do: encode(payload, schema_name: schema_name, format: :guess)
+
+  def encode(payload, schema_name: schema_name, format: format) when is_map(payload) do
     with {:ok, schema_name} <- Name.parse(schema_name),
          {:ok, avro} <- Resolver.resolve(schema_name.name),
          {:ok, body} <- do_encode(avro.schema, payload) do
@@ -100,12 +103,26 @@ defmodule Avrora.Encoder do
         )
       end
 
-      body =
-        if is_nil(avro.version),
-          do: body,
-          else: <<@registry_magic_bytes, <<avro.version::size(32)>>, body::binary>>
+      case format do
+        :guess ->
+          if is_nil(avro.version),
+            do: do_embed_schema(avro.schema, body),
+            else: do_embed_version(avro.version, body)
 
-      {:ok, body}
+        :ocf ->
+          do_embed_schema(avro.schema, body)
+
+        :registry ->
+          if is_nil(avro.version),
+            do: {:error, :invalid_schema_version},
+            else: do_embed_version(avro.version, body)
+
+        :plain ->
+          {:ok, body}
+
+        _ ->
+          {:error, :unknown_format}
+      end
     end
   end
 
@@ -133,6 +150,24 @@ defmodule Avrora.Encoder do
       schema
       |> :avro_record.new(payload)
       |> :avro_binary_encoder.encode_value()
+      |> :erlang.list_to_binary()
+
+    {:ok, encoded}
+  rescue
+    error -> {:error, error}
+  end
+
+  defp do_embed_version(version, payload) do
+    encoded = <<@registry_magic_bytes, <<version::size(32)>>, payload::binary>>
+
+    {:ok, encoded}
+  end
+
+  defp do_embed_schema(schema, payload) do
+    encoded =
+      schema
+      |> :avro_ocf.make_header()
+      |> :avro_ocf.make_ocf(List.wrap(payload))
       |> :erlang.list_to_binary()
 
     {:ok, encoded}

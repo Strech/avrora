@@ -56,7 +56,7 @@ defmodule Avrora.EncoderTest do
     end
 
     test "when payload was encoded with no magic bytes" do
-      assert {:error, :undecodable} = Encoder.decode(message())
+      assert {:error, :undecodable} = Encoder.decode(not_magic_message())
     end
   end
 
@@ -275,7 +275,81 @@ defmodule Avrora.EncoderTest do
       end)
 
       {:ok, encoded} = Encoder.encode(raw_message(), schema_name: "io.confluent.Payment")
-      assert not_magic_message() == encoded
+      assert is_ocf?(encoded)
+    end
+
+    test "when registry is not configured, but format requires schema version" do
+      Avrora.Storage.MemoryMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.Payment"
+
+        {:ok, nil}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.Payment"
+        assert value == schema()
+
+        {:ok, schema()}
+      end)
+
+      Avrora.Storage.RegistryMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.Payment"
+
+        {:error, :unconfigured_registry_url}
+      end)
+
+      Avrora.Storage.FileMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.Payment"
+
+        {:ok, schema()}
+      end)
+
+      result =
+        Encoder.encode(raw_message(), schema_name: "io.confluent.Payment", format: :registry)
+
+      assert {:error, :invalid_schema_version} = result
+    end
+
+    test "when registry is configured and schema is found, but format is given explicitly" do
+      Avrora.Storage.MemoryMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.Payment"
+
+        {:ok, nil}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.Payment"
+        assert value == schema_with_version()
+
+        {:ok, schema_with_version()}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.Payment:42"
+        assert value == schema_with_version()
+
+        {:ok, schema_with_version()}
+      end)
+
+      Avrora.Storage.RegistryMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.Payment"
+
+        {:ok, schema_with_version()}
+      end)
+
+      Avrora.Storage.FileMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.Payment"
+
+        {:ok, schema()}
+      end)
+
+      {:ok, encoded} =
+        Encoder.encode(raw_message(), schema_name: "io.confluent.Payment", format: :ocf)
+
+      assert is_ocf?(encoded)
     end
 
     test "when registry is configured, but schema not found" do
@@ -390,7 +464,9 @@ defmodule Avrora.EncoderTest do
 
       output =
         capture_log(fn ->
-          {:ok, encoded} = Encoder.encode(raw_message(), schema_name: "io.confluent.Payment:42")
+          {:ok, encoded} =
+            Encoder.encode(raw_message(), schema_name: "io.confluent.Payment:42", format: :plain)
+
           assert not_magic_message() == encoded
         end)
 
@@ -398,11 +474,13 @@ defmodule Avrora.EncoderTest do
     end
   end
 
+  defp is_ocf?(payload),
+    do: match?(payload, schema_header()) && match?(payload, not_magic_message())
+
   defp raw_message, do: %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
 
-  defp message do
-    <<72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48,
-      48, 45, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64>>
+  defp schema_header do
+    <<79, 98, 106, 1>>
   end
 
   defp magic_message do
@@ -420,11 +498,11 @@ defmodule Avrora.EncoderTest do
       101, 108, 100, 115, 34, 58, 91, 123, 34, 110, 97, 109, 101, 34, 58, 34, 105, 100, 34, 44,
       34, 116, 121, 112, 101, 34, 58, 34, 115, 116, 114, 105, 110, 103, 34, 125, 44, 123, 34, 110,
       97, 109, 101, 34, 58, 34, 97, 109, 111, 117, 110, 116, 34, 44, 34, 116, 121, 112, 101, 34,
-      58, 34, 100, 111, 117, 98, 108, 101, 34, 125, 93, 125, 0, 50, 8, 86, 136, 188, 182, 153, 91,
-      143, 129, 0, 45, 200, 112, 4, 192, 2, 90, 72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48, 48,
-      48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-      48, 48, 123, 20, 174, 71, 225, 250, 47, 64, 50, 8, 86, 136, 188, 182, 153, 91, 143, 129, 0,
-      45, 200, 112, 4, 192>>
+      58, 34, 100, 111, 117, 98, 108, 101, 34, 125, 93, 125, 0, 236, 47, 96, 164, 206, 59, 152,
+      115, 80, 243, 64, 50, 180, 153, 105, 34, 2, 90, 72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48,
+      48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 48, 48, 48, 48, 48,
+      48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64, 236, 47, 96, 164, 206, 59, 152, 115, 80,
+      243, 64, 50, 180, 153, 105, 34>>
   end
 
   defp not_magic_message do
