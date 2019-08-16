@@ -90,7 +90,7 @@ defmodule Avrora.Encoder do
             48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64>>}
   """
   @spec encode(map(), keyword(String.t())) :: {:ok, binary()} | {:error, term()}
-  def encode(payload, schema_name: schema_name),
+  def encode(payload, schema_name: schema_name) when is_map(payload),
     do: encode(payload, schema_name: schema_name, format: :guess)
 
   def encode(payload, schema_name: schema_name, format: format) when is_map(payload) do
