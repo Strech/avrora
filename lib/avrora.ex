@@ -9,11 +9,12 @@ defmodule Avrora do
 
   def start_link(opts \\ []), do: GenServer.start_link(__MODULE__, opts, name: __MODULE__)
 
+  @impl true
   def init(_state \\ []) do
     children = [
       Avrora.Storage.Memory
     ]
 
-    Supervisor.start_link(children, strategy: :one_for_one)
+    Supervisor.init(children, strategy: :one_for_one)
   end
 end

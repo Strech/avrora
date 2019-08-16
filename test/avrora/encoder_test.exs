@@ -275,7 +275,7 @@ defmodule Avrora.EncoderTest do
       end)
 
       {:ok, encoded} = Encoder.encode(raw_message(), schema_name: "io.confluent.Payment")
-      assert is_ocf?(encoded)
+      assert is_ocf(encoded)
     end
 
     test "when registry is not configured, but format requires schema version" do
@@ -349,7 +349,7 @@ defmodule Avrora.EncoderTest do
       {:ok, encoded} =
         Encoder.encode(raw_message(), schema_name: "io.confluent.Payment", format: :ocf)
 
-      assert is_ocf?(encoded)
+      assert is_ocf(encoded)
     end
 
     test "when registry is configured, but schema not found" do
@@ -474,14 +474,16 @@ defmodule Avrora.EncoderTest do
     end
   end
 
-  defp is_ocf?(payload),
-    do: match?(payload, schema_header()) && match?(payload, not_magic_message())
+  defp is_ocf(payload) do
+    match?(
+      <<79, 98, 106, 1, _::size(1504), 72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45,
+        48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
+        123, 20, 174, 71, 225, 250, 47, 64, _::binary>>,
+      payload
+    )
+  end
 
   defp raw_message, do: %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
-
-  defp schema_header do
-    <<79, 98, 106, 1>>
-  end
 
   defp magic_message do
     <<0, 0, 0, 0, 42, 72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48,
