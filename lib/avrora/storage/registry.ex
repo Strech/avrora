@@ -37,8 +37,6 @@ defmodule Avrora.Storage.Registry do
   @doc """
   Fetch a schema by a globally unique ID.
 
-  FIXME: Can't use a real docs with iex> because don't know how to make it work
-
   ## Examples
 
       ...> {:ok, avro} = Avrora.Storage.Registry.get(1)
