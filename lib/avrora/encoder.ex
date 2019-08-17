@@ -11,7 +11,7 @@ defmodule Avrora.Encoder do
   @object_container_magic_bytes <<"Obj", 1>>
 
   @doc """
-  Decodes given message with a schema eather loaded from the Object Container File
+  Decodes given message with a schema eather loaded from the Object Container Files
   or from the configured schema registry.
 
   ## Examples
@@ -84,7 +84,7 @@ defmodule Avrora.Encoder do
   You can control formatting with a `:format` option, possible variants are:
 
   * :guess - behaves like :ocf if can't behave like :registry (default)
-  * :ocf - embeds schema with Object Container File format
+  * :ocf - embeds schema with Object Container Files format
   * :registry - embeds Confluent Schema Registry magic version
   * :plain - gives nothing, but only encoded message
 

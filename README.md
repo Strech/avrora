@@ -117,7 +117,7 @@ message = %{"id" => "tx-1", "amount" => 15.99}
 If you want to controll output format, you can provide `:format` option.
 Possible values are:
 
-* `:ocf` - embeds schema with [Object Container File](https://avro.apache.org/docs/1.8.1/spec.html#Object+Container+Files) format
+* `:ocf` - embeds schema with [Object Container Files](https://avro.apache.org/docs/1.8.1/spec.html#Object+Container+Files) format
 * `:registry` - embeds Confluent [Schema Registry](https://docs.confluent.io/current/schema-registry/serializer-formatter.html#wire-format) magic version
 * `:plain` - only encode message with nothing embeded
 * `:guess` - fallbacks to `:ocf` if can't behave like `:registry` *(default)*
