@@ -3,7 +3,122 @@ defmodule Avrora.ResolverTest do
   doctest Avrora.Resolver
 
   import Mox
+  import ExUnit.CaptureLog
   alias Avrora.Resolver
+
+  describe "resolve_any/2" do
+    test "when registry is configured and schema was not found in memory, but registry" do
+      Avrora.Storage.MemoryMock
+      |> expect(:get, fn key ->
+        assert key == 1
+        {:ok, nil}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == 1
+        assert value == schema_with_id()
+        {:ok, value}
+      end)
+
+      Avrora.Storage.RegistryMock
+      |> expect(:get, fn key ->
+        assert key == 1
+        {:ok, schema_with_id()}
+      end)
+
+      {:ok, avro} = Resolver.resolve_any(1, "io.confluent.Payment")
+      {type, _, _, _, _, fields, full_name, _} = avro.schema
+
+      assert avro.id == 1
+      assert is_nil(avro.version)
+      assert type == :avro_record_type
+      assert full_name == "io.confluent.Payment"
+      assert length(fields) == 2
+    end
+
+    test "when registry is configured, but failing and schema was not found in a memory" do
+      Avrora.Storage.MemoryMock
+      |> expect(:get, fn key ->
+        assert key == 1
+        {:ok, nil}
+      end)
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.Payment"
+        {:ok, nil}
+      end)
+
+      Avrora.Storage.RegistryMock
+      |> expect(:get, fn key ->
+        assert key == 1
+        {:error, :unknown_subject}
+      end)
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.Payment"
+        {:error, :unknown_subject}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.Payment"
+        assert value == raw_schema()
+        {:error, :unknown}
+      end)
+
+      Avrora.Storage.FileMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.Payment"
+
+        {:ok, schema()}
+      end)
+
+      output =
+        capture_log(fn ->
+          assert {:error, :unknown} = Resolver.resolve_any(1, "io.confluent.Payment")
+        end)
+
+      assert output =~ "fail to resolve schema by id"
+    end
+
+    test "when registry is not configured and was not found in memory" do
+      Avrora.Storage.MemoryMock
+      |> expect(:get, fn key ->
+        assert key == 1
+        {:ok, nil}
+      end)
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.Payment"
+        {:ok, nil}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.Payment"
+        assert value == schema()
+        {:ok, value}
+      end)
+
+      Avrora.Storage.RegistryMock
+      |> expect(:get, fn key ->
+        assert key == 1
+        {:error, :unconfigured_registry_url}
+      end)
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.Payment"
+        {:error, :unconfigured_registry_url}
+      end)
+
+      Avrora.Storage.FileMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.Payment"
+
+        {:ok, schema()}
+      end)
+
+      {:ok, avro} = Resolver.resolve_any(1, "io.confluent.Payment")
+      {type, _, _, _, _, fields, full_name, _} = avro.schema
+
+      assert is_nil(avro.id)
+      assert is_nil(avro.version)
+      assert type == :avro_record_type
+      assert full_name == "io.confluent.Payment"
+      assert length(fields) == 2
+    end
+  end
 
   describe "resolve/1" do
     test "when global ID is given and it was found in a memory" do

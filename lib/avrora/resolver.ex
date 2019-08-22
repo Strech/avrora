@@ -4,7 +4,35 @@ defmodule Avrora.Resolver do
   memory and registry storage up to date.
   """
 
+  require Logger
   alias Avrora.{Config, Name}
+
+  @doc """
+  Resolves schema by either global ID or name (can contain version).
+
+  It will return first successful resolution result with order:
+
+    * Avrora.Resolver.resolve/1 when integer
+    * Avrora.Resolver.resolve/1 when binary
+
+  ## Examples
+
+      ...> {:ok, avro} = Avrora.Resolver.resolve_any(1, "io.confluent.Payment")
+      ...> {_, _, _, _, _, _, full_name, _} = avro.schema
+      ...> full_name
+      "io.confluent.Payment"
+  """
+  @spec resolve_any(integer(), String.t()) :: {:ok, Avrora.Schema.t()} | {:error, term()}
+  def resolve_any(id, name) do
+    case resolve(id) do
+      {:ok, avro} ->
+        {:ok, avro}
+
+      _ ->
+        Logger.debug("fail to resolve schema by id `#{id}`, will fallback to name `#{name}`")
+        resolve(name)
+    end
+  end
 
   @doc """
   Resolves schema by a global ID.
