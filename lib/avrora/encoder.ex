@@ -25,8 +25,8 @@ defmodule Avrora.Encoder do
   @spec decode(binary()) :: {:ok, map()} | {:error, term()}
   def decode(payload) when is_binary(payload) do
     case payload do
-      <<@registry_magic_bytes, <<version::size(32)>>, body::binary>> ->
-        with {:ok, avro} <- Resolver.resolve(version), do: do_decode(avro.schema, body)
+      <<@registry_magic_bytes, <<id::size(32)>>, body::binary>> ->
+        with {:ok, avro} <- Resolver.resolve(id), do: do_decode(avro.schema, body)
 
       <<@object_container_magic_bytes, _::binary>> ->
         do_decode(payload)
@@ -53,14 +53,14 @@ defmodule Avrora.Encoder do
     with {:ok, schema_name} <- Name.parse(schema_name) do
       unless is_nil(schema_name.version) do
         Logger.warn(
-          "decoding message with schema version is not allowed, `#{schema_name.name}` used instead"
+          "decoding message with schema version is not supported, `#{schema_name.name}` used instead"
         )
       end
 
-      {schema_name, body} =
+      {schema_id, body} =
         case payload do
-          <<@registry_magic_bytes, <<version::size(32)>>, body::binary>> ->
-            {"#{schema_name.name}:#{version}", body}
+          <<@registry_magic_bytes, <<id::size(32)>>, body::binary>> ->
+            {id, body}
 
           <<@object_container_magic_bytes, _::binary>> ->
             Logger.warn("message contains embeded schema, given schema name will be ignored")
@@ -70,9 +70,13 @@ defmodule Avrora.Encoder do
             {schema_name.name, body}
         end
 
-      case schema_name do
-        :embeded -> do_decode(payload)
-        _ -> with {:ok, avro} <- Resolver.resolve(schema_name), do: do_decode(avro.schema, body)
+      case schema_id do
+        :embeded ->
+          do_decode(payload)
+
+        _ ->
+          with {:ok, avro} <- Resolver.resolve_any(schema_id, schema_name.name),
+               do: do_decode(avro.schema, body)
       end
     end
   end
@@ -106,7 +110,7 @@ defmodule Avrora.Encoder do
          {:ok, body} <- do_encode(avro.schema, payload) do
       unless is_nil(schema_name.version) do
         Logger.warn(
-          "encoding message with schema version is not allowed, `#{schema_name.name}` used instead"
+          "encoding message with schema version is not supported yet, `#{schema_name.name}` used instead"
         )
       end
 
@@ -114,12 +118,12 @@ defmodule Avrora.Encoder do
         :guess ->
           if is_nil(avro.version),
             do: do_embed_schema(avro.schema, body),
-            else: do_embed_version(avro.version, body)
+            else: do_embed_id(avro.id, body)
 
         :registry ->
           if is_nil(avro.version),
             do: {:error, :invalid_schema_version},
-            else: do_embed_version(avro.version, body)
+            else: do_embed_id(avro.id, body)
 
         :ocf ->
           do_embed_schema(avro.schema, body)
@@ -164,8 +168,8 @@ defmodule Avrora.Encoder do
     error -> {:error, error}
   end
 
-  defp do_embed_version(version, payload) do
-    encoded = <<@registry_magic_bytes, <<version::size(32)>>, payload::binary>>
+  defp do_embed_id(id, payload) do
+    encoded = <<@registry_magic_bytes, <<id::size(32)>>, payload::binary>>
 
     {:ok, encoded}
   end
