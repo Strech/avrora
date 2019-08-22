@@ -29,7 +29,7 @@ defmodule Avrora.Resolver do
         {:ok, avro}
 
       _ ->
-        Logger.debug("fail to resolve schema by id `#{id}`, will fallback to name `#{name}`")
+        Logger.debug("fail to resolve by id `#{id}`, will fallback to name `#{name}`")
         resolve(name)
     end
   end
