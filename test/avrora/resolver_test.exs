@@ -75,14 +75,14 @@ defmodule Avrora.ResolverTest do
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
-        assert value == schema_with_version()
+        assert key == 42
+        assert value == schema_with_id_and_version()
 
         {:ok, value}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment:42"
-        assert value == schema_with_version()
+        assert key == "io.confluent.Payment:3"
+        assert value == schema_with_id_and_version()
 
         {:ok, value}
       end)
@@ -91,14 +91,14 @@ defmodule Avrora.ResolverTest do
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment"
 
-        {:ok, schema_with_version()}
+        {:ok, schema_with_id_and_version()}
       end)
 
       {:ok, avro} = Resolver.resolve("io.confluent.Payment")
       {type, _, _, _, _, fields, full_name, _} = avro.schema
 
-      assert is_nil(avro.id)
-      assert avro.version == 42
+      assert avro.id == 42
+      assert avro.version == 3
       assert type == :avro_record_type
       assert full_name == "io.confluent.Payment"
       assert length(fields) == 2
@@ -112,14 +112,8 @@ defmodule Avrora.ResolverTest do
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
-        assert value == schema_with_version()
-
-        {:ok, value}
-      end)
-      |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment:42"
-        assert value == schema_with_version()
+        assert key == 1
+        assert value == schema_with_id()
 
         {:ok, value}
       end)
@@ -134,7 +128,7 @@ defmodule Avrora.ResolverTest do
         assert key == "io.confluent.Payment"
         assert value == raw_schema()
 
-        {:ok, schema_with_version()}
+        {:ok, schema_with_id()}
       end)
 
       Avrora.Storage.FileMock
@@ -147,8 +141,8 @@ defmodule Avrora.ResolverTest do
       {:ok, avro} = Resolver.resolve("io.confluent.Payment")
       {type, _, _, _, _, fields, full_name, _} = avro.schema
 
-      assert is_nil(avro.id)
-      assert avro.version == 42
+      assert avro.id == 1
+      assert is_nil(avro.version)
       assert type == :avro_record_type
       assert full_name == "io.confluent.Payment"
       assert length(fields) == 2
@@ -157,19 +151,19 @@ defmodule Avrora.ResolverTest do
     test "when schema name with version is given and it was not found in a memory and in a registry" do
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment:42"
+        assert key == "io.confluent.Payment:3"
 
         {:ok, nil}
       end)
 
       Avrora.Storage.RegistryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment:42"
+        assert key == "io.confluent.Payment:3"
 
         {:error, :unknown_version}
       end)
 
-      assert Resolver.resolve("io.confluent.Payment:42") == {:error, :unknown_version}
+      assert Resolver.resolve("io.confluent.Payment:3") == {:error, :unknown_version}
     end
 
     test "when schema name is given and it was not found in a memory and registry is not configured" do
@@ -210,10 +204,10 @@ defmodule Avrora.ResolverTest do
       assert length(fields) == 2
     end
 
-    test "when schema name:version is given and it was not found in a memory and registry is not configured" do
+    test "when schema name with version is given and it was not found in a memory and registry is not configured" do
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment:42"
+        assert key == "io.confluent.Payment:3"
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
@@ -225,17 +219,17 @@ defmodule Avrora.ResolverTest do
 
       Avrora.Storage.RegistryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment:42"
+        assert key == "io.confluent.Payment:3"
         {:error, :unconfigured_registry_url}
       end)
 
       Avrora.Storage.FileMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment:42"
+        assert key == "io.confluent.Payment:3"
         {:ok, schema()}
       end)
 
-      {:ok, avro} = Resolver.resolve("io.confluent.Payment:42")
+      {:ok, avro} = Resolver.resolve("io.confluent.Payment:3")
       {type, _, _, _, _, fields, full_name, _} = avro.schema
 
       assert is_nil(avro.id)
@@ -264,10 +258,10 @@ defmodule Avrora.ResolverTest do
     }
   end
 
-  defp schema_with_version do
+  defp schema_with_id_and_version do
     %Avrora.Schema{
-      id: nil,
-      version: 42,
+      id: 42,
+      version: 3,
       schema: erlavro_schema(),
       raw_schema: raw_schema()
     }

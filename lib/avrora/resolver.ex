@@ -60,20 +60,19 @@ defmodule Avrora.Resolver do
          {:ok, nil} <- memory_storage().get(name) do
       case registry_storage().get(name) do
         {:ok, avro} ->
-          with {:ok, avro} <- memory_storage().put(schema_name.name, avro) do
+          with {:ok, avro} <- memory_storage().put(avro.id, avro) do
             memory_storage().put("#{schema_name.name}:#{avro.version}", avro)
+          end
+
+        {:error, :unknown_subject} ->
+          with {:ok, avro} <- file_storage().get(schema_name.name),
+               {:ok, avro} <- registry_storage().put(schema_name.name, avro.raw_schema) do
+            memory_storage().put(avro.id, avro)
           end
 
         {:error, :unconfigured_registry_url} ->
           with {:ok, avro} <- file_storage().get(name),
                do: memory_storage().put(schema_name.name, avro)
-
-        {:error, :unknown_subject} ->
-          with {:ok, avro} <- file_storage().get(schema_name.name),
-               {:ok, avro} <- registry_storage().put(schema_name.name, avro.raw_schema),
-               {:ok, avro} <- memory_storage().put(schema_name.name, avro) do
-            memory_storage().put("#{schema_name.name}:#{avro.version}", avro)
-          end
 
         {:error, reason} ->
           {:error, reason}
