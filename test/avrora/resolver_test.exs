@@ -6,7 +6,7 @@ defmodule Avrora.ResolverTest do
   import ExUnit.CaptureLog
   alias Avrora.Resolver
 
-  describe "resolve_any/2" do
+  describe "resolve_any/1" do
     test "when registry is configured and schema was not found in memory, but registry" do
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
