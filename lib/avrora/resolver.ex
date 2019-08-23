@@ -8,30 +8,34 @@ defmodule Avrora.Resolver do
   alias Avrora.{Config, Name}
 
   @doc """
-  Resolves schema by either global ID or name (can contain version).
+  Resolves schema by all given possible identifiers.
+  It will return first successful resolution or the last error.
 
-  It will return first successful resolution result with order:
+  To resolve schema it uses:
 
     * Avrora.Resolver.resolve/1 when integer
     * Avrora.Resolver.resolve/1 when binary
 
   ## Examples
 
-      ...> {:ok, avro} = Avrora.Resolver.resolve_any(1, "io.confluent.Payment")
+      ...> {:ok, avro} = Avrora.Resolver.resolve_any([1, "io.confluent.Payment"])
       ...> {_, _, _, _, _, _, full_name, _} = avro.schema
       ...> full_name
       "io.confluent.Payment"
   """
-  @spec resolve_any(integer(), String.t()) :: {:ok, Avrora.Schema.t()} | {:error, term()}
-  def resolve_any(id, name) do
-    case resolve(id) do
-      {:ok, avro} ->
-        {:ok, avro}
+  @spec resolve_any(nonempty_list(integer() | String.t())) ::
+          {:ok, Avrora.Schema.t()} | {:error, term()}
+  def resolve_any(ids) do
+    ids = List.wrap(ids)
+    total = Enum.count(ids)
 
-      _ ->
-        Logger.debug("fail to resolve by id `#{id}`, will fallback to name `#{name}`")
-        resolve(name)
-    end
+    ids
+    |> Stream.map(&{&1, resolve(&1)})
+    |> Stream.with_index(1)
+    |> Enum.find_value(fn {{id, {status, result}}, index} ->
+      if status == :error, do: Logger.debug("fail to resolve schema by identifier `#{id}`")
+      if status == :ok || index == total, do: {status, result}
+    end)
   end
 
   @doc """

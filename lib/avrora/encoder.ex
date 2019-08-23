@@ -75,7 +75,7 @@ defmodule Avrora.Encoder do
           do_decode(payload)
 
         _ ->
-          with {:ok, avro} <- Resolver.resolve_any(schema_id, schema_name.name),
+          with {:ok, avro} <- Resolver.resolve_any([schema_id, schema_name.name]),
                do: do_decode(avro.schema, body)
       end
     end
