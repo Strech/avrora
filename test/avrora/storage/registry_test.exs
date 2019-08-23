@@ -17,7 +17,8 @@ defmodule Avrora.Storage.RegistryTest do
         {
           :ok,
           %{
-            "name" => "io.confluent.Payment",
+            "subject" => "io.confluent.Payment",
+            "id" => 42,
             "version" => 1,
             "schema" => json_schema()
           }
@@ -27,6 +28,8 @@ defmodule Avrora.Storage.RegistryTest do
       {:ok, avro} = Registry.get("io.confluent.Payment")
       {type, _, _, _, _, fields, full_name, _} = avro.schema
 
+      assert avro.id == 42
+      assert avro.version == 1
       assert type == :avro_record_type
       assert full_name == "io.confluent.Payment"
       assert length(fields) == 2
@@ -40,7 +43,8 @@ defmodule Avrora.Storage.RegistryTest do
         {
           :ok,
           %{
-            "name" => "io.confluent.Payment",
+            "subject" => "io.confluent.Payment",
+            "id" => 42,
             "version" => 10,
             "schema" => json_schema()
           }
@@ -50,6 +54,8 @@ defmodule Avrora.Storage.RegistryTest do
       {:ok, avro} = Registry.get("io.confluent.Payment:10")
       {type, _, _, _, _, fields, full_name, _} = avro.schema
 
+      assert avro.id == 42
+      assert avro.version == 10
       assert type == :avro_record_type
       assert full_name == "io.confluent.Payment"
       assert length(fields) == 2
@@ -77,6 +83,8 @@ defmodule Avrora.Storage.RegistryTest do
       {:ok, avro} = Registry.get(1)
       {type, _, _, _, _, fields, full_name, _} = avro.schema
 
+      assert avro.id == 1
+      assert is_nil(avro.version)
       assert type == :avro_record_type
       assert full_name == "io.confluent.Payment"
       assert length(fields) == 2
@@ -117,6 +125,7 @@ defmodule Avrora.Storage.RegistryTest do
       {type, _, _, _, _, fields, full_name, _} = avro.schema
 
       assert avro.id == 1
+      assert is_nil(avro.version)
       assert type == :avro_record_type
       assert full_name == "io.confluent.Payment"
       assert length(fields) == 2
@@ -137,6 +146,7 @@ defmodule Avrora.Storage.RegistryTest do
           {type, _, _, _, _, fields, full_name, _} = avro.schema
 
           assert avro.id == 1
+          assert is_nil(avro.version)
           assert type == :avro_record_type
           assert full_name == "io.confluent.Payment"
           assert length(fields) == 2

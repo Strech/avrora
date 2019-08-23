@@ -25,12 +25,13 @@ defmodule Avrora.Storage.Registry do
     with {:ok, schema_name} <- Name.parse(key),
          {name, version} <- {schema_name.name, schema_name.version || "latest"},
          {:ok, response} <- http_client_get("subjects/#{name}/versions/#{version}"),
+         {:ok, id} <- Map.fetch(response, "id"),
          {:ok, version} <- Map.fetch(response, "version"),
          {:ok, schema} <- Map.fetch(response, "schema"),
          {:ok, schema} <- Schema.parse(schema) do
       Logger.debug("obtaining schema #{schema_name.name} with version `#{version}`")
 
-      {:ok, %{schema | version: version}}
+      {:ok, %{schema | id: id, version: version}}
     end
   end
 
