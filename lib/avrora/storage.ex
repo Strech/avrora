@@ -9,4 +9,9 @@ defmodule Avrora.Storage do
 
   @callback put(key :: String.t() | integer(), value :: String.t() | Avrora.Schema.t()) ::
               {:ok, result :: Avrora.Schema.t()} | {:error, reason :: term()}
+
+  @typedoc """
+  A possible schema indentifier
+  """
+  @type schema_id :: String.t() | integer()
 end

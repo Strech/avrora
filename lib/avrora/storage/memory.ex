@@ -4,6 +4,7 @@ defmodule Avrora.Storage.Memory do
   """
 
   use GenServer
+  alias Avrora.{Schema, Storage}
 
   @behaviour Avrora.Storage
   @ets_opts [
@@ -35,6 +36,17 @@ defmodule Avrora.Storage.Memory do
   end
 
   @impl true
+  def handle_cast({:expire, key, ttl}, state) do
+    {:ok, _} =
+      Task.start(fn ->
+        Process.sleep(ttl)
+        __MODULE__.delete(key)
+      end)
+
+    {:noreply, state}
+  end
+
+  @impl true
   def handle_call({:get, key}, _from, state) do
     {:ok, table} = Keyword.fetch(state, :table)
 
@@ -42,6 +54,12 @@ defmodule Avrora.Storage.Memory do
       [{_, value}] -> {:reply, value, state}
       _ -> {:reply, nil, state}
     end
+  end
+
+  @impl true
+  def handle_call({:delete, key}, _from, state) do
+    {:ok, table} = Keyword.fetch(state, :table)
+    {:reply, :ets.delete(table, key), state}
   end
 
   @doc """
@@ -60,8 +78,7 @@ defmodule Avrora.Storage.Memory do
   def get(key), do: get(__MODULE__, key)
 
   @doc false
-  @spec get(pid() | atom(), String.t() | integer()) ::
-          {:ok, nil | Avrora.Schema.t()} | {:error, term()}
+  @spec get(pid() | atom(), Storage.schema_id()) :: {:ok, nil | Schema.t()} | {:error, term()}
   def get(pid, key), do: {:ok, GenServer.call(pid, {:get, key})}
 
   @doc """
@@ -77,7 +94,54 @@ defmodule Avrora.Storage.Memory do
   def put(key, value), do: put(__MODULE__, key, value)
 
   @doc false
-  @spec put(pid() | atom(), String.t() | integer(), Avrora.Schema.t()) ::
+  @spec put(pid() | atom(), Storage.schema_id(), Schema.t()) ::
           {:ok, Avrora.Schema.t()} | {:error, term()}
   def put(pid, key, value), do: {GenServer.cast(pid, {:put, key, value}), value}
+
+  @doc """
+  Deletes a key from the storage. Works no matter the key exists or not.
+
+  ## Examples
+      iex> _ = Avrora.Storage.Memory.start_link()
+      iex> avro = %Avrora.Schema{id: nil, schema: [], raw_schema: "{}"}
+      iex> Avrora.Storage.Memory.put("my-key", avro)
+      {:ok, %Avrora.Schema{id: nil, schema: [], raw_schema: "{}"}}
+      iex> Avrora.Storage.Memory.get("my-key")
+      {:ok, %Avrora.Schema{id: nil, schema: [], raw_schema: "{}"}}
+      iex> Avrora.Storage.Memory.delete("my-key")
+      {:ok, true}
+      iex> Avrora.Storage.Memory.get("my-key")
+      {:ok, nil}
+  """
+  @spec delete(Storage.schema_id()) :: {:ok, boolean()} | {:error, term()}
+  def delete(key), do: delete(__MODULE__, key)
+
+  @doc false
+  @spec delete(pid() | atom(), Storage.schema_id()) :: {:ok, boolean()} | {:error, term()}
+  def delete(pid, key), do: {:ok, GenServer.call(pid, {:delete, key})}
+
+  @doc """
+  Expires a key in the storage after its TTL is over. Works no matter the key exists or not.
+
+  ## Examples
+      iex> _ = Avrora.Storage.Memory.start_link()
+      iex> avro = %Avrora.Schema{id: nil, schema: [], raw_schema: "{}"}
+      iex> Avrora.Storage.Memory.put("my-key", avro)
+      {:ok, %Avrora.Schema{id: nil, schema: [], raw_schema: "{}"}}
+      iex> {:ok, _} = Avrora.Storage.Memory.expire("my-key", :timer.seconds(1))
+      iex> Avrora.Storage.Memory.get("my-key")
+      {:ok, %Avrora.Schema{id: nil, schema: [], raw_schema: "{}"}}
+      iex> Process.sleep(:timer.seconds(1))
+      iex> Avrora.Storage.Memory.get("my-key")
+      {:ok, nil}
+  """
+  @spec expire(Storage.schema_id(), integer()) :: {:ok, integer()} | {:error, term()}
+  def expire(key, ttl), do: expire(__MODULE__, key, ttl)
+
+  @doc false
+  @spec expire(pid() | atom(), Storage.schema_id(), integer()) ::
+          {:ok, integer()} | {:error, term()}
+  def expire(pid, key, ttl), do: {GenServer.cast(pid, {:expire, key, ttl}), timestamp(ttl)}
+
+  defp timestamp(shift), do: trunc(System.system_time(:second) + shift / 1_000)
 end
