@@ -25,7 +25,7 @@ To use Avrora with your projects, edit your `mix.exs` file and add it as a depen
 ```elixir
 def deps do
   [
-    {:avrora, "~> 0.2"}
+    {:avrora, "~> 0.5"}
   ]
 end
 ```
@@ -39,6 +39,7 @@ locally stored schemas. Add it in your `config/confix.exs`
 config :avrora,
   registry_url: "http://localhost:8081",      # default to `nil`
   schemas_path: Path.expand("./priv/schemas") # default to `./priv/schemas`
+  names_cache_ttl: :timer.minutes(5)          # default to `300_000` (milliseconds)
 ```
 
 If you will set `registry_url` to a non-`nil` value, then each time we need to find
@@ -47,6 +48,18 @@ schema registry and in case if it's not found we will do lookup in the local sch
 
 In addition schemas which was not found in the registry
 will be registered on encoding/decoding time.
+
+When a schema was resolved by the name in the schema registry, it is possible to
+cache the schema and assign it to that name, but if someone add a new version of
+that schema you will never get it fetched again until you either clean the
+memory storage, or restart your application.
+
+To boost a performance of the schema resolution by name used a configuration
+option `names_cache_ttl`. It is the milliseconds to keep the
+resolved name schema cache in the memory.
+
+:bulb: We can safely cache global id and versioned name resolution results
+because they will never change.
 
 ## Start new process manually
 
