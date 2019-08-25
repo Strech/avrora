@@ -13,17 +13,20 @@ defmodule Avrora.ResolverTest do
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
         assert key == 1
+
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
         assert key == 1
         assert value == schema_with_id()
+
         {:ok, value}
       end)
 
       Avrora.Storage.RegistryMock
       |> expect(:get, fn key ->
         assert key == 1
+
         {:ok, schema_with_id()}
       end)
 
@@ -127,25 +130,30 @@ defmodule Avrora.ResolverTest do
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
         assert key == 1
+
         {:ok, nil}
       end)
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment"
+
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
         assert value == schema()
+
         {:ok, value}
       end)
 
       Avrora.Storage.RegistryMock
       |> expect(:get, fn key ->
         assert key == 1
+
         {:error, :unconfigured_registry_url}
       end)
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment"
+
         {:error, :unconfigured_registry_url}
       end)
 
@@ -172,6 +180,7 @@ defmodule Avrora.ResolverTest do
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
         assert key == 1
+
         {:ok, schema_with_id()}
       end)
 
@@ -189,17 +198,20 @@ defmodule Avrora.ResolverTest do
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
         assert key == 1
+
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
         assert key == 1
         assert value == schema_with_id()
+
         {:ok, value}
       end)
 
       Avrora.Storage.RegistryMock
       |> expect(:get, fn key ->
         assert key == 1
+
         {:ok, schema_with_id()}
       end)
 
@@ -217,12 +229,14 @@ defmodule Avrora.ResolverTest do
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
         assert key == 1
+
         {:ok, nil}
       end)
 
       Avrora.Storage.RegistryMock
       |> expect(:get, fn key ->
         assert key == 1
+
         {:error, :unknown_subject}
       end)
 
