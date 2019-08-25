@@ -203,8 +203,13 @@ defmodule Avrora.EncoderTest do
         {:ok, schema_with_id()}
       end)
 
-      {:ok, decoded} = Encoder.decode(magic_message(), schema_name: "io.confluent.Payment")
-      assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
+      output =
+        capture_log(fn ->
+          {:ok, decoded} = Encoder.decode(magic_message(), schema_name: "io.confluent.Payment")
+          assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
+        end)
+
+      assert output =~ "message contains embeded global id, given schema name will be ignored"
     end
 
     test "when decoding with schema name containing version" do

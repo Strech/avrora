@@ -60,6 +60,7 @@ defmodule Avrora.Encoder do
       {schema_id, body} =
         case payload do
           <<@registry_magic_bytes, <<id::size(32)>>, body::binary>> ->
+            Logger.warn("message contains embeded global id, given schema name will be ignored")
             {id, body}
 
           <<@object_container_magic_bytes, _::binary>> ->
