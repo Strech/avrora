@@ -4,7 +4,7 @@ defmodule Avrora.MixProject do
   def project do
     [
       app: :avrora,
-      version: "0.5.2",
+      version: "0.6.0",
       elixir: "~> 1.6",
       description: description(),
       package: package(),
