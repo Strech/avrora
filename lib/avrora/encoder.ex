@@ -116,13 +116,13 @@ defmodule Avrora.Encoder do
 
       case format do
         :guess ->
-          if is_nil(avro.version),
+          if is_nil(avro.id),
             do: do_embed_schema(avro.schema, body),
             else: do_embed_id(avro.id, body)
 
         :registry ->
-          if is_nil(avro.version),
-            do: {:error, :invalid_schema_version},
+          if is_nil(avro.id),
+            do: {:error, :invalid_schema_id},
             else: do_embed_id(avro.id, body)
 
         :ocf ->

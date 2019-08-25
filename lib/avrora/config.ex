@@ -6,6 +6,7 @@ defmodule Avrora.Config do
 
       * `schemas_path` a path where all local schemas stored (default: ./priv/schemas)
       * `registry_url` a Confluent Schema Registry url (default: nil)
+      * `names_cache_ttl` a time to keep global schema names cached in millisecods (default: 300_000)
 
   ## Extra settings:
 
@@ -20,6 +21,9 @@ defmodule Avrora.Config do
 
   @doc false
   def registry_url, do: get_env(:registry_url, nil)
+
+  @doc false
+  def names_cache_ttl, do: get_env(:names_cache_ttl, :timer.minutes(5))
 
   @doc false
   def file_storage, do: get_env(:file_storage, Avrora.Storage.File)

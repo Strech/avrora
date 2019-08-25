@@ -6,7 +6,9 @@ defmodule Avrora.Storage.Memory do
   use GenServer
   alias Avrora.{Schema, Storage}
 
-  @behaviour Avrora.Storage
+  @behaviour Storage
+  @behaviour Storage.Transient
+
   @ets_opts [
     :private,
     :set,
@@ -117,7 +119,7 @@ defmodule Avrora.Storage.Memory do
       iex> Avrora.Storage.Memory.get("my-key")
       {:ok, nil}
   """
-  @spec delete(Storage.schema_id()) :: {:ok, boolean()} | {:error, term()}
+  @impl true
   def delete(key), do: delete(__MODULE__, key)
 
   @doc false
@@ -140,12 +142,15 @@ defmodule Avrora.Storage.Memory do
       iex> Avrora.Storage.Memory.get("my-key")
       {:ok, nil}
   """
-  @spec expire(Storage.schema_id(), integer()) :: {:ok, integer()} | {:error, term()}
+  @impl true
   def expire(key, ttl), do: expire(__MODULE__, key, ttl)
 
   @doc false
-  @spec expire(pid() | atom(), Storage.schema_id(), integer()) ::
-          {:ok, integer()} | {:error, term()}
+  def expire(_pid, _key, :infinity), do: {:ok, :infinity}
+
+  @doc false
+  @spec expire(pid() | atom(), Storage.schema_id(), timeout()) ::
+          {:ok, Storage.Transient.timestamp()} | {:error, term()}
   def expire(pid, key, ttl), do: {GenServer.cast(pid, {:expire, key, ttl}), timestamp(ttl)}
 
   defp timestamp(shift), do: trunc(System.system_time(:second) + shift / 1_000)

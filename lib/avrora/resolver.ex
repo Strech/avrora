@@ -92,13 +92,23 @@ defmodule Avrora.Resolver do
          {:ok, nil} <- memory_storage().get(name) do
       case registry_storage().get(name) do
         {:ok, avro} ->
-          with {:ok, avro} <- memory_storage().put(avro.id, avro) do
-            memory_storage().put("#{schema_name.name}:#{avro.version}", avro)
+          with {:ok, avro} <- memory_storage().put("#{schema_name.name}:#{avro.version}", avro),
+               {:ok, avro} <- memory_storage().put(schema_name.name, avro),
+               {:ok, timestamp} = memory_storage().expire(schema_name.name, names_ttl()) do
+            if timestamp == :infinity,
+              do: Logger.debug("schema `#{schema_name.name}` will be always resolved from memory")
+
+            memory_storage().put(avro.id, avro)
           end
 
         {:error, :unknown_subject} ->
           with {:ok, avro} <- file_storage().get(schema_name.name),
-               {:ok, avro} <- registry_storage().put(schema_name.name, avro.raw_schema) do
+               {:ok, avro} <- registry_storage().put(schema_name.name, avro.raw_schema),
+               {:ok, avro} <- memory_storage().put(schema_name.name, avro),
+               {:ok, timestamp} = memory_storage().expire(schema_name.name, names_ttl()) do
+            if timestamp == :infinity,
+              do: Logger.debug("schema `#{schema_name.name}` will be always resolved from memory")
+
             memory_storage().put(avro.id, avro)
           end
 
@@ -115,4 +125,5 @@ defmodule Avrora.Resolver do
   defp file_storage, do: Config.file_storage()
   defp memory_storage, do: Config.memory_storage()
   defp registry_storage, do: Config.registry_storage()
+  defp names_ttl, do: Config.names_cache_ttl()
 end
