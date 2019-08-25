@@ -37,10 +37,14 @@ defmodule Avrora.Storage.Memory do
 
   @impl true
   def handle_cast({:expire, key, ttl}, state) do
+    pid = self()
+
+    # NOTE: Maybe it's better to replace it with a combination of
+    #       Process.send_after/4 + GenServer.handle_info/2
     {:ok, _} =
       Task.start(fn ->
         Process.sleep(ttl)
-        __MODULE__.delete(key)
+        __MODULE__.delete(pid, key)
       end)
 
     {:noreply, state}
@@ -122,16 +126,17 @@ defmodule Avrora.Storage.Memory do
 
   @doc """
   Expires a key in the storage after its TTL is over. Works no matter the key exists or not.
+  TTL is measured in millisecods.
 
   ## Examples
       iex> _ = Avrora.Storage.Memory.start_link()
       iex> avro = %Avrora.Schema{id: nil, schema: [], raw_schema: "{}"}
       iex> Avrora.Storage.Memory.put("my-key", avro)
       {:ok, %Avrora.Schema{id: nil, schema: [], raw_schema: "{}"}}
-      iex> {:ok, _} = Avrora.Storage.Memory.expire("my-key", :timer.seconds(1))
+      iex> {:ok, _} = Avrora.Storage.Memory.expire("my-key", 100)
       iex> Avrora.Storage.Memory.get("my-key")
       {:ok, %Avrora.Schema{id: nil, schema: [], raw_schema: "{}"}}
-      iex> Process.sleep(:timer.seconds(1))
+      iex> Process.sleep(100)
       iex> Avrora.Storage.Memory.get("my-key")
       {:ok, nil}
   """

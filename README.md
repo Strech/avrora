@@ -56,7 +56,8 @@ memory storage, or restart your application.
 
 To boost a performance of the schema resolution by name used a configuration
 option `names_cache_ttl`. It is the milliseconds to keep the
-resolved name schema cache in the memory.
+resolved name schema cache in the memory. In you want to avoid names cache
+eviction you can set that value to `:infinity`.
 
 :bulb: We can safely cache global id and versioned name resolution results
 because they will never change.
