@@ -51,13 +51,13 @@ will be registered on encoding/decoding time.
 
 When a schema was resolved by the name in the schema registry, it is possible to
 cache the schema and assign it to that name, but if someone adds a new schema
-version you will never get it fetched again until you either clean the
-memory storage, or restart your application.
+version you will never get it fetched again until you either clean the memory
+storage or restart your application.
 
-To boost a performance of the schema resolution by name used a configuration
-option `names_cache_ttl`. It is the milliseconds to keep the
-resolved name schema cache in the memory. In you want to avoid names cache
-eviction you can set the value to `:infinity`.
+To boost the performance of the schema resolution by name use a configuration
+option `names_cache_ttl`. It is the milliseconds to keep the resolved name
+schema cache in the memory. If you want to avoid names cache eviction you can
+set the value to `:infinity`.
 
 :bulb: We can safely cache global id and versioned name resolution results
 because they will never change.
