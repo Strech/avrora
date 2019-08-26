@@ -5,5 +5,6 @@ Application.put_env(:avrora, :registry_storage, Avrora.Storage.RegistryMock)
 
 Application.put_env(:avrora, :registry_url, "http://reg.loc")
 Application.put_env(:avrora, :schemas_path, Path.expand("./test/fixtures/schemas"))
+Application.put_env(:avrora, :names_cache_ttl, :infinity)
 
-ExUnit.start()
+ExUnit.start(capture_log: true)

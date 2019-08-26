@@ -6,22 +6,27 @@ defmodule Avrora.ResolverTest do
   import ExUnit.CaptureLog
   alias Avrora.Resolver
 
+  setup :verify_on_exit!
+
   describe "resolve_any/1" do
     test "when registry is configured and schema was not found in memory, but registry" do
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
         assert key == 1
+
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
         assert key == 1
         assert value == schema_with_id()
+
         {:ok, value}
       end)
 
       Avrora.Storage.RegistryMock
       |> expect(:get, fn key ->
         assert key == 1
+
         {:ok, schema_with_id()}
       end)
 
@@ -39,31 +44,31 @@ defmodule Avrora.ResolverTest do
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
         assert key == 1
+
         {:ok, nil}
       end)
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment"
-        {:ok, nil}
-      end)
-      |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
-        assert value == schema()
+
         {:ok, nil}
       end)
 
       Avrora.Storage.RegistryMock
       |> expect(:get, fn key ->
         assert key == 1
+
         {:error, :unknown_subject}
       end)
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment"
+
         {:error, :unknown_subject}
       end)
       |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
         assert value == raw_schema()
-        {:error, :failure}
+
+        {:error, :unknown_error}
       end)
 
       Avrora.Storage.FileMock
@@ -75,7 +80,7 @@ defmodule Avrora.ResolverTest do
 
       output =
         capture_log(fn ->
-          assert {:error, :failure} = Resolver.resolve_any([1, "io.confluent.Payment"])
+          assert {:error, :unknown_error} = Resolver.resolve_any([1, "io.confluent.Payment"])
         end)
 
       assert output =~ "fail to resolve schema by identifier"
@@ -85,31 +90,31 @@ defmodule Avrora.ResolverTest do
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
         assert key == 1
+
         {:ok, nil}
       end)
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment"
+
         {:ok, nil}
       end)
 
       Avrora.Storage.RegistryMock
       |> expect(:get, fn key ->
         assert key == 1
+
         {:error, :unknown_subject}
       end)
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment"
+
         {:error, :unknown_subject}
-      end)
-      |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
-        assert value == raw_schema()
-        {:error, :unknown_error}
       end)
 
       Avrora.Storage.FileMock
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment"
+
         {:error, :enoent}
       end)
 
@@ -125,25 +130,30 @@ defmodule Avrora.ResolverTest do
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
         assert key == 1
+
         {:ok, nil}
       end)
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment"
+
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
         assert value == schema()
+
         {:ok, value}
       end)
 
       Avrora.Storage.RegistryMock
       |> expect(:get, fn key ->
         assert key == 1
+
         {:error, :unconfigured_registry_url}
       end)
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment"
+
         {:error, :unconfigured_registry_url}
       end)
 
@@ -170,6 +180,7 @@ defmodule Avrora.ResolverTest do
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
         assert key == 1
+
         {:ok, schema_with_id()}
       end)
 
@@ -187,17 +198,20 @@ defmodule Avrora.ResolverTest do
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
         assert key == 1
+
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
         assert key == 1
         assert value == schema_with_id()
+
         {:ok, value}
       end)
 
       Avrora.Storage.RegistryMock
       |> expect(:get, fn key ->
         assert key == 1
+
         {:ok, schema_with_id()}
       end)
 
@@ -215,12 +229,14 @@ defmodule Avrora.ResolverTest do
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
         assert key == 1
+
         {:ok, nil}
       end)
 
       Avrora.Storage.RegistryMock
       |> expect(:get, fn key ->
         assert key == 1
+
         {:error, :unknown_subject}
       end)
 
@@ -235,13 +251,25 @@ defmodule Avrora.ResolverTest do
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
-        assert key == 42
+        assert key == "io.confluent.Payment:3"
         assert value == schema_with_id_and_version()
 
         {:ok, value}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment:3"
+        assert key == "io.confluent.Payment"
+        assert value == schema_with_id_and_version()
+
+        {:ok, value}
+      end)
+      |> expect(:expire, fn key, ttl ->
+        assert key == "io.confluent.Payment"
+        assert ttl == :infinity
+
+        {:ok, :infinity}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == 42
         assert value == schema_with_id_and_version()
 
         {:ok, value}
@@ -270,6 +298,18 @@ defmodule Avrora.ResolverTest do
         assert key == "io.confluent.Payment"
 
         {:ok, nil}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.Payment"
+        assert value == schema_with_id()
+
+        {:ok, value}
+      end)
+      |> expect(:expire, fn key, ttl ->
+        assert key == "io.confluent.Payment"
+        assert ttl == :infinity
+
+        {:ok, :infinity}
       end)
       |> expect(:put, fn key, value ->
         assert key == 1
@@ -368,6 +408,7 @@ defmodule Avrora.ResolverTest do
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment:3"
+
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
@@ -380,12 +421,14 @@ defmodule Avrora.ResolverTest do
       Avrora.Storage.RegistryMock
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment:3"
+
         {:error, :unconfigured_registry_url}
       end)
 
       Avrora.Storage.FileMock
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment:3"
+
         {:ok, schema()}
       end)
 
@@ -394,6 +437,55 @@ defmodule Avrora.ResolverTest do
 
       assert is_nil(avro.id)
       assert is_nil(avro.version)
+      assert type == :avro_record_type
+      assert full_name == "io.confluent.Payment"
+      assert length(fields) == 2
+    end
+
+    test "when schema name with version is given and it was not found in a memory, but registry" do
+      Avrora.Storage.MemoryMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.Payment:3"
+
+        {:ok, nil}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.Payment:3"
+        assert value == schema_with_id_and_version()
+
+        {:ok, value}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.Payment"
+        assert value == schema_with_id_and_version()
+
+        {:ok, value}
+      end)
+      |> expect(:expire, fn key, ttl ->
+        assert key == "io.confluent.Payment"
+        assert ttl == :infinity
+
+        {:ok, :infinity}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == 42
+        assert value == schema_with_id_and_version()
+
+        {:ok, value}
+      end)
+
+      Avrora.Storage.RegistryMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.Payment:3"
+
+        {:ok, schema_with_id_and_version()}
+      end)
+
+      {:ok, avro} = Resolver.resolve("io.confluent.Payment:3")
+      {type, _, _, _, _, fields, full_name, _} = avro.schema
+
+      assert avro.id == 42
+      assert avro.version == 3
       assert type == :avro_record_type
       assert full_name == "io.confluent.Payment"
       assert length(fields) == 2

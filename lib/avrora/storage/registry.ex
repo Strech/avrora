@@ -29,7 +29,7 @@ defmodule Avrora.Storage.Registry do
          {:ok, version} <- Map.fetch(response, "version"),
          {:ok, schema} <- Map.fetch(response, "schema"),
          {:ok, schema} <- Schema.parse(schema) do
-      Logger.debug("obtaining schema #{schema_name.name} with version `#{version}`")
+      Logger.debug("obtaining schema `#{schema_name.name}` with version `#{version}`")
 
       {:ok, %{schema | id: id, version: version}}
     end

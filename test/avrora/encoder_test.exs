@@ -6,6 +6,8 @@ defmodule Avrora.EncoderTest do
   import ExUnit.CaptureLog
   alias Avrora.Encoder
 
+  setup :verify_on_exit!
+
   describe "decode/1" do
     test "when payload was encoded with OCF magic byte" do
       {:ok, decoded} = Encoder.decode(ocf_magic_message())
@@ -23,7 +25,7 @@ defmodule Avrora.EncoderTest do
         assert key == 42
         assert value == schema_with_id()
 
-        {:ok, schema_with_id()}
+        {:ok, value}
       end)
 
       Avrora.Storage.RegistryMock
@@ -72,7 +74,7 @@ defmodule Avrora.EncoderTest do
         assert key == "io.confluent.Payment"
         assert value == schema()
 
-        {:ok, schema()}
+        {:ok, value}
       end)
 
       Avrora.Storage.RegistryMock
@@ -101,16 +103,28 @@ defmodule Avrora.EncoderTest do
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
-        assert key == 42
-        assert value == schema_with_id_and_version()
-
-        {:ok, schema_with_id_and_version()}
-      end)
-      |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment:3"
         assert value == schema_with_id_and_version()
 
-        {:ok, schema_with_id_and_version()}
+        {:ok, value}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.Payment"
+        assert value == schema_with_id_and_version()
+
+        {:ok, value}
+      end)
+      |> expect(:expire, fn key, ttl ->
+        assert key == "io.confluent.Payment"
+        assert ttl == :infinity
+
+        {:ok, :infinity}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == 42
+        assert value == schema_with_id_and_version()
+
+        {:ok, value}
       end)
 
       Avrora.Storage.RegistryMock
@@ -142,7 +156,7 @@ defmodule Avrora.EncoderTest do
         assert key == "io.confluent.Payment"
         assert value == schema()
 
-        {:ok, schema()}
+        {:ok, value}
       end)
 
       Avrora.Storage.RegistryMock
@@ -179,7 +193,7 @@ defmodule Avrora.EncoderTest do
         assert key == 42
         assert value == schema_with_id()
 
-        {:ok, schema_with_id_and_version()}
+        {:ok, value}
       end)
 
       Avrora.Storage.RegistryMock
@@ -189,8 +203,13 @@ defmodule Avrora.EncoderTest do
         {:ok, schema_with_id()}
       end)
 
-      {:ok, decoded} = Encoder.decode(magic_message(), schema_name: "io.confluent.Payment")
-      assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
+      output =
+        capture_log(fn ->
+          {:ok, decoded} = Encoder.decode(magic_message(), schema_name: "io.confluent.Payment")
+          assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
+        end)
+
+      assert output =~ "message contains embeded global id, given schema name will be ignored"
     end
 
     test "when decoding with schema name containing version" do
@@ -204,7 +223,7 @@ defmodule Avrora.EncoderTest do
         assert key == "io.confluent.Payment"
         assert value == schema()
 
-        {:ok, schema()}
+        {:ok, value}
       end)
 
       Avrora.Storage.RegistryMock
@@ -257,7 +276,7 @@ defmodule Avrora.EncoderTest do
         assert key == "io.confluent.Payment"
         assert value == schema()
 
-        {:ok, schema()}
+        {:ok, value}
       end)
 
       Avrora.Storage.RegistryMock
@@ -289,7 +308,7 @@ defmodule Avrora.EncoderTest do
         assert key == "io.confluent.Payment"
         assert value == schema()
 
-        {:ok, schema()}
+        {:ok, value}
       end)
 
       Avrora.Storage.RegistryMock
@@ -309,7 +328,7 @@ defmodule Avrora.EncoderTest do
       result =
         Encoder.encode(raw_message(), schema_name: "io.confluent.Payment", format: :registry)
 
-      assert {:error, :invalid_schema_version} = result
+      assert {:error, :invalid_schema_id} = result
     end
 
     test "when registry is configured and schema is found, but format is given explicitly" do
@@ -320,16 +339,28 @@ defmodule Avrora.EncoderTest do
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
-        assert key == 42
-        assert value == schema_with_id_and_version()
-
-        {:ok, schema_with_id_and_version()}
-      end)
-      |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment:3"
         assert value == schema_with_id_and_version()
 
-        {:ok, schema_with_id_and_version()}
+        {:ok, value}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.Payment"
+        assert value == schema_with_id_and_version()
+
+        {:ok, value}
+      end)
+      |> expect(:expire, fn key, ttl ->
+        assert key == "io.confluent.Payment"
+        assert ttl == :infinity
+
+        {:ok, :infinity}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == 42
+        assert value == schema_with_id_and_version()
+
+        {:ok, value}
       end)
 
       Avrora.Storage.RegistryMock
@@ -337,13 +368,6 @@ defmodule Avrora.EncoderTest do
         assert key == "io.confluent.Payment"
 
         {:ok, schema_with_id_and_version()}
-      end)
-
-      Avrora.Storage.FileMock
-      |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
-
-        {:ok, schema()}
       end)
 
       {:ok, encoded} =
@@ -360,16 +384,22 @@ defmodule Avrora.EncoderTest do
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
-        assert key == 42
-        assert value == schema_with_id_and_version()
+        assert key == "io.confluent.Payment"
+        assert value == schema_with_id()
 
-        {:ok, schema_with_id_and_version()}
+        {:ok, value}
+      end)
+      |> expect(:expire, fn key, ttl ->
+        assert key == "io.confluent.Payment"
+        assert ttl == :infinity
+
+        {:ok, :infinity}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment:3"
-        assert value == schema_with_id_and_version()
+        assert key == 42
+        assert value == schema_with_id()
 
-        {:ok, schema_with_id_and_version()}
+        {:ok, value}
       end)
 
       Avrora.Storage.RegistryMock
@@ -382,7 +412,7 @@ defmodule Avrora.EncoderTest do
         assert key == "io.confluent.Payment"
         assert value == raw_schema()
 
-        {:ok, schema_with_id_and_version()}
+        {:ok, schema_with_id()}
       end)
 
       Avrora.Storage.FileMock
@@ -404,16 +434,28 @@ defmodule Avrora.EncoderTest do
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
-        assert key == 42
-        assert value == schema_with_id_and_version()
-
-        {:ok, schema_with_id_and_version()}
-      end)
-      |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment:3"
         assert value == schema_with_id_and_version()
 
-        {:ok, schema_with_id_and_version()}
+        {:ok, value}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.Payment"
+        assert value == schema_with_id_and_version()
+
+        {:ok, value}
+      end)
+      |> expect(:expire, fn key, ttl ->
+        assert key == "io.confluent.Payment"
+        assert ttl == :infinity
+
+        {:ok, :infinity}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == 42
+        assert value == schema_with_id_and_version()
+
+        {:ok, value}
       end)
 
       Avrora.Storage.RegistryMock
@@ -421,13 +463,6 @@ defmodule Avrora.EncoderTest do
         assert key == "io.confluent.Payment"
 
         {:ok, schema_with_id_and_version()}
-      end)
-
-      Avrora.Storage.FileMock
-      |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
-
-        {:ok, schema()}
       end)
 
       {:ok, encoded} = Encoder.encode(raw_message(), schema_name: "io.confluent.Payment")
@@ -445,7 +480,7 @@ defmodule Avrora.EncoderTest do
         assert key == "io.confluent.Payment"
         assert value == schema()
 
-        {:ok, schema()}
+        {:ok, value}
       end)
 
       Avrora.Storage.RegistryMock

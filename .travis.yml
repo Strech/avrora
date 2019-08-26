@@ -4,10 +4,10 @@ notifications:
   email: false
 
 elixir:
-  - 1.8.2
+  - 1.9.1
 
 otp_release:
-  - 21.1
+  - 22.0
 
 matrix:
   include:
@@ -15,6 +15,8 @@ matrix:
       otp_release: "19.0"
     - elixir: "1.8"
       otp_release: "21.1"
+    - elixir: "1.9"
+      otp_release: "22.0"
       env:
         - DIALYZER=true
         - CREDO=true
