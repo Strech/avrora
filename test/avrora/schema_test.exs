@@ -7,11 +7,15 @@ defmodule Avrora.SchemaTest do
   describe "parse/1" do
     test "when payload is a valid json schema" do
       {:ok, avro} = Schema.parse(payment_json())
-      {type, _, _, _, _, fields, full_name, _} = avro.schema
+
+      {:ok, {type, _, _, _, _, fields, full_name, _}} =
+        :avro_schema_store.lookup_type("io.confluent.Payment", avro.lookup_table)
 
       assert type == :avro_record_type
       assert full_name == "io.confluent.Payment"
       assert length(fields) == 2
+
+      assert avro.full_name == "io.confluent.Payment"
       assert avro.raw_schema == payment_json()
     end
 

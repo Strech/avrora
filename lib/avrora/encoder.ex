@@ -9,6 +9,13 @@ defmodule Avrora.Encoder do
 
   @registry_magic_bytes <<0::size(8)>>
   @object_container_magic_bytes <<"Obj", 1>>
+  @decoder_options %{
+    encoding: :avro_binary,
+    hook: &__MODULE__.__hook/4,
+    is_wrapped: true,
+    map_type: :proplist,
+    record_type: :map
+  }
 
   @doc """
   Decodes given message with a schema eather loaded from the Object Container Files
@@ -26,7 +33,7 @@ defmodule Avrora.Encoder do
   def decode(payload) when is_binary(payload) do
     case payload do
       <<@registry_magic_bytes, <<id::size(32)>>, body::binary>> ->
-        with {:ok, avro} <- Resolver.resolve(id), do: do_decode(avro.schema, body)
+        with {:ok, schema} <- Resolver.resolve(id), do: do_decode(schema, body)
 
       <<@object_container_magic_bytes, _::binary>> ->
         do_decode(payload)
@@ -76,8 +83,8 @@ defmodule Avrora.Encoder do
           do_decode(payload)
 
         _ ->
-          with {:ok, avro} <- Resolver.resolve_any([schema_id, schema_name.name]),
-               do: do_decode(avro.schema, body)
+          with {:ok, schema} <- Resolver.resolve_any([schema_id, schema_name.name]),
+               do: do_decode(schema, body)
       end
     end
   end
@@ -138,6 +145,10 @@ defmodule Avrora.Encoder do
     end
   end
 
+  # NOTE: `erlavro` allows to set a decoder hook, but we don't, at lease for now
+  @doc false
+  def __hook(_type, _sub_name_or_id, data, decode_fun), do: decode_fun.(data)
+
   defp do_decode(payload) do
     {_, _, decoded} = :avro_ocf.decode_binary(payload)
 
@@ -148,9 +159,12 @@ defmodule Avrora.Encoder do
 
   defp do_decode(schema, payload) do
     decoded =
-      payload
-      |> :avro_binary_decoder.decode(:undefined, fn _ -> schema end)
-      |> Mapper.to_map()
+      :avro_binary_decoder.decode(
+        payload,
+        schema.full_name,
+        schema.lookup_table,
+        @decoder_options
+      )
 
     {:ok, decoded}
   rescue
