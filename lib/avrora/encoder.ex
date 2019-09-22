@@ -11,7 +11,7 @@ defmodule Avrora.Encoder do
   @object_container_magic_bytes <<"Obj", 1>>
   @decoder_options %{
     encoding: :avro_binary,
-    hook: &__MODULE__.__hook/4,
+    hook: &__MODULE__.__hook__/4,
     is_wrapped: true,
     map_type: :proplist,
     record_type: :map
@@ -147,7 +147,7 @@ defmodule Avrora.Encoder do
 
   # NOTE: `erlavro` allows to set a decoder hook, but we don't, at lease for now
   @doc false
-  def __hook(_type, _sub_name_or_id, data, decode_fun), do: decode_fun.(data)
+  def __hook__(_type, _sub_name_or_id, data, decode_fun), do: decode_fun.(data)
 
   defp do_decode(payload) do
     {_, _, decoded} = :avro_ocf.decode_binary(payload)

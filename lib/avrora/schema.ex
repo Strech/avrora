@@ -44,8 +44,23 @@ defmodule Avrora.Schema do
     end
   end
 
-  def to_erlavro(self = %__MODULE__{}),
-    do: :avro_schema_store.lookup_type(self.full_name, self.lookup_table)
+  @doc """
+  Convert `Avrora.Schema` to erlavro definition. Definition will be retrieved
+  from the `lookup_table` of that schema.
+
+  ## Examples
+
+      iex> json = ~s({"namespace":"io.confluent","type":"record","name":"Payment","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
+      iex> {:ok, schema} = Avrora.Schema.parse(json)
+      iex> {:ok, {type, _, _, _, _, _, full_name, _}} = Avrora.Schema.to_erlavro(schema)
+      iex> full_name
+      "io.confluent.Payment"
+      iex> type
+      :avro_record_type
+  """
+  @spec parse(t()) :: {:ok, term()} | {:error, term()}
+  def to_erlavro(%__MODULE__{} = schema),
+    do: :avro_schema_store.lookup_type(schema.full_name, schema.lookup_table)
 
   defp do_parse(payload) do
     {:ok, :avro_json_decoder.decode_schema(payload)}
