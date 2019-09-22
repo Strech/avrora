@@ -33,7 +33,7 @@ defmodule Avrora.Storage.File do
 
       iex> {:ok, schema} = Avrora.Storage.File.get("io.confluent.examples.Payment")
       iex> schema.full_name
-      "io.confluent.Payment
+      "io.confluent.Payment"
   """
   def get(key) when is_binary(key) do
     with {:ok, schema_name} <- Name.parse(key),

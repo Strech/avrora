@@ -25,14 +25,11 @@ defmodule Avrora.Storage.RegistryTest do
         }
       end)
 
-      {:ok, avro} = Registry.get("io.confluent.Payment")
-      {type, _, _, _, _, fields, full_name, _} = avro.schema
+      {:ok, schema} = Registry.get("io.confluent.Payment")
 
-      assert avro.id == 42
-      assert avro.version == 1
-      assert type == :avro_record_type
-      assert full_name == "io.confluent.Payment"
-      assert length(fields) == 2
+      assert schema.id == 42
+      assert schema.version == 1
+      assert schema.full_name == "io.confluent.Payment"
     end
 
     test "when request by subject name with version was successful" do
@@ -51,14 +48,11 @@ defmodule Avrora.Storage.RegistryTest do
         }
       end)
 
-      {:ok, avro} = Registry.get("io.confluent.Payment:10")
-      {type, _, _, _, _, fields, full_name, _} = avro.schema
+      {:ok, schema} = Registry.get("io.confluent.Payment:10")
 
-      assert avro.id == 42
-      assert avro.version == 10
-      assert type == :avro_record_type
-      assert full_name == "io.confluent.Payment"
-      assert length(fields) == 2
+      assert schema.id == 42
+      assert schema.version == 10
+      assert schema.full_name == "io.confluent.Payment"
     end
 
     test "when request by subject name was unsuccessful" do
@@ -80,14 +74,11 @@ defmodule Avrora.Storage.RegistryTest do
         {:ok, %{"schema" => json_schema()}}
       end)
 
-      {:ok, avro} = Registry.get(1)
-      {type, _, _, _, _, fields, full_name, _} = avro.schema
+      {:ok, schema} = Registry.get(1)
 
-      assert avro.id == 1
-      assert is_nil(avro.version)
-      assert type == :avro_record_type
-      assert full_name == "io.confluent.Payment"
-      assert length(fields) == 2
+      assert schema.id == 1
+      assert is_nil(schema.version)
+      assert schema.full_name == "io.confluent.Payment"
     end
 
     test "when request by global ID was unsuccessful" do
@@ -121,14 +112,11 @@ defmodule Avrora.Storage.RegistryTest do
         {:ok, %{"id" => 1}}
       end)
 
-      {:ok, avro} = Registry.put("io.confluent.Payment", json_schema())
-      {type, _, _, _, _, fields, full_name, _} = avro.schema
+      {:ok, schema} = Registry.put("io.confluent.Payment", json_schema())
 
-      assert avro.id == 1
-      assert is_nil(avro.version)
-      assert type == :avro_record_type
-      assert full_name == "io.confluent.Payment"
-      assert length(fields) == 2
+      assert schema.id == 1
+      assert is_nil(schema.version)
+      assert schema.full_name == "io.confluent.Payment"
     end
 
     test "when key contains version and request was successful" do
@@ -142,14 +130,11 @@ defmodule Avrora.Storage.RegistryTest do
 
       output =
         capture_log(fn ->
-          {:ok, avro} = Registry.put("io.confluent.Payment:42", json_schema())
-          {type, _, _, _, _, fields, full_name, _} = avro.schema
+          {:ok, schema} = Registry.put("io.confluent.Payment:42", json_schema())
 
-          assert avro.id == 1
-          assert is_nil(avro.version)
-          assert type == :avro_record_type
-          assert full_name == "io.confluent.Payment"
-          assert length(fields) == 2
+          assert schema.id == 1
+          assert is_nil(schema.version)
+          assert schema.full_name == "io.confluent.Payment"
         end)
 
       assert output =~ "schema with version is not allowed"
