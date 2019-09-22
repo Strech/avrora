@@ -4,17 +4,14 @@ defmodule Avrora.Schema do
   convinient use.
   """
 
-  defstruct [:id, :version, :schema, :full_name, :lookup_table, :raw_schema]
+  defstruct [:id, :version, :full_name, :lookup_table, :json]
 
   @type t :: %__MODULE__{
           id: nil | integer(),
           version: nil | integer(),
-          # FIXME: Deprecate field `schema` in favour of `schema_store`
-          schema: :avro.record_type(),
           full_name: String.t(),
           lookup_table: reference(),
-          # FIXME: Rename field `raw_schema` to `json`
-          raw_schema: String.t()
+          json: String.t()
         }
 
   @doc """
@@ -24,9 +21,8 @@ defmodule Avrora.Schema do
   ## Examples
 
       iex> json = ~s({"namespace":"io.confluent","type":"record","name":"Payment","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
-      iex> {:ok, avro} = Avrora.Schema.parse(json)
-      iex> {_, _, _, _, _, _, full_name, _} = avro.schema
-      iex> full_name
+      iex> {:ok, schema} = Avrora.Schema.parse(json)
+      iex> schema.full_name
       "io.confluent.Payment"
   """
   @spec parse(String.t()) :: {:ok, t()} | {:error, term()}
@@ -40,14 +36,16 @@ defmodule Avrora.Schema do
         %__MODULE__{
           id: nil,
           version: nil,
-          schema: schema,
           full_name: full_name,
           lookup_table: lookup_table,
-          raw_schema: payload
+          json: payload
         }
       }
     end
   end
+
+  def to_erlavro(self = %__MODULE__{}),
+    do: :avro_schema_store.lookup_type(self.full_name, self.lookup_table)
 
   defp do_parse(payload) do
     {:ok, :avro_json_decoder.decode_schema(payload)}

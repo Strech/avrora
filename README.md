@@ -124,17 +124,17 @@ message = %{"id" => "tx-1", "amount" => 15.99}
   44, 123, 34, 110, 97, 109, 101, 34, 58, 34, 97, 109, 111, 117, 110, 116, 34,
   44, 34, 116, 121, 112, 101, 34, 58, 34, 100, 111, 117, 98, 108, 101, 34, 125,
   93, 125, 0, 138, 124, 66, 49, 157, 51, 242, 3, 33, 52, 161, 147, 221, 174,
-  114, 48, 2, 26, 8, 116, 120, 45, 49, 123, 20, 174, 71, 225, 250, 47, 64, 138, 
+  114, 48, 2, 26, 8, 116, 120, 45, 49, 123, 20, 174, 71, 225, 250, 47, 64, 138,
   124, 66, 49, 157, 51, 242, 3, 33, 52, 161, 147, 221, 174, 114, 48>>
 ```
 
 If you want to controll output format, you can provide `:format` option.
 Possible values are:
 
-* `:ocf` - embeds schema with [Object Container Files](https://avro.apache.org/docs/1.8.1/spec.html#Object+Container+Files) format
-* `:registry` - embeds Confluent [Schema Registry](https://docs.confluent.io/current/schema-registry/serializer-formatter.html#wire-format) magic version
-* `:plain` - only encode message with nothing embeded
-* `:guess` - fallbacks to `:ocf` if can't behave like `:registry` *(default)*
+- `:ocf` - embeds schema with [Object Container Files](https://avro.apache.org/docs/1.8.1/spec.html#Object+Container+Files) format
+- `:registry` - embeds Confluent [Schema Registry](https://docs.confluent.io/current/schema-registry/serializer-formatter.html#wire-format) magic version
+- `:plain` - only encode message with nothing embeded
+- `:guess` - fallbacks to `:ocf` if can't behave like `:registry` _(default)_
 
 ```elixir
 message = %{"id" => "tx-1", "amount" => 15.99}
@@ -143,7 +143,6 @@ message = %{"id" => "tx-1", "amount" => 15.99}
 {:ok, encoded} = Avrora.encode(message, schema_name: "io.confluent.Payment", format: :plain)
 <<8, 116, 120, 45, 49, 123, 20, 174, 71, 225, 250, 47, 64>>
 ```
-
 
 ### decode/2
 

@@ -5,7 +5,7 @@ defmodule Avrora.Encoder do
   """
 
   require Logger
-  alias Avrora.{Mapper, Name, Resolver}
+  alias Avrora.{Mapper, Name, Resolver, Schema}
 
   @registry_magic_bytes <<0::size(8)>>
   @object_container_magic_bytes <<"Obj", 1>>
@@ -114,8 +114,8 @@ defmodule Avrora.Encoder do
 
   def encode(payload, schema_name: schema_name, format: format) when is_map(payload) do
     with {:ok, schema_name} <- Name.parse(schema_name),
-         {:ok, avro} <- Resolver.resolve(schema_name.name),
-         {:ok, body} <- do_encode(avro.schema, payload) do
+         {:ok, schema} <- Resolver.resolve(schema_name.name),
+         {:ok, body} <- do_encode(schema, payload) do
       unless is_nil(schema_name.version) do
         Logger.warn(
           "encoding message with schema version is not supported yet, `#{schema_name.name}` used instead"
@@ -124,17 +124,17 @@ defmodule Avrora.Encoder do
 
       case format do
         :guess ->
-          if is_nil(avro.id),
-            do: do_embed_schema(avro.schema, body),
-            else: do_embed_id(avro.id, body)
+          if is_nil(schema.id),
+            do: do_embed_schema(schema, body),
+            else: do_embed_id(schema.id, body)
 
         :registry ->
-          if is_nil(avro.id),
+          if is_nil(schema.id),
             do: {:error, :invalid_schema_id},
-            else: do_embed_id(avro.id, body)
+            else: do_embed_id(schema.id, body)
 
         :ocf ->
-          do_embed_schema(avro.schema, body)
+          do_embed_schema(schema, body)
 
         :plain ->
           {:ok, body}
@@ -173,9 +173,8 @@ defmodule Avrora.Encoder do
 
   defp do_encode(schema, payload) do
     encoded =
-      schema
-      |> :avro_record.new(payload)
-      |> :avro_binary_encoder.encode_value()
+      schema.lookup_table
+      |> :avro_binary_encoder.encode(schema.full_name, payload)
       |> :erlang.list_to_binary()
 
     {:ok, encoded}
@@ -190,13 +189,15 @@ defmodule Avrora.Encoder do
   end
 
   defp do_embed_schema(schema, payload) do
-    encoded =
-      schema
-      |> :avro_ocf.make_header()
-      |> :avro_ocf.make_ocf(List.wrap(payload))
-      |> :erlang.list_to_binary()
+    with {:ok, schema} <- Schema.to_erlavro(schema) do
+      encoded =
+        schema
+        |> :avro_ocf.make_header()
+        |> :avro_ocf.make_ocf(List.wrap(payload))
+        |> :erlang.list_to_binary()
 
-    {:ok, encoded}
+      {:ok, encoded}
+    end
   rescue
     error -> {:error, error}
   end
