@@ -84,14 +84,14 @@ defmodule Avrora.Resolver do
   """
   @spec resolve(String.t()) :: {:ok, Avrora.Schema.t()} | {:error, term()}
   def resolve(name) when is_binary(name) do
-    with {:ok, schema_name} = Name.parse(name),
+    with {:ok, schema_name} <- Name.parse(name),
          {:ok, nil} <- memory_storage().get(name) do
       case registry_storage().get(name) do
         {:ok, schema} ->
           with {:ok, schema} <-
                  memory_storage().put("#{schema_name.name}:#{schema.version}", schema),
                {:ok, schema} <- memory_storage().put(schema_name.name, schema),
-               {:ok, timestamp} = memory_storage().expire(schema_name.name, names_ttl()) do
+               {:ok, timestamp} <- memory_storage().expire(schema_name.name, names_ttl()) do
             if timestamp == :infinity,
               do: Logger.debug("schema `#{schema_name.name}` will be always resolved from memory")
 
@@ -102,7 +102,7 @@ defmodule Avrora.Resolver do
           with {:ok, schema} <- file_storage().get(schema_name.name),
                {:ok, schema} <- registry_storage().put(schema_name.name, schema.json),
                {:ok, schema} <- memory_storage().put(schema_name.name, schema),
-               {:ok, timestamp} = memory_storage().expire(schema_name.name, names_ttl()) do
+               {:ok, timestamp} <- memory_storage().expire(schema_name.name, names_ttl()) do
             if timestamp == :infinity,
               do: Logger.debug("schema `#{schema_name.name}` will be always resolved from memory")
 

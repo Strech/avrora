@@ -23,7 +23,7 @@ defmodule Avrora.HTTPClient do
   @spec post(String.t(), String.t(), keyword(String.t())) :: {:ok, map()} | {:error, term()}
   def post(url, payload, content_type: content_type) when is_binary(payload) do
     with {:ok, body} <- Jason.encode(%{"schema" => payload}),
-         {:ok, {{_, status, _}, _, body}} =
+         {:ok, {{_, status, _}, _, body}} <-
            :httpc.request(:post, {'#{url}', [], [content_type], body}, [], []) do
       handle(status, body)
     end

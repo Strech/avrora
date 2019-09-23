@@ -23,7 +23,7 @@ matrix:
 
 script:
   - mix test
-  - if [ "$DIALYZER" ]; then mix dialyzer --no-compile --halt-exit-status; fi
+  - if [ "$DIALYZER" ]; then mix dialyzer --no-compile --ignore-exit-status; fi
   - if [ "$CREDO" ]; then mix credo; fi
 
 cache:
