@@ -10,12 +10,12 @@ defmodule Avrora.EncoderTest do
 
   describe "decode/1" do
     test "when payload was encoded with OCF magic byte" do
-      {:ok, decoded} = Encoder.decode(ocf_magic_message())
+      {:ok, decoded} = Encoder.decode(payment_ocf_message())
       assert decoded == [%{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}]
     end
 
     test "when payload was encoded with magic byte and registry is configured" do
-      schema_with_id = schema_with_id()
+      payment_schema_with_id = payment_schema_with_id()
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
@@ -25,7 +25,7 @@ defmodule Avrora.EncoderTest do
       end)
       |> expect(:put, fn key, value ->
         assert key == 42
-        assert value == schema_with_id
+        assert value == payment_schema_with_id
 
         {:ok, value}
       end)
@@ -34,10 +34,10 @@ defmodule Avrora.EncoderTest do
       |> expect(:get, fn key ->
         assert key == 42
 
-        {:ok, schema_with_id}
+        {:ok, payment_schema_with_id}
       end)
 
-      {:ok, decoded} = Encoder.decode(magic_message())
+      {:ok, decoded} = Encoder.decode(payment_registry_message())
       assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
     end
 
@@ -56,17 +56,17 @@ defmodule Avrora.EncoderTest do
         {:error, :unconfigured_registry_url}
       end)
 
-      assert {:error, :unconfigured_registry_url} = Encoder.decode(magic_message())
+      assert {:error, :unconfigured_registry_url} = Encoder.decode(payment_registry_message())
     end
 
     test "when payload was encoded with no magic bytes" do
-      assert {:error, :undecodable} = Encoder.decode(not_magic_message())
+      assert {:error, :undecodable} = Encoder.decode(payment_plain_message())
     end
   end
 
   describe "decode/2" do
     test "when payload was encoded without magic byte and registry is not configured" do
-      schema_without_id_and_version = schema_without_id_and_version()
+      payment_schema = payment_schema()
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
@@ -76,7 +76,7 @@ defmodule Avrora.EncoderTest do
       end)
       |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
-        assert value == schema_without_id_and_version
+        assert value == payment_schema
 
         {:ok, value}
       end)
@@ -92,15 +92,17 @@ defmodule Avrora.EncoderTest do
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment"
 
-        {:ok, schema_without_id_and_version}
+        {:ok, payment_schema}
       end)
 
-      {:ok, decoded} = Encoder.decode(not_magic_message(), schema_name: "io.confluent.Payment")
+      {:ok, decoded} =
+        Encoder.decode(payment_plain_message(), schema_name: "io.confluent.Payment")
+
       assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
     end
 
     test "when payload was encoded without magic byte and registry is configured" do
-      schema_with_id_and_version = schema_with_id_and_version()
+      payment_payment_schema_with_id_and_version = payment_payment_schema_with_id_and_version()
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
@@ -110,13 +112,13 @@ defmodule Avrora.EncoderTest do
       end)
       |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment:3"
-        assert value == schema_with_id_and_version
+        assert value == payment_payment_schema_with_id_and_version
 
         {:ok, value}
       end)
       |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
-        assert value == schema_with_id_and_version
+        assert value == payment_payment_schema_with_id_and_version
 
         {:ok, value}
       end)
@@ -128,7 +130,7 @@ defmodule Avrora.EncoderTest do
       end)
       |> expect(:put, fn key, value ->
         assert key == 42
-        assert value == schema_with_id_and_version
+        assert value == payment_payment_schema_with_id_and_version
 
         {:ok, value}
       end)
@@ -137,15 +139,17 @@ defmodule Avrora.EncoderTest do
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment"
 
-        {:ok, schema_with_id_and_version}
+        {:ok, payment_payment_schema_with_id_and_version}
       end)
 
-      {:ok, decoded} = Encoder.decode(not_magic_message(), schema_name: "io.confluent.Payment")
+      {:ok, decoded} =
+        Encoder.decode(payment_plain_message(), schema_name: "io.confluent.Payment")
+
       assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
     end
 
     test "when payload was encoded with magic byte and registry is not configured" do
-      schema_without_id_and_version = schema_without_id_and_version()
+      payment_schema = payment_schema()
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
@@ -162,7 +166,7 @@ defmodule Avrora.EncoderTest do
       end)
       |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
-        assert value == schema_without_id_and_version
+        assert value == payment_schema
 
         {:ok, value}
       end)
@@ -183,15 +187,17 @@ defmodule Avrora.EncoderTest do
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment"
 
-        {:ok, schema_without_id_and_version}
+        {:ok, payment_schema}
       end)
 
-      {:ok, decoded} = Encoder.decode(magic_message(), schema_name: "io.confluent.Payment")
+      {:ok, decoded} =
+        Encoder.decode(payment_registry_message(), schema_name: "io.confluent.Payment")
+
       assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
     end
 
     test "when payload was encoded with magic byte and registry is configured" do
-      schema_with_id = schema_with_id()
+      payment_schema_with_id = payment_schema_with_id()
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
@@ -201,7 +207,7 @@ defmodule Avrora.EncoderTest do
       end)
       |> expect(:put, fn key, value ->
         assert key == 42
-        assert value == schema_with_id
+        assert value == payment_schema_with_id
 
         {:ok, value}
       end)
@@ -210,12 +216,14 @@ defmodule Avrora.EncoderTest do
       |> expect(:get, fn key ->
         assert key == 42
 
-        {:ok, schema_with_id}
+        {:ok, payment_schema_with_id}
       end)
 
       output =
         capture_log(fn ->
-          {:ok, decoded} = Encoder.decode(magic_message(), schema_name: "io.confluent.Payment")
+          {:ok, decoded} =
+            Encoder.decode(payment_registry_message(), schema_name: "io.confluent.Payment")
+
           assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
         end)
 
@@ -223,7 +231,7 @@ defmodule Avrora.EncoderTest do
     end
 
     test "when decoding with schema name containing version" do
-      schema_without_id_and_version = schema_without_id_and_version()
+      payment_schema = payment_schema()
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
@@ -233,7 +241,7 @@ defmodule Avrora.EncoderTest do
       end)
       |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
-        assert value == schema_without_id_and_version
+        assert value == payment_schema
 
         {:ok, value}
       end)
@@ -249,13 +257,13 @@ defmodule Avrora.EncoderTest do
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment"
 
-        {:ok, schema_without_id_and_version}
+        {:ok, payment_schema}
       end)
 
       output =
         capture_log(fn ->
           {:ok, decoded} =
-            Encoder.decode(not_magic_message(), schema_name: "io.confluent.Payment:42")
+            Encoder.decode(payment_plain_message(), schema_name: "io.confluent.Payment:42")
 
           assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
         end)
@@ -267,18 +275,57 @@ defmodule Avrora.EncoderTest do
       output =
         capture_log(fn ->
           {:ok, decoded} =
-            Encoder.decode(ocf_magic_message(), schema_name: "io.confluent.Payment")
+            Encoder.decode(payment_ocf_message(), schema_name: "io.confluent.Payment")
 
           assert decoded == [%{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}]
         end)
 
       assert output =~ "given schema name will be ignored"
     end
+
+    test "when decoding plain message with type reference in it" do
+      messenger_schema = messenger_schema()
+
+      Avrora.Storage.MemoryMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.Messenger"
+
+        {:ok, nil}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.Messenger"
+        assert value == messenger_schema
+
+        {:ok, value}
+      end)
+
+      Avrora.Storage.RegistryMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.Messenger"
+
+        {:error, :unconfigured_registry_url}
+      end)
+
+      Avrora.Storage.FileMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.Messenger"
+
+        {:ok, messenger_schema}
+      end)
+
+      {:ok, decoded} =
+        Encoder.decode(messenger_plain_message(), schema_name: "io.confluent.Messenger")
+
+      assert decoded == %{
+               "inbox" => [%{"text" => "Hello world!"}],
+               "archive" => [%{"text" => "How are you?"}]
+             }
+    end
   end
 
   describe "encode/2" do
     test "when registry is not configured" do
-      schema_without_id_and_version = schema_without_id_and_version()
+      payment_schema = payment_schema()
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
@@ -288,7 +335,7 @@ defmodule Avrora.EncoderTest do
       end)
       |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
-        assert value == schema_without_id_and_version
+        assert value == payment_schema
 
         {:ok, value}
       end)
@@ -304,15 +351,15 @@ defmodule Avrora.EncoderTest do
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment"
 
-        {:ok, schema_without_id_and_version}
+        {:ok, payment_schema}
       end)
 
-      {:ok, encoded} = Encoder.encode(raw_message(), schema_name: "io.confluent.Payment")
-      assert is_ocf(encoded)
+      {:ok, encoded} = Encoder.encode(payment_payload(), schema_name: "io.confluent.Payment")
+      assert is_payment_ocf(encoded)
     end
 
     test "when registry is not configured, but format requires schema version" do
-      schema_without_id_and_version = schema_without_id_and_version()
+      payment_schema = payment_schema()
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
@@ -322,7 +369,7 @@ defmodule Avrora.EncoderTest do
       end)
       |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
-        assert value == schema_without_id_and_version
+        assert value == payment_schema
 
         {:ok, value}
       end)
@@ -338,17 +385,17 @@ defmodule Avrora.EncoderTest do
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment"
 
-        {:ok, schema_without_id_and_version}
+        {:ok, payment_schema}
       end)
 
       result =
-        Encoder.encode(raw_message(), schema_name: "io.confluent.Payment", format: :registry)
+        Encoder.encode(payment_payload(), schema_name: "io.confluent.Payment", format: :registry)
 
       assert {:error, :invalid_schema_id} = result
     end
 
     test "when registry is configured and schema is found, but format is given explicitly" do
-      schema_with_id_and_version = schema_with_id_and_version()
+      payment_payment_schema_with_id_and_version = payment_payment_schema_with_id_and_version()
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
@@ -358,13 +405,13 @@ defmodule Avrora.EncoderTest do
       end)
       |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment:3"
-        assert value == schema_with_id_and_version
+        assert value == payment_payment_schema_with_id_and_version
 
         {:ok, value}
       end)
       |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
-        assert value == schema_with_id_and_version
+        assert value == payment_payment_schema_with_id_and_version
 
         {:ok, value}
       end)
@@ -376,7 +423,7 @@ defmodule Avrora.EncoderTest do
       end)
       |> expect(:put, fn key, value ->
         assert key == 42
-        assert value == schema_with_id_and_version
+        assert value == payment_payment_schema_with_id_and_version
 
         {:ok, value}
       end)
@@ -385,18 +432,18 @@ defmodule Avrora.EncoderTest do
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment"
 
-        {:ok, schema_with_id_and_version}
+        {:ok, payment_payment_schema_with_id_and_version}
       end)
 
       {:ok, encoded} =
-        Encoder.encode(raw_message(), schema_name: "io.confluent.Payment", format: :ocf)
+        Encoder.encode(payment_payload(), schema_name: "io.confluent.Payment", format: :ocf)
 
-      assert is_ocf(encoded)
+      assert is_payment_ocf(encoded)
     end
 
     test "when registry is configured, but schema not found" do
-      schema_with_id = schema_with_id()
-      schema_without_id_and_version = schema_without_id_and_version()
+      payment_schema_with_id = payment_schema_with_id()
+      payment_schema = payment_schema()
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
@@ -406,7 +453,7 @@ defmodule Avrora.EncoderTest do
       end)
       |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
-        assert value == schema_with_id
+        assert value == payment_schema_with_id
 
         {:ok, value}
       end)
@@ -418,7 +465,7 @@ defmodule Avrora.EncoderTest do
       end)
       |> expect(:put, fn key, value ->
         assert key == 42
-        assert value == schema_with_id
+        assert value == payment_schema_with_id
 
         {:ok, value}
       end)
@@ -431,24 +478,24 @@ defmodule Avrora.EncoderTest do
       end)
       |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
-        assert value == json_schema()
+        assert value == payment_json_schema()
 
-        {:ok, schema_with_id}
+        {:ok, payment_schema_with_id}
       end)
 
       Avrora.Storage.FileMock
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment"
 
-        {:ok, schema_without_id_and_version}
+        {:ok, payment_schema}
       end)
 
-      {:ok, encoded} = Encoder.encode(raw_message(), schema_name: "io.confluent.Payment")
-      assert magic_message() == encoded
+      {:ok, encoded} = Encoder.encode(payment_payload(), schema_name: "io.confluent.Payment")
+      assert payment_registry_message() == encoded
     end
 
     test "when registry is configured and schema was found" do
-      schema_with_id_and_version = schema_with_id_and_version()
+      payment_payment_schema_with_id_and_version = payment_payment_schema_with_id_and_version()
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
@@ -458,13 +505,13 @@ defmodule Avrora.EncoderTest do
       end)
       |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment:3"
-        assert value == schema_with_id_and_version
+        assert value == payment_payment_schema_with_id_and_version
 
         {:ok, value}
       end)
       |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
-        assert value == schema_with_id_and_version
+        assert value == payment_payment_schema_with_id_and_version
 
         {:ok, value}
       end)
@@ -476,7 +523,7 @@ defmodule Avrora.EncoderTest do
       end)
       |> expect(:put, fn key, value ->
         assert key == 42
-        assert value == schema_with_id_and_version
+        assert value == payment_payment_schema_with_id_and_version
 
         {:ok, value}
       end)
@@ -485,15 +532,15 @@ defmodule Avrora.EncoderTest do
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment"
 
-        {:ok, schema_with_id_and_version}
+        {:ok, payment_payment_schema_with_id_and_version}
       end)
 
-      {:ok, encoded} = Encoder.encode(raw_message(), schema_name: "io.confluent.Payment")
-      assert magic_message() == encoded
+      {:ok, encoded} = Encoder.encode(payment_payload(), schema_name: "io.confluent.Payment")
+      assert payment_registry_message() == encoded
     end
 
     test "when schema name provided with version" do
-      schema_without_id_and_version = schema_without_id_and_version()
+      payment_schema = payment_schema()
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
@@ -503,7 +550,7 @@ defmodule Avrora.EncoderTest do
       end)
       |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
-        assert value == schema_without_id_and_version
+        assert value == payment_schema
 
         {:ok, value}
       end)
@@ -519,22 +566,61 @@ defmodule Avrora.EncoderTest do
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment"
 
-        {:ok, schema_without_id_and_version}
+        {:ok, payment_schema}
       end)
 
       output =
         capture_log(fn ->
           {:ok, encoded} =
-            Encoder.encode(raw_message(), schema_name: "io.confluent.Payment:42", format: :plain)
+            Encoder.encode(payment_payload(),
+              schema_name: "io.confluent.Payment:42",
+              format: :plain
+            )
 
-          assert not_magic_message() == encoded
+          assert payment_plain_message() == encoded
         end)
 
       assert output =~ "with schema version is not supported"
     end
+
+    test "when registry is not configured and payload contains type reference" do
+      messenger_schema = messenger_schema()
+
+      Avrora.Storage.MemoryMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.Messenger"
+
+        {:ok, nil}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.Messenger"
+        assert value == messenger_schema
+
+        {:ok, value}
+      end)
+
+      Avrora.Storage.RegistryMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.Messenger"
+
+        {:error, :unconfigured_registry_url}
+      end)
+
+      Avrora.Storage.FileMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.Messenger"
+
+        {:ok, messenger_schema}
+      end)
+
+      {:ok, encoded} =
+        Encoder.encode(messenger_payload(), schema_name: "io.confluent.Messenger", format: :plain)
+
+      assert encoded == messenger_plain_message()
+    end
   end
 
-  defp is_ocf(payload) do
+  defp is_payment_ocf(payload) do
     match?(
       <<79, 98, 106, 1, _::size(1504), 72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45,
         48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
@@ -543,15 +629,18 @@ defmodule Avrora.EncoderTest do
     )
   end
 
-  defp raw_message, do: %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
+  defp payment_payload, do: %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
 
-  defp magic_message do
+  defp messenger_payload,
+    do: %{"inbox" => [%{"text" => "Hello world!"}], "archive" => [%{"text" => "How are you?"}]}
+
+  defp payment_registry_message do
     <<0, 0, 0, 0, 42, 72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48,
       45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 123, 20, 174, 71,
       225, 250, 47, 64>>
   end
 
-  defp ocf_magic_message do
+  defp payment_ocf_message do
     <<79, 98, 106, 1, 3, 204, 2, 20, 97, 118, 114, 111, 46, 99, 111, 100, 101, 99, 8, 110, 117,
       108, 108, 22, 97, 118, 114, 111, 46, 115, 99, 104, 101, 109, 97, 144, 2, 123, 34, 110, 97,
       109, 101, 115, 112, 97, 99, 101, 34, 58, 34, 105, 111, 46, 99, 111, 110, 102, 108, 117, 101,
@@ -567,27 +656,41 @@ defmodule Avrora.EncoderTest do
       243, 64, 50, 180, 153, 105, 34>>
   end
 
-  defp not_magic_message do
+  defp payment_plain_message do
     <<72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48,
       48, 45, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64>>
   end
 
-  defp schema_without_id_and_version do
-    {:ok, schema} = Schema.parse(json_schema())
+  defp messenger_plain_message do
+    <<1, 26, 24, 72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33, 0, 1, 26, 24, 72, 111,
+      119, 32, 97, 114, 101, 32, 121, 111, 117, 63, 0>>
+  end
+
+  defp payment_schema do
+    {:ok, schema} = Schema.parse(payment_json_schema())
     %{schema | id: nil, version: nil}
   end
 
-  defp schema_with_id_and_version do
-    {:ok, schema} = Schema.parse(json_schema())
+  defp payment_payment_schema_with_id_and_version do
+    {:ok, schema} = Schema.parse(payment_json_schema())
     %{schema | id: 42, version: 3}
   end
 
-  defp schema_with_id do
-    {:ok, schema} = Schema.parse(json_schema())
+  defp payment_schema_with_id do
+    {:ok, schema} = Schema.parse(payment_json_schema())
     %{schema | id: 42, version: nil}
   end
 
-  defp json_schema do
+  defp messenger_schema do
+    {:ok, schema} = Schema.parse(messenger_json_schema())
+    %{schema | id: nil, version: nil}
+  end
+
+  defp messenger_json_schema do
+    ~s({"type":"record","name":"Messenger","namespace":"io.confluent","fields":[{"name":"inbox","type":{"type":"array","items":{"type":"record","name":"Message","fields":[{"name":"text","type":"string"}]}}},{"name":"archive","type":{"type":"array","items":"io.confluent.Message"}}]})
+  end
+
+  defp payment_json_schema do
     ~s({"namespace":"io.confluent","type":"record","name":"Payment","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
   end
 end
