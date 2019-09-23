@@ -6,18 +6,31 @@ defmodule Avrora.SchemaTest do
 
   describe "parse/1" do
     test "when payload is a valid json schema" do
-      {:ok, avro} = Schema.parse(payment_json())
-      {type, _, _, _, _, fields, full_name, _} = avro.schema
+      {:ok, schema} = Schema.parse(payment_json())
+      {:ok, {type, _, _, _, _, fields, full_name, _}} = Schema.to_erlavro(schema)
 
       assert type == :avro_record_type
       assert full_name == "io.confluent.Payment"
       assert length(fields) == 2
-      assert avro.raw_schema == payment_json()
+
+      assert schema.full_name == "io.confluent.Payment"
+      assert schema.json == payment_json()
     end
 
     test "when payload is an invalid json shema" do
       assert Schema.parse("a:b") == {:error, "argument error"}
       assert Schema.parse("{}") == {:error, {:not_found, "type"}}
+    end
+  end
+
+  describe "to_erlavro" do
+    test "when payload is a valid json schema" do
+      {:ok, schema} = Schema.parse(payment_json())
+      {:ok, {type, _, _, _, _, fields, full_name, _}} = Schema.to_erlavro(schema)
+
+      assert type == :avro_record_type
+      assert full_name == "io.confluent.Payment"
+      assert length(fields) == 2
     end
   end
 

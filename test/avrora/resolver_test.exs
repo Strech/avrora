@@ -4,12 +4,14 @@ defmodule Avrora.ResolverTest do
 
   import Mox
   import ExUnit.CaptureLog
-  alias Avrora.Resolver
+  alias Avrora.{Resolver, Schema}
 
   setup :verify_on_exit!
 
   describe "resolve_any/1" do
     test "when registry is configured and schema was not found in memory, but registry" do
+      schema_with_id = schema_with_id()
+
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
         assert key == 1
@@ -18,7 +20,7 @@ defmodule Avrora.ResolverTest do
       end)
       |> expect(:put, fn key, value ->
         assert key == 1
-        assert value == schema_with_id()
+        assert value == schema_with_id
 
         {:ok, value}
       end)
@@ -27,20 +29,19 @@ defmodule Avrora.ResolverTest do
       |> expect(:get, fn key ->
         assert key == 1
 
-        {:ok, schema_with_id()}
+        {:ok, schema_with_id}
       end)
 
-      {:ok, avro} = Resolver.resolve_any([1, "io.confluent.Payment"])
-      {type, _, _, _, _, fields, full_name, _} = avro.schema
+      {:ok, schema} = Resolver.resolve_any([1, "io.confluent.Payment"])
 
-      assert avro.id == 1
-      assert is_nil(avro.version)
-      assert type == :avro_record_type
-      assert full_name == "io.confluent.Payment"
-      assert length(fields) == 2
+      assert schema.id == 1
+      assert is_nil(schema.version)
+      assert schema.full_name == "io.confluent.Payment"
     end
 
     test "when registry is configured, but failing and schema was not found in a memory and found in a file" do
+      schema_without_id_and_version = schema_without_id_and_version()
+
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
         assert key == 1
@@ -66,7 +67,7 @@ defmodule Avrora.ResolverTest do
       end)
       |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
-        assert value == raw_schema()
+        assert value == json_schema()
 
         {:error, :unknown_error}
       end)
@@ -75,7 +76,7 @@ defmodule Avrora.ResolverTest do
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment"
 
-        {:ok, schema()}
+        {:ok, schema_without_id_and_version}
       end)
 
       output =
@@ -127,6 +128,8 @@ defmodule Avrora.ResolverTest do
     end
 
     test "when registry is not configured and was not found in memory" do
+      schema_without_id_and_version = schema_without_id_and_version()
+
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
         assert key == 1
@@ -140,7 +143,7 @@ defmodule Avrora.ResolverTest do
       end)
       |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
-        assert value == schema()
+        assert value == schema_without_id_and_version
 
         {:ok, value}
       end)
@@ -161,40 +164,38 @@ defmodule Avrora.ResolverTest do
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment"
 
-        {:ok, schema()}
+        {:ok, schema_without_id_and_version}
       end)
 
-      {:ok, avro} = Resolver.resolve_any([1, "io.confluent.Payment"])
-      {type, _, _, _, _, fields, full_name, _} = avro.schema
+      {:ok, schema} = Resolver.resolve_any([1, "io.confluent.Payment"])
 
-      assert is_nil(avro.id)
-      assert is_nil(avro.version)
-      assert type == :avro_record_type
-      assert full_name == "io.confluent.Payment"
-      assert length(fields) == 2
+      assert is_nil(schema.id)
+      assert is_nil(schema.version)
+      assert schema.full_name == "io.confluent.Payment"
     end
   end
 
   describe "resolve/1" do
     test "when global ID is given and it was found in a memory" do
+      schema_with_id = schema_with_id()
+
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
         assert key == 1
 
-        {:ok, schema_with_id()}
+        {:ok, schema_with_id}
       end)
 
-      {:ok, avro} = Resolver.resolve(1)
-      {type, _, _, _, _, fields, full_name, _} = avro.schema
+      {:ok, schema} = Resolver.resolve(1)
 
-      assert avro.id == 1
-      assert is_nil(avro.version)
-      assert type == :avro_record_type
-      assert full_name == "io.confluent.Payment"
-      assert length(fields) == 2
+      assert schema.id == 1
+      assert is_nil(schema.version)
+      assert schema.full_name == "io.confluent.Payment"
     end
 
     test "when global ID is given and it was not found in a memory" do
+      schema_with_id = schema_with_id()
+
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
         assert key == 1
@@ -203,7 +204,7 @@ defmodule Avrora.ResolverTest do
       end)
       |> expect(:put, fn key, value ->
         assert key == 1
-        assert value == schema_with_id()
+        assert value == schema_with_id
 
         {:ok, value}
       end)
@@ -212,17 +213,14 @@ defmodule Avrora.ResolverTest do
       |> expect(:get, fn key ->
         assert key == 1
 
-        {:ok, schema_with_id()}
+        {:ok, schema_with_id}
       end)
 
-      {:ok, avro} = Resolver.resolve(1)
-      {type, _, _, _, _, fields, full_name, _} = avro.schema
+      {:ok, schema} = Resolver.resolve(1)
 
-      assert avro.id == 1
-      assert is_nil(avro.version)
-      assert type == :avro_record_type
-      assert full_name == "io.confluent.Payment"
-      assert length(fields) == 2
+      assert schema.id == 1
+      assert is_nil(schema.version)
+      assert schema.full_name == "io.confluent.Payment"
     end
 
     test "when global ID is given and it was not found in a memory and in a registry" do
@@ -244,6 +242,8 @@ defmodule Avrora.ResolverTest do
     end
 
     test "when schema name is given and it was not found in a memory, but registry" do
+      schema_with_id_and_version = schema_with_id_and_version()
+
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment"
@@ -252,13 +252,13 @@ defmodule Avrora.ResolverTest do
       end)
       |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment:3"
-        assert value == schema_with_id_and_version()
+        assert value == schema_with_id_and_version
 
         {:ok, value}
       end)
       |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
-        assert value == schema_with_id_and_version()
+        assert value == schema_with_id_and_version
 
         {:ok, value}
       end)
@@ -270,7 +270,7 @@ defmodule Avrora.ResolverTest do
       end)
       |> expect(:put, fn key, value ->
         assert key == 42
-        assert value == schema_with_id_and_version()
+        assert value == schema_with_id_and_version
 
         {:ok, value}
       end)
@@ -279,20 +279,20 @@ defmodule Avrora.ResolverTest do
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment"
 
-        {:ok, schema_with_id_and_version()}
+        {:ok, schema_with_id_and_version}
       end)
 
-      {:ok, avro} = Resolver.resolve("io.confluent.Payment")
-      {type, _, _, _, _, fields, full_name, _} = avro.schema
+      {:ok, schema} = Resolver.resolve("io.confluent.Payment")
 
-      assert avro.id == 42
-      assert avro.version == 3
-      assert type == :avro_record_type
-      assert full_name == "io.confluent.Payment"
-      assert length(fields) == 2
+      assert schema.id == 42
+      assert schema.version == 3
+      assert schema.full_name == "io.confluent.Payment"
     end
 
     test "when schema name is given and it was not found in a memory and in a registry" do
+      schema_with_id = schema_with_id()
+      schema_without_id_and_version = schema_without_id_and_version()
+
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment"
@@ -301,7 +301,7 @@ defmodule Avrora.ResolverTest do
       end)
       |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
-        assert value == schema_with_id()
+        assert value == schema_with_id
 
         {:ok, value}
       end)
@@ -313,7 +313,7 @@ defmodule Avrora.ResolverTest do
       end)
       |> expect(:put, fn key, value ->
         assert key == 1
-        assert value == schema_with_id()
+        assert value == schema_with_id
 
         {:ok, value}
       end)
@@ -326,26 +326,23 @@ defmodule Avrora.ResolverTest do
       end)
       |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
-        assert value == raw_schema()
+        assert value == json_schema()
 
-        {:ok, schema_with_id()}
+        {:ok, schema_with_id}
       end)
 
       Avrora.Storage.FileMock
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment"
 
-        {:ok, schema()}
+        {:ok, schema_without_id_and_version}
       end)
 
-      {:ok, avro} = Resolver.resolve("io.confluent.Payment")
-      {type, _, _, _, _, fields, full_name, _} = avro.schema
+      {:ok, schema} = Resolver.resolve("io.confluent.Payment")
 
-      assert avro.id == 1
-      assert is_nil(avro.version)
-      assert type == :avro_record_type
-      assert full_name == "io.confluent.Payment"
-      assert length(fields) == 2
+      assert schema.id == 1
+      assert is_nil(schema.version)
+      assert schema.full_name == "io.confluent.Payment"
     end
 
     test "when schema name with version is given and it was not found in a memory and in a registry" do
@@ -367,6 +364,8 @@ defmodule Avrora.ResolverTest do
     end
 
     test "when schema name is given and it was not found in a memory and registry is not configured" do
+      schema_without_id_and_version = schema_without_id_and_version()
+
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment"
@@ -375,7 +374,7 @@ defmodule Avrora.ResolverTest do
       end)
       |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
-        assert value == schema()
+        assert value == schema_without_id_and_version
 
         {:ok, value}
       end)
@@ -391,20 +390,19 @@ defmodule Avrora.ResolverTest do
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment"
 
-        {:ok, schema()}
+        {:ok, schema_without_id_and_version}
       end)
 
-      {:ok, avro} = Resolver.resolve("io.confluent.Payment")
-      {type, _, _, _, _, fields, full_name, _} = avro.schema
+      {:ok, schema} = Resolver.resolve("io.confluent.Payment")
 
-      assert is_nil(avro.id)
-      assert is_nil(avro.version)
-      assert type == :avro_record_type
-      assert full_name == "io.confluent.Payment"
-      assert length(fields) == 2
+      assert is_nil(schema.id)
+      assert is_nil(schema.version)
+      assert schema.full_name == "io.confluent.Payment"
     end
 
     test "when schema name with version is given and it was not found in a memory and registry is not configured" do
+      schema_without_id_and_version = schema_without_id_and_version()
+
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment:3"
@@ -413,7 +411,7 @@ defmodule Avrora.ResolverTest do
       end)
       |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
-        assert value == schema()
+        assert value == schema_without_id_and_version
 
         {:ok, value}
       end)
@@ -429,20 +427,19 @@ defmodule Avrora.ResolverTest do
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment:3"
 
-        {:ok, schema()}
+        {:ok, schema_without_id_and_version}
       end)
 
-      {:ok, avro} = Resolver.resolve("io.confluent.Payment:3")
-      {type, _, _, _, _, fields, full_name, _} = avro.schema
+      {:ok, schema} = Resolver.resolve("io.confluent.Payment:3")
 
-      assert is_nil(avro.id)
-      assert is_nil(avro.version)
-      assert type == :avro_record_type
-      assert full_name == "io.confluent.Payment"
-      assert length(fields) == 2
+      assert is_nil(schema.id)
+      assert is_nil(schema.version)
+      assert schema.full_name == "io.confluent.Payment"
     end
 
     test "when schema name with version is given and it was not found in a memory, but registry" do
+      schema_with_id_and_version = schema_with_id_and_version()
+
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment:3"
@@ -451,13 +448,13 @@ defmodule Avrora.ResolverTest do
       end)
       |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment:3"
-        assert value == schema_with_id_and_version()
+        assert value == schema_with_id_and_version
 
         {:ok, value}
       end)
       |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
-        assert value == schema_with_id_and_version()
+        assert value == schema_with_id_and_version
 
         {:ok, value}
       end)
@@ -469,7 +466,7 @@ defmodule Avrora.ResolverTest do
       end)
       |> expect(:put, fn key, value ->
         assert key == 42
-        assert value == schema_with_id_and_version()
+        assert value == schema_with_id_and_version
 
         {:ok, value}
       end)
@@ -478,52 +475,33 @@ defmodule Avrora.ResolverTest do
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment:3"
 
-        {:ok, schema_with_id_and_version()}
+        {:ok, schema_with_id_and_version}
       end)
 
-      {:ok, avro} = Resolver.resolve("io.confluent.Payment:3")
-      {type, _, _, _, _, fields, full_name, _} = avro.schema
+      {:ok, schema} = Resolver.resolve("io.confluent.Payment:3")
 
-      assert avro.id == 42
-      assert avro.version == 3
-      assert type == :avro_record_type
-      assert full_name == "io.confluent.Payment"
-      assert length(fields) == 2
+      assert schema.id == 42
+      assert schema.version == 3
+      assert schema.full_name == "io.confluent.Payment"
     end
   end
 
-  defp schema do
-    %Avrora.Schema{
-      id: nil,
-      version: nil,
-      schema: erlavro_schema(),
-      raw_schema: raw_schema()
-    }
+  defp schema_without_id_and_version do
+    {:ok, schema} = Schema.parse(json_schema())
+    %{schema | id: nil, version: nil}
   end
 
   defp schema_with_id do
-    %Avrora.Schema{
-      id: 1,
-      version: nil,
-      schema: erlavro_schema(),
-      raw_schema: raw_schema()
-    }
+    {:ok, schema} = Schema.parse(json_schema())
+    %{schema | id: 1, version: nil}
   end
 
   defp schema_with_id_and_version do
-    %Avrora.Schema{
-      id: 42,
-      version: 3,
-      schema: erlavro_schema(),
-      raw_schema: raw_schema()
-    }
+    {:ok, schema} = Schema.parse(json_schema())
+    %{schema | id: 42, version: 3}
   end
 
-  defp erlavro_schema do
-    :avro_json_decoder.decode_schema(raw_schema())
-  end
-
-  defp raw_schema do
+  defp json_schema do
     ~s({"namespace":"io.confluent","type":"record","name":"Payment","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
   end
 end

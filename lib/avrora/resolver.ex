@@ -18,9 +18,8 @@ defmodule Avrora.Resolver do
 
   ## Examples
 
-      ...> {:ok, avro} = Avrora.Resolver.resolve_any([1, "io.confluent.Payment"])
-      ...> {_, _, _, _, _, _, full_name, _} = avro.schema
-      ...> full_name
+      ...> {:ok, schema} = Avrora.Resolver.resolve_any([1, "io.confluent.Payment"])
+      ...> schema.full_name
       "io.confluent.Payment"
   """
   @spec resolve_any(nonempty_list(integer() | String.t())) ::
@@ -46,9 +45,8 @@ defmodule Avrora.Resolver do
 
   ## Examples
 
-      iex> {:ok, avro} = Avrora.Resolver.resolve(1)
-      iex> {_, _, _, _, _, _, full_name, _} = avro.schema
-      iex> full_name
+      iex> {:ok, schema} = Avrora.Resolver.resolve(1)
+      iex> schema.full_name
       "io.confluent.Payment"
   """
   @spec resolve(integer()) :: {:ok, Avrora.Schema.t()} | {:error, term()}
@@ -73,17 +71,15 @@ defmodule Avrora.Resolver do
 
   ## Examples
 
-      ...> {:ok, avro1} = Avrora.Resolver.resolve("io.confluent.Payment")
-      ...> {:ok, avro2} = Avrora.Resolver.resolve("io.confluent.Payment:42")
-      ...> avro1.version
+      ...> {:ok, schema1} = Avrora.Resolver.resolve("io.confluent.Payment")
+      ...> {:ok, schema2} = Avrora.Resolver.resolve("io.confluent.Payment:42")
+      ...> schema1.version
       42
-      ...> avro2.version
+      ...> schema2.version
       42
-      ...> {_, _, _, _, _, _, full_name1, _} = avro1.schema
-      ...> full_name1
+      ...> schema1.full_name
       "io.confluent.Payment"
-      ...> {_, _, _, _, _, _, full_name2, _} = avro2.schema
-      ...> full_name2
+      ...> schema.full_name
       "io.confluent.Payment"
   """
   @spec resolve(String.t()) :: {:ok, Avrora.Schema.t()} | {:error, term()}
@@ -91,30 +87,31 @@ defmodule Avrora.Resolver do
     with {:ok, schema_name} = Name.parse(name),
          {:ok, nil} <- memory_storage().get(name) do
       case registry_storage().get(name) do
-        {:ok, avro} ->
-          with {:ok, avro} <- memory_storage().put("#{schema_name.name}:#{avro.version}", avro),
-               {:ok, avro} <- memory_storage().put(schema_name.name, avro),
+        {:ok, schema} ->
+          with {:ok, schema} <-
+                 memory_storage().put("#{schema_name.name}:#{schema.version}", schema),
+               {:ok, schema} <- memory_storage().put(schema_name.name, schema),
                {:ok, timestamp} = memory_storage().expire(schema_name.name, names_ttl()) do
             if timestamp == :infinity,
               do: Logger.debug("schema `#{schema_name.name}` will be always resolved from memory")
 
-            memory_storage().put(avro.id, avro)
+            memory_storage().put(schema.id, schema)
           end
 
         {:error, :unknown_subject} ->
-          with {:ok, avro} <- file_storage().get(schema_name.name),
-               {:ok, avro} <- registry_storage().put(schema_name.name, avro.raw_schema),
-               {:ok, avro} <- memory_storage().put(schema_name.name, avro),
+          with {:ok, schema} <- file_storage().get(schema_name.name),
+               {:ok, schema} <- registry_storage().put(schema_name.name, schema.json),
+               {:ok, schema} <- memory_storage().put(schema_name.name, schema),
                {:ok, timestamp} = memory_storage().expire(schema_name.name, names_ttl()) do
             if timestamp == :infinity,
               do: Logger.debug("schema `#{schema_name.name}` will be always resolved from memory")
 
-            memory_storage().put(avro.id, avro)
+            memory_storage().put(schema.id, schema)
           end
 
         {:error, :unconfigured_registry_url} ->
-          with {:ok, avro} <- file_storage().get(name),
-               do: memory_storage().put(schema_name.name, avro)
+          with {:ok, schema} <- file_storage().get(name),
+               do: memory_storage().put(schema_name.name, schema)
 
         {:error, reason} ->
           {:error, reason}

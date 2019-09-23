@@ -1,0 +1,30 @@
+{
+  "type": "record",
+  "name": "Messenger",
+  "namespace": "io.confluent",
+  "fields": [
+    {
+      "name": "inbox",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "Message",
+          "fields": [
+            {
+              "name": "text",
+              "type": "string"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "archive",
+      "type": {
+        "type": "array",
+        "items": "io.confluent.Message"
+      }
+    }
+  ]
+}

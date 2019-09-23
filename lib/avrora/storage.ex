@@ -12,7 +12,7 @@ defmodule Avrora.Storage do
   @callback get(key :: schema_id) ::
               {:ok, result :: nil | Avrora.Schema.t()} | {:error, reason :: term()}
 
-  @callback put(key :: schema_id, value :: String.t() | Avrora.Schema.t()) ::
+  @callback put(key :: schema_id, value :: Avrora.Schema.t()) ::
               {:ok, result :: Avrora.Schema.t()} | {:error, reason :: term()}
 
   defmodule Transient do

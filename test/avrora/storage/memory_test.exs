@@ -81,16 +81,12 @@ defmodule Avrora.Storage.MemoryTest do
   defp schema,
     do: %Avrora.Schema{
       id: 1,
-      schema: [],
-      raw_schema:
-        ~s({"type": "record", "name": "one", "fields": [{"name": "id", "type": "integer"}]})
+      json: ~s({"type": "record", "name": "one", "fields": [{"name": "id", "type": "integer"}]})
     }
 
   defp new_schema,
     do: %Avrora.Schema{
       id: 1,
-      schema: [],
-      raw_schema:
-        ~s({"type": "record", "name": "two", "fields": [{"name": "greeting", "type": "string"}]})
+      json: ~s({"type": "record", "name": "two", "fields": [{"name": "word", "type": "string"}]})
     }
 end

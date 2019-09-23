@@ -92,9 +92,9 @@ defmodule Avrora.Storage.Memory do
 
   ## Examples
       iex> _ = Avrora.Storage.Memory.start_link()
-      iex> avro = %Avrora.Schema{id: nil, schema: [], raw_schema: "{}"}
-      iex> Avrora.Storage.Memory.put("my-key", avro)
-      {:ok, %Avrora.Schema{id: nil, schema: [], raw_schema: "{}"}}
+      iex> schema = %Avrora.Schema{id: nil, json: "{}"}
+      iex> Avrora.Storage.Memory.put("my-key", schema)
+      {:ok, %Avrora.Schema{id: nil, json: "{}"}}
   """
   @impl true
   def put(key, value), do: put(__MODULE__, key, value)
@@ -109,11 +109,11 @@ defmodule Avrora.Storage.Memory do
 
   ## Examples
       iex> _ = Avrora.Storage.Memory.start_link()
-      iex> avro = %Avrora.Schema{id: nil, schema: [], raw_schema: "{}"}
-      iex> Avrora.Storage.Memory.put("my-key", avro)
-      {:ok, %Avrora.Schema{id: nil, schema: [], raw_schema: "{}"}}
+      iex> schema = %Avrora.Schema{id: nil, json: "{}"}
+      iex> Avrora.Storage.Memory.put("my-key", schema)
+      {:ok, %Avrora.Schema{id: nil, json: "{}"}}
       iex> Avrora.Storage.Memory.get("my-key")
-      {:ok, %Avrora.Schema{id: nil, schema: [], raw_schema: "{}"}}
+      {:ok, %Avrora.Schema{id: nil, json: "{}"}}
       iex> Avrora.Storage.Memory.delete("my-key")
       {:ok, true}
       iex> Avrora.Storage.Memory.get("my-key")
@@ -132,12 +132,12 @@ defmodule Avrora.Storage.Memory do
 
   ## Examples
       iex> _ = Avrora.Storage.Memory.start_link()
-      iex> avro = %Avrora.Schema{id: nil, schema: [], raw_schema: "{}"}
-      iex> Avrora.Storage.Memory.put("my-key", avro)
-      {:ok, %Avrora.Schema{id: nil, schema: [], raw_schema: "{}"}}
+      iex> schema = %Avrora.Schema{id: nil, json: "{}"}
+      iex> Avrora.Storage.Memory.put("my-key", schema)
+      {:ok, %Avrora.Schema{id: nil, json: "{}"}}
       iex> {:ok, _} = Avrora.Storage.Memory.expire("my-key", 100)
       iex> Avrora.Storage.Memory.get("my-key")
-      {:ok, %Avrora.Schema{id: nil, schema: [], raw_schema: "{}"}}
+      {:ok, %Avrora.Schema{id: nil, json: "{}"}}
       iex> Process.sleep(100)
       iex> Avrora.Storage.Memory.get("my-key")
       {:ok, nil}
