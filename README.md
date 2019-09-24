@@ -25,7 +25,7 @@ To use Avrora with your projects, edit your `mix.exs` file and add it as a depen
 ```elixir
 def deps do
   [
-    {:avrora, "~> 0.6"}
+    {:avrora, "~> 0.7"}
   ]
 end
 ```
