@@ -17,7 +17,7 @@ defmodule Avrora.SchemaTest do
       assert schema.json == payment_json()
     end
 
-    test "when payload is an invalid json shema" do
+    test "when payload is an invalid json schema" do
       assert Schema.parse("a:b") == {:error, "argument error"}
       assert Schema.parse("{}") == {:error, {:not_found, "type"}}
     end
