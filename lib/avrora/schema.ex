@@ -15,7 +15,7 @@ defmodule Avrora.Schema do
         }
 
   @doc """
-  Parses a json payload and converts it to the schema with id, erlavro formar
+  Parses a json payload and converts it to the schema with id, erlavro format
   and raw json format.
 
   ## Examples
