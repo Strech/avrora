@@ -1,7 +1,6 @@
 defmodule Avrora.Encoder do
   @moduledoc """
-  Encodes and decodes avro messages created with or without extra Schema Registry
-  version.
+  Encode and decode binary Avro messages.
   """
 
   require Logger
@@ -18,8 +17,7 @@ defmodule Avrora.Encoder do
   }
 
   @doc """
-  Decodes given message with a schema eather loaded from the Object Container Files
-  or from the configured schema registry.
+  Decode binary Avro message, loading schema from Schema Registry or Object Container Files.
 
   ## Examples
 
@@ -44,8 +42,7 @@ defmodule Avrora.Encoder do
   end
 
   @doc """
-  Decodes given message with a schema eather loaded from the local file or from
-  the configured schema registry.
+  Decode binary Avro message, loading schema from local file or Schema Registry.
 
   ## Examples
 
@@ -90,15 +87,17 @@ defmodule Avrora.Encoder do
   end
 
   @doc """
-  Encodes given message with a schema eather loaded from the local file or from
-  the configured schema registry.
+  Encode message map in Avro format, loading schema from local file or Schema Registry.
 
-  You can control formatting with a `:format` option, possible variants are:
+  The `:format` argument controls output format:
 
-  * :guess - behaves like :ocf if can't behave like :registry (default)
-  * :ocf - embeds schema with Object Container Files format
-  * :registry - embeds Confluent Schema Registry magic version
-  * :plain - gives nothing, but only encoded message
+  * `:plain` - Just return Avro binary data, with no header or embedded schema
+  * `:ocf` - Use [Object Container File]https://avro.apache.org/docs/1.8.1/spec.html#Object+Container+Files)
+    format, embedding the full schema with the data
+  * `:registry` - Write data with Confluent Schema Registry
+    [Wire Format](https://docs.confluent.io/current/schema-registry/serializer-formatter.html#wire-format),
+    which prefixes the data with the schema id
+  * `:guess` - Use `:registry` if possible, otherwise use `:ocf` (default)
 
   ## Examples
 
@@ -145,7 +144,7 @@ defmodule Avrora.Encoder do
     end
   end
 
-  # NOTE: `erlavro` allows to set a decoder hook, but we don't, at lease for now
+  # NOTE: `erlavro` supports setting a decoder hook, but we don't, at least for now
   @doc false
   def __hook__(_type, _sub_name_or_id, data, decode_fun), do: decode_fun.(data)
 

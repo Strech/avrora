@@ -1,20 +1,13 @@
 defmodule Avrora.Resolver do
   @moduledoc """
-  Resolves schema names or global ID's to a specific schema files while keeping
-  memory and registry storage up to date.
+  Resolve schema name or global ID to a schema, keeping cache up to date.
   """
 
   require Logger
   alias Avrora.{Config, Name}
 
   @doc """
-  Resolves schema by all given possible identifiers.
-  It will return first successful resolution or the last error.
-
-  To resolve schema it uses:
-
-    * Avrora.Resolver.resolve/1 when integer
-    * Avrora.Resolver.resolve/1 when binary
+  Resolve schema, trying multiple methods. First tries integer id, then string name.
 
   ## Examples
 
@@ -38,10 +31,9 @@ defmodule Avrora.Resolver do
   end
 
   @doc """
-  Resolves schema by a global ID.
+  Resolve schema by integer ID, then update memory storage.
 
-  After schema being resolved it will be stored in memory storage
-  with key equal to `global ID`.
+  Stores schema in memory cache with key id.
 
   ## Examples
 
@@ -58,16 +50,14 @@ defmodule Avrora.Resolver do
   end
 
   @doc """
-  Resolves schema be it's name and optionally version. A version could be provided
-  by adding `:` and version number to the name (i.e `io.confluent.Payment:5`).
+  Resolve schema by string name with optional version.
 
-  In case if confluent schema registry url is configured, resolution will take a
-  look there first and in case of failure try to read schema from the configured
-  schemas folder.
+  Version can be provided by adding `:` and version number, e.g. `io.confluent.Payment:5`.
 
-  After schema being resolved it will be stored in memory storage with
-  key equal `name` and `name:version`. Also it will be added to the registry if
-  it's configured.
+  If the Schema Registry is configured (`:registry_url`), it will first try
+  there, then local schemas folder (`:schemas_path`).
+
+  Stores schema in memory with key `name` and `name:version` and adds schema to registry if configured.
 
   ## Examples
 

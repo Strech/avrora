@@ -1,19 +1,19 @@
 defmodule Avrora.Config do
   @moduledoc """
-  Configuration for Avrora with some extra options.
+  Configuration for Avrora.
 
-  ## Available options:
+  ## Options:
 
-      * `schemas_path` a path where all local schemas stored (default: ./priv/schemas)
-      * `registry_url` a Confluent Schema Registry url (default: nil)
-      * `names_cache_ttl` a time to keep global schema names cached in millisecods (default: 300_000)
+      * `schemas_path` path to local schema files, default ./priv/schemas
+      * `registry_url` URL for Confluent Schema Registry, default nil
+      * `names_cache_ttl` duration to cache global schema names millisecods, default 300_000
 
-  ## Extra settings:
+  ## Module configuration:
 
-      * `file_storage` implements `Storage` behaviour and handle files in `schemas_path`
-      * `memory_storage` implements `Storage` behaviour and handle memory operations
-      * `registry_storage` implements `Storage` behaviour and handle Schema Registry via `registry_url`
-      * `http_client` a basic HTTP client for the get/post requests
+      * `file_storage` module which handles files in `schemas_path`, default `Avrora.Storage.File`
+      * `memory_storage` module which handles memory operations, default `Avrora.Storage.Memory`
+      * `registry_storage` module which handles Schema Registry requests, default `Avrora.Storage.Registry`
+      * `http_client` module which handles HTTP client requests to Schema Registry, default `Avrora.HTTPClient`
   """
 
   @doc false
