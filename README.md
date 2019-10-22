@@ -49,7 +49,7 @@ config :avrora,
 ```
 
 * `registry_url` - URL for the Confluent Schema Registry, default `nil`
-* `schemas_path` - Base path for locally stored schema files, default `/priv/schemas`
+* `schemas_path` - Base path for locally stored schema files, default `./priv/schemas`
 * `names_cache_ttl` - Time in ms to cache schemas in memory, default 300_000.
 
 Set `names_cache_ttl` to `:infinity` to cache forever. This is safe when
@@ -118,6 +118,7 @@ When running interactively, first make sure the cache is started:
 To encode a `Payment` message:
 
 ```elixir
+{:ok, pid} = Avrora.start_link()
 message = %{"id" => "tx-1", "amount" => 15.99}
 
 {:ok, encoded} = Avrora.encode(message, schema_name: "io.confluent.Payment")
@@ -147,6 +148,7 @@ The `:format` argument controls output format:
   * `:guess` - Use `:registry` if possible, otherwise use `:ocf` (default)
 
 ```elixir
+{:ok, pid} = Avrora.start_link()
 message = %{"id" => "tx-1", "amount" => 15.99}
 
 {:ok, encoded} = Avrora.encode(message, schema_name: "io.confluent.Payment", format: :plain)
@@ -158,6 +160,7 @@ message = %{"id" => "tx-1", "amount" => 15.99}
 Decode `Payment` message using the specified schema:
 
 ```elixir
+{:ok, pid} = Avrora.start_link()
 message = <<8, 116, 120, 45, 49, 123, 20, 174, 71, 225, 250, 47, 64>>
 
 {:ok, decoded} = Avrora.decode(message, schema_name: "io.confluent.Payment")
@@ -178,6 +181,7 @@ embedded schema.
 **NOTE:** Messages encoded with OCF are wrapped in a List.
 
 ```elixir
+{:ok, pid} = Avrora.start_link()
 message =
   <<79, 98, 106, 1, 3, 204, 2, 20, 97, 118, 114, 111, 46, 99, 111, 100, 101, 99,
     8, 110, 117, 108, 108, 22, 97, 118, 114, 111, 46, 115, 99, 104, 101, 109, 97,
