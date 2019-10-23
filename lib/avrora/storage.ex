@@ -1,12 +1,9 @@
 defmodule Avrora.Storage do
   @moduledoc """
-  A general storage behaviour which allows a client to get the schema by a given
-  name or a global ID and store a given schema under a specific name.
+  Behavior for storing and getting schemas by name or integer ID.
   """
 
-  @typedoc """
-  A possible schema indentifier.
-  """
+  @typedoc "Schema indentifier."
   @type schema_id :: String.t() | integer()
 
   @callback get(key :: schema_id) ::
@@ -17,14 +14,12 @@ defmodule Avrora.Storage do
 
   defmodule Transient do
     @moduledoc """
-    A type of storage which allows keys to be removed or expired.
+    Storage behavior which allows keys to be removed or expired.
     """
 
     alias Avrora.Storage
 
-    @typedoc """
-    A naive timestamp with a seconds precision.
-    """
+    @typedoc "Naive timestamp with second precision."
     @type timestamp :: timeout()
 
     @callback delete(key :: Storage.schema_id()) ::

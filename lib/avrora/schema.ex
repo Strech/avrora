@@ -1,7 +1,6 @@
 defmodule Avrora.Schema do
   @moduledoc """
-  A wrapper struct around AvroEx.Schema and Confluent Schema Registry for more
-  convinient use.
+  Convenience wrapper struct for `AvroEx.Schema` and Confluent Schema Registry.
   """
 
   defstruct [:id, :version, :full_name, :lookup_table, :json]
@@ -15,8 +14,7 @@ defmodule Avrora.Schema do
         }
 
   @doc """
-  Parses a json payload and converts it to the schema with id, erlavro format
-  and raw json format.
+  Parse Avro schema JSON and convert to struct.
 
   ## Examples
 
@@ -45,8 +43,7 @@ defmodule Avrora.Schema do
   end
 
   @doc """
-  Convert `Avrora.Schema` to erlavro definition. Definition will be retrieved
-  from the `lookup_table` of that schema.
+  Convert struct to `erlavro` format and look up in `avro_schema_store`.
 
   ## Examples
 
@@ -62,6 +59,7 @@ defmodule Avrora.Schema do
   def to_erlavro(%__MODULE__{} = schema),
     do: :avro_schema_store.lookup_type(schema.full_name, schema.lookup_table)
 
+  # Parse schema, converting errors to error return
   defp do_parse(payload) do
     {:ok, :avro_json_decoder.decode_schema(payload)}
   rescue

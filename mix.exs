@@ -38,7 +38,7 @@ defmodule Avrora.MixProject do
 
   defp description do
     """
-    An Elixir library for convenient work with Avro messages.
+    An Elixir library for working with Avro messages conveniently.
     It supports local schema files and Confluent® schema registry.
     """
   end

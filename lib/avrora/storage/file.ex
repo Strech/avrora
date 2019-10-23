@@ -1,9 +1,9 @@
 defmodule Avrora.Storage.File do
   @moduledoc """
-  Reads and parse schema from the disk with conventional name resoltion.
+  `Avora.Storage` behavior implementation which uses the filesystem.
 
-  For instance schema name `<namespace>.<namespace>.<name>` will be converted to
-  `namespace/namespace/name.avsc` path.
+  Schema name `<namespace>.<namespace>.<name>` will be stored to path
+  `namespace/namespace/name.avsc`.
   """
 
   require Logger
@@ -13,11 +13,10 @@ defmodule Avrora.Storage.File do
   @extension ".avsc"
 
   @doc """
-  Reads the schema from the disk by it's full name.
+  Read schema from disk by full name, including namespace.
 
-  Given name should contain a namespace and the schemas should be placed by a
-  convention – namespace segment is a folder name, hence a schema with a
-  full name: `io.confluent.Payment` should be placed like this
+  Files are stored with each namespace component as a folder name.
+  For example `io.confluent.Payment` should be stored as follows:
 
   .
   ├── lib/

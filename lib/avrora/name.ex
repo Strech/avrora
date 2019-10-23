@@ -1,7 +1,6 @@
 defmodule Avrora.Name do
   @moduledoc """
-  A wrapper around versioned name the schema. It can handle names like `io.confluent.Payment`
-  and `io.confluent.Payment:42` by using `:` as a delimiter.
+  Struct for versioned schema names like `io.confluent.Payment:42`.
   """
 
   defstruct [:name, :version]
@@ -14,7 +13,7 @@ defmodule Avrora.Name do
   @delimiter_char ":"
 
   @doc """
-  Parses given name and plits it on `name` + `version` by a `:` delimiter.
+  Parse schema name with optional version, returning struct.
 
   ## Examples
 

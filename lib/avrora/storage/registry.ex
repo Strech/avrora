@@ -1,7 +1,10 @@
 defmodule Avrora.Storage.Registry do
   @moduledoc """
-  A small wrapper for [Confluent Schema Registry](https://docs.confluent.io/current/schema-registry/develop/api.html),
-  with as less as possible functionality. Inspired by [Schemex](https://github.com/bencebalogh/schemex).
+  `Avora.Storage` behavior implementation which uses [Confluent Schema
+  Registry](https://docs.confluent.io/current/schema-registry/develop/api.html).
+
+  This only implements the minimum client functionality needed to talk with the registry.
+  Inspired by [Schemex](https://github.com/bencebalogh/schemex).
   """
 
   require Logger
@@ -12,7 +15,9 @@ defmodule Avrora.Storage.Registry do
   @content_type "application/vnd.schemaregistry.v1+json"
 
   @doc """
-  Fetch the latest version of the schema registered under a subject name.
+  Get schema by subject name.
+
+  Uses version if defined or latest.
 
   ## Examples
 
@@ -35,7 +40,7 @@ defmodule Avrora.Storage.Registry do
   end
 
   @doc """
-  Fetch a schema by a globally unique ID.
+  Get schema by integer ID.
 
   ## Examples
 
@@ -54,7 +59,7 @@ defmodule Avrora.Storage.Registry do
   end
 
   @doc """
-  Register a new version of a schema under the subject name.
+  Register new version of schema under subject name.
 
   ## Examples
 

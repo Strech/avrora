@@ -1,6 +1,8 @@
 defmodule Avrora.Storage.Memory do
   @moduledoc """
-  Fast in-memory storage of schemas with access by global id or full name.
+  `Avora.Storage` behavior implementation which uses memory (ETS).
+
+  Schemas can be accessed by integer id or full name.
   """
 
   use GenServer
@@ -69,7 +71,7 @@ defmodule Avrora.Storage.Memory do
   end
 
   @doc """
-  Retrieve a value by a given key.
+  Get schema by key.
 
   ## Examples
       iex> _ = Avrora.Storage.Memory.start_link()
@@ -88,7 +90,7 @@ defmodule Avrora.Storage.Memory do
   def get(pid, key), do: {:ok, GenServer.call(pid, {:get, key})}
 
   @doc """
-  Stores a value with a given key. If the value is already exists it will be replaced.
+  Store schema by key. If value already exists it will be replaced.
 
   ## Examples
       iex> _ = Avrora.Storage.Memory.start_link()
@@ -105,7 +107,7 @@ defmodule Avrora.Storage.Memory do
   def put(pid, key, value), do: {GenServer.cast(pid, {:put, key, value}), value}
 
   @doc """
-  Deletes a key from the storage. Works no matter the key exists or not.
+  Delete data from storage by key. Always succeeds, whether or not the key exists.
 
   ## Examples
       iex> _ = Avrora.Storage.Memory.start_link()
@@ -127,8 +129,8 @@ defmodule Avrora.Storage.Memory do
   def delete(pid, key), do: {:ok, GenServer.call(pid, {:delete, key})}
 
   @doc """
-  Expires a key in the storage after its TTL is over. Works no matter the key exists or not.
-  TTL is measured in millisecods.
+  Tell storage module to delete data after TTL (time to live) expires. Works whether or not the key exists.
+  TTL is in milliseconds.
 
   ## Examples
       iex> _ = Avrora.Storage.Memory.start_link()
