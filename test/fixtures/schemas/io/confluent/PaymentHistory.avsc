@@ -4,7 +4,14 @@
   "namespace": "io.confluent",
   "fields": [
     {
-      "name": "payments",
+      "name": "incoming",
+      "type": {
+        "type": "array",
+        "items": "io.confluent.Payment"
+      }
+    },
+    {
+      "name": "outgoing",
       "type": {
         "type": "array",
         "items": "io.confluent.Payment"

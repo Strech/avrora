@@ -1,0 +1,16 @@
+{
+  "type": "record",
+  "name": "File",
+  "namespace": "io.confluent",
+  "aliases": ["Document"],
+  "fields": [
+    {
+      "name": "name",
+      "type": "string"
+    },
+    {
+      "name": "extension",
+      "type": "string"
+    }
+  ]
+}

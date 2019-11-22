@@ -1,0 +1,16 @@
+{
+  "type": "record",
+  "name": "Account",
+  "namespace": "io.confluent",
+  "aliases": ["Profile"],
+  "fields": [
+    {
+      "name": "payment_history",
+      "type": "io.confluent.PaymentHistory"
+    },
+    {
+      "name": "messenger",
+      "type": "io.confluent.Messenger"
+    }
+  ]
+}

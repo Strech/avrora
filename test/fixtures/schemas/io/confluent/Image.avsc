@@ -1,0 +1,21 @@
+{
+  "type": "record",
+  "name": "Image",
+  "namespace": "io.confluent",
+  "aliases": ["Picture", "Photo"],
+  "fields": [
+    {
+      "name": "name",
+      "type": "string"
+    },
+    {
+      "name": "extension",
+      "type": "string"
+    },
+    {
+      "name": "created_at",
+      "type": "long",
+      "logicalType": "timestamp-millis"
+    }
+  ]
+}
