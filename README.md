@@ -77,6 +77,10 @@ Or start the cache process manually:
 {:ok, pid} = Avrora.start_link()
 ```
 
+## Configuration
+
+TODO
+
 ## Usage
 
 The primary way to use the library is via the `Avrora.encode/2` and
