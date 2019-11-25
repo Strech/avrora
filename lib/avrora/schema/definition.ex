@@ -1,6 +1,11 @@
 defmodule Avrora.Schema.Definition do
   @moduledoc """
   TODO
+
+  1. Cover all types with syntetic example
+  2. Add is_reference?(type) method
+  3. Think about structure we return as def/ref
+  4. Standardize naming of ref/reference??
   """
 
   # schema = :avro_json_decoder.decode_schema(File.read!("test/fixtures/schemas/io/confluent/Account.avsc"), allow_bad_references: true)
@@ -39,7 +44,7 @@ defmodule Avrora.Schema.Definition do
     end)
   end
 
-  defp extract({:avro_record_field, name, _, type, _, _, _aliases}, state) do
+  defp extract({:avro_record_field, name, _, type, _, _, _}, state) do
     IO.puts("Record.field {#{name}}")
     extract(type, state)
   end
