@@ -16,6 +16,13 @@
               "type": "string"
             },
             {
+              "name": "recepients",
+              "type": {
+                "type": "map",
+                "values": "string"
+              }
+            },
+            {
               "name": "attachment",
               "type": [
                 "io.confluent.File",

@@ -13,6 +13,16 @@
       "type": "string"
     },
     {
+      "name": "blob",
+      "type": "fixed",
+      "size": 1048576
+    },
+    {
+      "name": "orientation",
+      "type": "enum",
+      "symbols": ["landscape", "portrait"]
+    },
+    {
       "name": "created_at",
       "type": "long",
       "logicalType": "timestamp-millis"

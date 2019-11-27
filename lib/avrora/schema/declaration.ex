@@ -1,12 +1,14 @@
-defmodule Avrora.Schema.Definition do
+defmodule Avrora.Schema.Declaration do
   @moduledoc """
   TODO
 
   1. Cover all types with syntetic example
-  2. Add is_reference?(type) method
+  2. Write tests!!!!!
   3. Think about structure we return as def/ref
-  4. Standardize naming of ref/reference??
+  4. Naming: %__MODULE__{defined: [], referenced: []}
   """
+
+  # defstruct [:definitions, :references]
 
   # schema = :avro_json_decoder.decode_schema(File.read!("test/fixtures/schemas/io/confluent/Account.avsc"), allow_bad_references: true)
   # Avrora.Schema.Definition.extract(schema)
@@ -68,6 +70,13 @@ defmodule Avrora.Schema.Definition do
 
   defp extract({:avro_map_type, _type, _}, state) do
     IO.puts("Map")
+    # TODO: Map can be a complex type, need a working example.
+    # values are this:
+    #
+    # {
+    #   personal: { ... }
+    #   private: { ... }
+    # }
     state
   end
 
@@ -91,12 +100,9 @@ defmodule Avrora.Schema.Definition do
 
   defp extract(type, state) when is_binary(type) do
     IO.puts("Reference <#{type}>")
+
     [{:ref, type} | state]
   end
 
-  defp extract(type, state) do
-    IO.puts("Unknown")
-    IO.puts("^^^^^^^ #{inspect(type)}")
-    state
-  end
+  defp extract(type, state), do: raise("unexpected type `#{type}`, this should never happen")
 end
