@@ -13,20 +13,22 @@ defmodule Avrora.Schema.Declaration do
   # schema = :avro_json_decoder.decode_schema(File.read!("test/fixtures/schemas/io/confluent/Account.avsc"), allow_bad_references: true)
   # Avrora.Schema.Definition.extract(schema)
 
+  @reserved_types ~w(null boolean int long float double bytes string record enum array map union fixed)
+
   def extract(schema) do
     definition =
       schema
       |> extract([])
-      |> List.foldl(%{ref: [], def: []}, fn {type, name}, memo ->
+      |> List.foldl(%{referenced: [], defined: []}, fn {type, name}, memo ->
         Map.update(memo, type, [name], &[name | &1])
       end)
       |> Map.new(fn {key, value} -> {key, Enum.uniq(value)} end)
 
     IO.puts("---------- ---------- References  ---------- ----------")
-    IO.puts(Enum.join(definition.ref, "\n"))
+    IO.puts(Enum.join(definition.referenced, "\n"))
 
     IO.puts("---------- ---------- Definitions ---------- ----------")
-    IO.puts(Enum.join(definition.def, "\n"))
+    IO.puts(Enum.join(definition.defined, "\n"))
 
     IO.puts("---------- ---------- ---------- ---------- -----------")
 
@@ -39,9 +41,9 @@ defmodule Avrora.Schema.Declaration do
     aliases =
       aliases
       |> :avro_util.canonicalize_aliases(namespace)
-      |> Enum.map(&{:def, &1})
+      |> Enum.map(&{:defined, &1})
 
-    List.foldl(fields, [{:def, fullname} | aliases] ++ state, fn type, state ->
+    List.foldl(fields, [{:defined, fullname} | aliases] ++ state, fn type, state ->
       extract(type, state)
     end)
   end
@@ -62,13 +64,13 @@ defmodule Avrora.Schema.Declaration do
     if is_binary(type) do
       IO.puts("Reference <#{type}>")
 
-      [{:ref, type} | state]
+      [{:referenced, type} | state]
     else
       extract(type, state)
     end
   end
 
-  defp extract({:avro_map_type, _type, _}, state) do
+  defp extract({:avro_map_type, type, _}, state) do
     IO.puts("Map")
     # TODO: Map can be a complex type, need a working example.
     # values are this:
@@ -77,7 +79,8 @@ defmodule Avrora.Schema.Declaration do
     #   personal: { ... }
     #   private: { ... }
     # }
-    state
+
+    extract(type, state)
   end
 
   defp extract({:avro_union_type, _, _} = type, state) do
@@ -99,10 +102,14 @@ defmodule Avrora.Schema.Declaration do
   end
 
   defp extract(type, state) when is_binary(type) do
-    IO.puts("Reference <#{type}>")
-
-    [{:ref, type} | state]
+    if Enum.member?(@reserved_types, type) do
+      IO.puts("Primitive/Complex (reserved)")
+      state
+    else
+      IO.puts("Reference <#{type}>")
+      [{:referenced, type} | state]
+    end
   end
 
-  defp extract(type, state), do: raise("unexpected type `#{type}`, this should never happen")
+  defp extract(type, _state), do: raise("unexpected type `#{type}`, this should never happen")
 end
