@@ -9,8 +9,11 @@
     },
     {
       "name": "visibility",
-      "type": "enum",
-      "symbols": ["private", "public"]
+      "type": {
+        "type": "enum",
+        "name": "VisibilityVariants",
+        "symbols": ["private", "public"]
+      }
     }
   ]
 }
