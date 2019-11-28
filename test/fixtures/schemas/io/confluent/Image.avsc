@@ -14,13 +14,19 @@
     },
     {
       "name": "blob",
-      "type": "fixed",
-      "size": 1048576
+      "type": {
+        "type": "fixed",
+        "name": "ImageSize",
+        "size": 1048576
+      }
     },
     {
       "name": "orientation",
-      "type": "enum",
-      "symbols": ["landscape", "portrait"]
+      "type": {
+        "type": "enum",
+        "name": "OrientationVariants",
+        "symbols": ["landscape", "portrait"]
+      }
     },
     {
       "name": "created_at",

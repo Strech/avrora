@@ -22,7 +22,7 @@ defmodule Avrora.Schema.DeclarationTest do
     test "when schema contains maps" do
       {:ok, declaration} = Declaration.extract(record_with_map())
 
-      assert declaration.referenced == []
+      assert declaration.referenced == ~w(io.confluent.Payment)
 
       assert sort(declaration.defined) ==
                sort(~w(io.confluent.Account io.confluent.Value io.confluent.Option))
@@ -34,6 +34,91 @@ defmodule Avrora.Schema.DeclarationTest do
       assert declaration.referenced == ~w(io.confluent.Payment)
       assert sort(declaration.defined) == sort(~w(io.confluent.Account io.confluent.Tag))
     end
+
+    test "when schema contains enums" do
+      {:ok, declaration} = Declaration.extract(record_with_enum())
+
+      assert declaration.referenced == []
+      assert declaration.defined == ~w(io.confluent.Image)
+    end
+
+    test "when schema contains unions" do
+      {:ok, declaration} = Declaration.extract(record_with_union())
+
+      assert declaration.referenced == ~w(io.confluent.Image)
+      assert sort(declaration.defined) == sort(~w(io.confluent.Message io.confluent.Contact))
+    end
+
+    test "when schema contains fixed" do
+      {:ok, declaration} = Declaration.extract(record_with_fixed())
+
+      assert declaration.referenced == ~w()
+      assert declaration.defined == ~w(io.confluent.Image)
+    end
+  end
+
+  defp record_with_fixed do
+    ~s(
+      {
+        "type": "record",
+        "name": "Image",
+        "namespace": "io.confluent",
+        "fields": [
+          {
+            "name": "blob",
+            "type": {
+              "type": "fixed",
+              "name": "ImageSize",
+              "size": 1048576
+            }
+          }
+        ]
+      }
+    ) |> decode_schema()
+  end
+
+  defp record_with_union do
+    ~s(
+      {
+        "type": "record",
+        "name": "Message",
+        "namespace": "io.confluent",
+        "fields": [
+          {
+            "name": "attachment",
+            "type": [
+              "string",
+              "io.confluent.Image",
+              {
+                "type": "record",
+                "name": "Contact",
+                "fields": [{"name": "email", "type": "string"}]
+              }
+            ]
+          }
+        ]
+      }
+    ) |> decode_schema()
+  end
+
+  defp record_with_enum do
+    ~s(
+      {
+        "type": "record",
+        "name": "Image",
+        "namespace": "io.confluent",
+        "fields": [
+          {
+            "name": "orientation",
+            "type": {
+              "type": "enum",
+              "name": "OrientationVariants",
+              "symbols": ["landscape", "portrait"]
+            }
+          }
+        ]
+      }
+    ) |> decode_schema()
   end
 
   defp record_with_array do
@@ -74,7 +159,20 @@ defmodule Avrora.Schema.DeclarationTest do
         "name": "Account",
         "namespace": "io.confluent",
         "fields": [
-          {"name": "id", "type": "int"},
+          {
+            "name": "tags",
+            "type": {
+              "type": "map",
+              "values": "string"
+            }
+          },
+          {
+            "name": "payment_history",
+            "type": {
+              "type": "map",
+              "values": "io.confluent.Payment"
+            }
+          },
           {
             "name": "settings",
             "type": {

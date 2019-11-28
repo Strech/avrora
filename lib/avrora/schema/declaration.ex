@@ -8,8 +8,6 @@ defmodule Avrora.Schema.Declaration do
   4. Naming: %__MODULE__{defined: [], referenced: []}
   """
 
-  # defstruct [:definitions, :references]
-
   # schema = :avro_json_decoder.decode_schema(File.read!("test/fixtures/schemas/io/confluent/Account.avsc"), allow_bad_references: true)
   # Avrora.Schema.Definition.extract(schema)
 
@@ -53,7 +51,7 @@ defmodule Avrora.Schema.Declaration do
     extract(type, state)
   end
 
-  defp extract({:avro_enum_type, _, _, _aliases, _, _symbols, _fullname, _}, state) do
+  defp extract({:avro_enum_type, _, _, _, _, _, _, _}, state) do
     IO.puts("Enum")
     state
   end
@@ -72,13 +70,6 @@ defmodule Avrora.Schema.Declaration do
 
   defp extract({:avro_map_type, type, _}, state) do
     IO.puts("Map")
-    # TODO: Map can be a complex type, need a working example.
-    # values are this:
-    #
-    # {
-    #   personal: { ... }
-    #   private: { ... }
-    # }
 
     extract(type, state)
   end
