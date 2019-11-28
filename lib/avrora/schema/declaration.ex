@@ -3,10 +3,9 @@ defmodule Avrora.Schema.Declaration do
   TODO
   """
 
-  # schema = :avro_json_decoder.decode_schema(File.read!("test/fixtures/schemas/io/confluent/Account.avsc"), allow_bad_references: true)
-  # Avrora.Schema.Definition.extract(schema)
-
-  @reserved_types ~w(null boolean int long float double bytes string record enum array map union fixed)
+  @reserved_types ~w(
+    null boolean int long float double bytes string record enum array map union fixed
+  )
 
   def extract(schema) do
     definition =
@@ -31,33 +30,20 @@ defmodule Avrora.Schema.Declaration do
     end)
   end
 
-  defp extract({:avro_array_type, type, _}, state) do
-    if is_binary(type) do
-      [{:referenced, type} | state]
-    else
-      extract(type, state)
-    end
-  end
-
   defp extract({:avro_union_type, _, _} = type, state) do
     type
     |> :avro_union.get_types()
-    |> List.foldl(state, fn utype, memo -> memo ++ extract(utype, state) end)
+    |> List.foldl(state, fn typ, memo -> memo ++ extract(typ, state) end)
   end
 
+  defp extract({:avro_array_type, type, _}, state), do: extract(type, state)
   defp extract({:avro_record_field, name, _, type, _, _, _}, state), do: extract(type, state)
-  defp extract({:avro_enum_type, _, _, _, _, _, _, _}, state), do: state
   defp extract({:avro_map_type, type, _}, state), do: extract(type, state)
+  defp extract({:avro_enum_type, _, _, _, _, _, _, _}, state), do: state
   defp extract({:avro_fixed_type, _, _, _, _, _, _}, state), do: state
   defp extract({:avro_primitive_type, _, _}, state), do: state
 
-  defp extract(type, state) when is_binary(type) do
-    if Enum.member?(@reserved_types, type) do
-      state
-    else
-      [{:referenced, type} | state]
-    end
-  end
-
+  defp extract(type, state) when is_binary(type) and type in @reserved_types, do: state
+  defp extract(type, state) when is_binary(type), do: [{:referenced, type} | state]
   defp extract(type, _state), do: raise("unexpected type `#{type}`, this should never happen")
 end
