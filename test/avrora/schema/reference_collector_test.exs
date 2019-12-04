@@ -1,59 +1,57 @@
-defmodule Avrora.Schema.DeclarationTest do
+defmodule Avrora.Schema.ReferenceCollectorTest do
   use ExUnit.Case, async: true
-  doctest Avrora.Schema.Declaration
+  doctest Avrora.Schema.ReferenceCollector
 
-  alias Avrora.Schema.Declaration
+  alias Avrora.Schema.ReferenceCollector
 
-  describe "extract/1" do
+  describe "collect/1" do
     test "when schema contains only primitive types" do
-      {:ok, declaration} = Declaration.extract(record_with_primitive())
+      {:ok, references} = ReferenceCollector.collect(record_with_primitive())
 
-      assert declaration.referenced == []
-      assert sort(declaration.defined) == sort(~w(io.confluent.Payment io.confluent.Transfer))
+      assert references == []
     end
 
     test "when schema contains primitive and reference types" do
-      {:ok, declaration} = Declaration.extract(record_with_reference())
+      {:ok, references} = ReferenceCollector.collect(record_with_reference())
 
-      assert declaration.referenced == ~w(io.confluent.PaymentHistory)
-      assert declaration.defined == ~w(io.confluent.Account)
+      assert Enum.sort(references) ==
+               Enum.sort(~w(io.confluent.PaymentHistory io.confluent.Message))
+    end
+
+    test "when schema contains primitive, sub-type and alias reference" do
+      {:ok, references} = ReferenceCollector.collect(record_with_alias_reference())
+
+      assert references == Enum.sort(~w(io.confluent.PaymentHistory))
     end
 
     test "when schema contains maps" do
-      {:ok, declaration} = Declaration.extract(record_with_map())
+      {:ok, references} = ReferenceCollector.collect(record_with_map())
 
-      assert declaration.referenced == ~w(io.confluent.Payment)
-
-      assert sort(declaration.defined) ==
-               sort(~w(io.confluent.Account io.confluent.Value io.confluent.Option))
+      assert references == ~w(io.confluent.Payment)
     end
 
     test "when schema contains arrays" do
-      {:ok, declaration} = Declaration.extract(record_with_array())
+      {:ok, references} = ReferenceCollector.collect(record_with_array())
 
-      assert declaration.referenced == ~w(io.confluent.Payment)
-      assert sort(declaration.defined) == sort(~w(io.confluent.Account io.confluent.Tag))
+      assert references == ~w(io.confluent.Payment)
     end
 
     test "when schema contains enums" do
-      {:ok, declaration} = Declaration.extract(record_with_enum())
+      {:ok, references} = ReferenceCollector.collect(record_with_enum())
 
-      assert declaration.referenced == []
-      assert declaration.defined == ~w(io.confluent.Image)
+      assert references == []
     end
 
     test "when schema contains unions" do
-      {:ok, declaration} = Declaration.extract(record_with_union())
+      {:ok, references} = ReferenceCollector.collect(record_with_union())
 
-      assert declaration.referenced == ~w(io.confluent.Image)
-      assert sort(declaration.defined) == sort(~w(io.confluent.Message io.confluent.Contact))
+      assert references == ~w(io.confluent.Image)
     end
 
     test "when schema contains fixed" do
-      {:ok, declaration} = Declaration.extract(record_with_fixed())
+      {:ok, references} = ReferenceCollector.collect(record_with_fixed())
 
-      assert declaration.referenced == ~w()
-      assert declaration.defined == ~w(io.confluent.Image)
+      assert references == []
     end
   end
 
@@ -190,6 +188,33 @@ defmodule Avrora.Schema.DeclarationTest do
     ) |> decode_schema()
   end
 
+  defp record_with_alias_reference do
+    ~s(
+      {
+        "type": "record",
+        "name": "Account",
+        "namespace": "io.confluent",
+        "fields": [
+          {"name": "id", "type": "int"},
+          {"name": "payment_history", "type": "io.confluent.PaymentHistory"},
+          {"name": "letters", "type": {"type": "array", "items": "io.confluent.Letter"}},
+          {
+            "name": "messages",
+            "type": {
+              "type": "array",
+              "items": {
+                "name": "Message",
+                "type": "record",
+                "aliases": ["Letter"],
+                "fields": [{"name": "body", "type": "string"}]
+              }
+            }
+          }
+        ]
+      }
+    ) |> decode_schema()
+  end
+
   defp record_with_reference do
     ~s(
       {
@@ -198,7 +223,8 @@ defmodule Avrora.Schema.DeclarationTest do
         "namespace": "io.confluent",
         "fields": [
           {"name": "id", "type": "int"},
-          {"name": "payment_history", "type": "io.confluent.PaymentHistory"}
+          {"name": "payment_history", "type": "io.confluent.PaymentHistory"},
+          {"name": "messages", "type": {"type": "array", "items": "io.confluent.Message"}}
         ]
       }
     ) |> decode_schema()
@@ -219,6 +245,5 @@ defmodule Avrora.Schema.DeclarationTest do
     ) |> decode_schema()
   end
 
-  defp sort(value), do: Enum.sort(value)
   defp decode_schema(json), do: :avro_json_decoder.decode_schema(json, allow_bad_references: true)
 end
