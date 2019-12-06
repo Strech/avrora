@@ -17,13 +17,13 @@ defmodule Avrora.SchemaTest do
       assert schema.json == payment_json()
     end
 
-    test "when payload is a valid json schema with external reference and callback is given" do
+    test "when payload is a valid json schema with external reference and callback returns valid schema" do
       {:ok, schema} =
-        Schema.parse(message_with_reference_json(),
-          callback: fn name ->
+        Schema.parse(
+          message_with_reference_json(),
+          fn name ->
             assert name == "io.confluent.Attachment"
-
-            attachment_erlavro()
+            attachment_json()
           end
         )
 
@@ -44,7 +44,20 @@ defmodule Avrora.SchemaTest do
 
       assert type == :avro_record_type
       assert full_name == "io.confluent.Attachment"
-      assert length(fields) == 2
+      assert length(fields) == 1
+    end
+
+    test "when payload is a valid json schema with external reference and callback returns invalid schema" do
+      result =
+        Schema.parse(
+          message_with_reference_json(),
+          fn name ->
+            assert name == "io.confluent.Attachment"
+            ~s({})
+          end
+        )
+
+      {:error, {:not_found, "type"}} = result
     end
 
     test "when payload is a valid json schema with external reference and no callback is given" do
@@ -68,14 +81,8 @@ defmodule Avrora.SchemaTest do
     end
   end
 
-  defp attachment_erlavro do
-    {:avro_record_type, "Attachment", "io.confluent", "", [],
-     [
-       {:avro_record_field, "name", "", {:avro_primitive_type, "string", []}, :undefined,
-        :ascending, []},
-       {:avro_record_field, "extension", "", {:avro_primitive_type, "string", []}, :undefined,
-        :ascending, []}
-     ], "io.confluent.Attachment", []}
+  defp attachment_json do
+    ~s({"namespace":"io.confluent","name":"Attachment","type":"record","fields":[{"name":"name","type":"string"}]})
   end
 
   defp payment_json do
@@ -87,6 +94,6 @@ defmodule Avrora.SchemaTest do
   end
 
   defp message_json do
-    ~s({"namespace":"io.confluent","name":"Message","type":"record","fields":[{"name":"body","type":"string"},{"name":"attachments","type":{"type":"array","items":{"name":"Attachment","type":"record","fields":[{"name":"name","type":"string"},{"name":"extension","type":"string"}]}}}]})
+    ~s({"namespace":"io.confluent","name":"Message","type":"record","fields":[{"name":"body","type":"string"},{"name":"attachments","type":{"type":"array","items":{"name":"Attachment","type":"record","fields":[{"name":"name","type":"string"}]}}}]})
   end
 end
