@@ -20,7 +20,7 @@ defmodule Avrora.Storage.FileTest do
           assert schema.full_name == "io.confluent.Payment"
         end)
 
-      assert output =~ "schema with version is not allowed"
+      assert output =~ "schema file with version is not allowed"
     end
 
     test "when schema file is not a valid json" do

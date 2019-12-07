@@ -35,19 +35,8 @@ defmodule Avrora.Storage.File do
       "io.confluent.Payment"
   """
   def get(key) when is_binary(key) do
-    with {:ok, schema_name} <- Name.parse(key),
-         filepath <- Path.join(schemas_path(), name_to_filename(schema_name.name)),
-         {:ok, body} <- File.read(filepath) do
-      unless is_nil(schema_name.version) do
-        Logger.warn(
-          "file reading schema with version is not allowed, `#{schema_name.name}` used instead"
-        )
-      end
-
-      Logger.debug("reading schema `#{schema_name.name}` from the file #{filepath}")
-
-      Schema.parse(body)
-    end
+    with {:ok, body} <- read_schema_file_by_name(key),
+         do: Schema.parse(body, &read_schema_file_by_name/1)
   end
 
   @doc false
@@ -56,6 +45,24 @@ defmodule Avrora.Storage.File do
   @doc false
   def put(_key, _value), do: {:error, :unsupported}
 
-  defp name_to_filename(name), do: String.replace(name, ".", "/") <> @extension
+  defp read_schema_file_by_name(name) do
+    with {:ok, schema_name} <- Name.parse(name),
+         filepath <- name_to_filepath(schema_name.name) do
+      unless is_nil(schema_name.version) do
+        Logger.warn(
+          "reading schema file with version is not allowed, `#{schema_name.name}` used instead"
+        )
+      end
+
+      Logger.debug("reading schema `#{schema_name.name}` from the file #{filepath}")
+      File.read(filepath)
+    end
+  end
+
+  defp name_to_filepath(name) do
+    filename = String.replace(name, ".", "/") <> @extension
+    Path.join(schemas_path(), filename)
+  end
+
   defp schemas_path, do: Config.schemas_path()
 end
