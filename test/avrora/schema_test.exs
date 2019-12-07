@@ -19,13 +19,10 @@ defmodule Avrora.SchemaTest do
 
     test "when payload is a valid json schema with external reference and callback returns valid schema" do
       {:ok, schema} =
-        Schema.parse(
-          message_with_reference_json(),
-          fn name ->
-            assert name == "io.confluent.Attachment"
-            attachment_json()
-          end
-        )
+        Schema.parse(message_with_reference_json(), fn name ->
+          assert name == "io.confluent.Attachment"
+          {:ok, attachment_json()}
+        end)
 
       {:ok, {type, _, _, _, _, fields, full_name, _}} = Schema.to_erlavro(schema)
 
@@ -49,19 +46,26 @@ defmodule Avrora.SchemaTest do
 
     test "when payload is a valid json schema with external reference and callback returns invalid schema" do
       result =
-        Schema.parse(
-          message_with_reference_json(),
-          fn name ->
-            assert name == "io.confluent.Attachment"
-            ~s({})
-          end
-        )
+        Schema.parse(message_with_reference_json(), fn name ->
+          assert name == "io.confluent.Attachment"
+          {:ok, ~s({})}
+        end)
 
       {:error, {:not_found, "type"}} = result
     end
 
+    test "when payload is a valid json schema with external reference and callback returns error" do
+      result =
+        Schema.parse(message_with_reference_json(), fn name ->
+          assert name == "io.confluent.Attachment"
+          {:error, :bad_thing_happen}
+        end)
+
+      assert {:error, :bad_thing_happen} == result
+    end
+
     test "when payload is a valid json schema with external reference and no callback is given" do
-      assert {:error, :bad_reference} == Schema.parse(message_with_reference_json())
+      assert {:error, {:not_found, "type"}} == Schema.parse(message_with_reference_json())
     end
 
     test "when payload is an invalid json schema" do

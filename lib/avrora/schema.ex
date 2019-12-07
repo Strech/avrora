@@ -15,7 +15,7 @@ defmodule Avrora.Schema do
           json: String.t()
         }
 
-  @type reference_lookup_fun :: (String.t() -> nil | String.t())
+  @type reference_lookup_fun :: (String.t() -> {:ok, String.t()} | {:error, term()})
   @default_reference_lookup &__MODULE__.reference_lookup/1
 
   @doc """
@@ -33,42 +33,32 @@ defmodule Avrora.Schema do
     with {:ok, schema} <- do_parse(payload),
          {:ok, references} <- ReferenceCollector.collect(schema),
          {_, _, _, _, _, _, full_name, _} <- schema,
-         lookup_table <- :avro_schema_store.new() do
-      _ = :avro_schema_store.add_type(schema, lookup_table)
-
-      references
-      |> Enum.map(&reference_lookup.(&1))
-      |> Enum.reject(&is_nil/1)
-      |> Enum.map(&do_parse/1)
-      |> Enum.each(fn result ->
-        case result do
-          {:ok, schema} -> _ = :avro_schema_store.add_type(schema, lookup_table)
-          {:error, reason} -> throw(reason)
-        end
-      end)
-
-      with {:ok, schema} <- do_compile(full_name, lookup_table) do
-        {
-          :ok,
-          %__MODULE__{
-            id: nil,
-            version: nil,
-            full_name: full_name,
-            lookup_table: lookup_table,
-            json: :avro_json_encoder.encode_type(schema)
-          }
+         schemas <- Enum.map(references, &reference_lookup.(&1)),
+         nil <- Enum.find(schemas, &(elem(&1, 0) == :error)),
+         schemas <- Enum.map(schemas, &do_parse(elem(&1, 1))),
+         nil <- Enum.find(schemas, &(elem(&1, 0) == :error)),
+         lookup_table <- :avro_schema_store.new(),
+         lookup_table <- :avro_schema_store.add_type(schema, lookup_table),
+         :ok <- Enum.each(schemas, &:avro_schema_store.add_type(elem(&1, 1), lookup_table)),
+         {:ok, schema} <- do_compile(full_name, lookup_table) do
+      {
+        :ok,
+        %__MODULE__{
+          id: nil,
+          version: nil,
+          full_name: full_name,
+          lookup_table: lookup_table,
+          json: :avro_json_encoder.encode_type(schema)
         }
-      end
+      }
     end
-  catch
-    reason -> {:error, reason}
   end
 
   @doc """
-  An example of a reference lookup which returns nothing
+  An example of a reference lookup which returns empty JSON body
   """
-  @spec reference_lookup(String.t()) :: nil | String.t()
-  def reference_lookup(_), do: nil
+  @spec reference_lookup(String.t()) :: {:ok, String.t()} | {:error, term()}
+  def reference_lookup(_), do: {:ok, ~s({})}
 
   @doc """
   Convert struct to `erlavro` format and look up in `avro_schema_store`.
