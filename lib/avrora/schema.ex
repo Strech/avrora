@@ -30,16 +30,10 @@ defmodule Avrora.Schema do
   """
   @spec parse(String.t(), reference_lookup_fun) :: {:ok, t()} | {:error, term()}
   def parse(payload, reference_lookup \\ @default_reference_lookup) when is_binary(payload) do
-    with {:ok, schema} <- do_parse(payload),
-         {:ok, references} <- ReferenceCollector.collect(schema),
+    with {:ok, [schema | _] = schemas} <- parse_recursive(payload, reference_lookup),
          {_, _, _, _, _, _, full_name, _} <- schema,
-         schemas <- Enum.map(references, &reference_lookup.(&1)),
-         nil <- Enum.find(schemas, &(elem(&1, 0) == :error)),
-         schemas <- Enum.map(schemas, &do_parse(elem(&1, 1))),
-         nil <- Enum.find(schemas, &(elem(&1, 0) == :error)),
          lookup_table <- :avro_schema_store.new(),
-         lookup_table <- :avro_schema_store.add_type(schema, lookup_table),
-         :ok <- Enum.each(schemas, &:avro_schema_store.add_type(elem(&1, 1), lookup_table)),
+         :ok <- Enum.each(schemas, &:avro_schema_store.add_type(&1, lookup_table)),
          {:ok, schema} <- do_compile(full_name, lookup_table) do
       {
         :ok,
@@ -76,6 +70,17 @@ defmodule Avrora.Schema do
   @spec to_erlavro(t()) :: {:ok, term()} | {:error, term()}
   def to_erlavro(%__MODULE__{} = schema),
     do: do_compile(schema.full_name, schema.lookup_table)
+
+  defp parse_recursive(payload, reference_lookup) do
+    with {:ok, schema} <- do_parse(payload),
+         {:ok, references} <- ReferenceCollector.collect(schema),
+         payloads <- Enum.map(references, &reference_lookup.(&1)),
+         :ok <- Enum.find(payloads, :ok, &(elem(&1, 0) == :error)),
+         schemas <- Enum.map(payloads, &do_parse(elem(&1, 1))),
+         :ok <- Enum.find(schemas, :ok, &(elem(&1, 0) == :error)) do
+      {:ok, [schema | Enum.map(schemas, &elem(&1, 1))]}
+    end
+  end
 
   # Compile complete version of the `erlavro` format with all references
   # being resolved, converting errors to error return
