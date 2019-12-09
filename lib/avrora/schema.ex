@@ -71,6 +71,9 @@ defmodule Avrora.Schema do
   def to_erlavro(%__MODULE__{} = schema),
     do: do_compile(schema.full_name, schema.lookup_table)
 
+  # FIXME: This is suboptimal way to traverse references because
+  #        the same reference from difference schemas will be
+  #        parsed and loaded twice or more times.
   defp parse_recursive(payload, reference_lookup) do
     with {:ok, schema} <- do_parse(payload),
          {:ok, references} <- ReferenceCollector.collect(schema) do
