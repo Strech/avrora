@@ -20,8 +20,11 @@ defmodule Avrora.SchemaTest do
     test "when payload is a valid json schema with external reference and callback returns valid schema" do
       {:ok, schema} =
         Schema.parse(message_with_reference_json(), fn name ->
-          assert name == "io.confluent.Attachment"
-          {:ok, attachment_json()}
+          case name do
+            "io.confluent.Attachment" -> {:ok, attachment_json()}
+            "io.confluent.Signature" -> {:ok, signature_json()}
+            _ -> raise "unknown reference name!"
+          end
         end)
 
       {:ok, {type, _, _, _, _, fields, full_name, _}} = Schema.to_erlavro(schema)
@@ -41,6 +44,13 @@ defmodule Avrora.SchemaTest do
 
       assert type == :avro_record_type
       assert full_name == "io.confluent.Attachment"
+      assert length(fields) == 2
+
+      {:avro_record_field, _, _, signature_type, _, _, _} = List.last(fields)
+      {type, _, _, _, _, fields, full_name, _} = signature_type
+
+      assert type == :avro_record_type
+      assert full_name == "io.confluent.Signature"
       assert length(fields) == 1
     end
 
@@ -85,8 +95,12 @@ defmodule Avrora.SchemaTest do
     end
   end
 
+  defp signature_json do
+    ~s({"namespace":"io.confluent","name":"Signature","type":"record","fields":[{"name":"checksum","type":{"name":"SignatureChecksum","type":"fixed","size":1048576}}]})
+  end
+
   defp attachment_json do
-    ~s({"namespace":"io.confluent","name":"Attachment","type":"record","fields":[{"name":"name","type":"string"}]})
+    ~s({"namespace":"io.confluent","name":"Attachment","type":"record","fields":[{"name":"name","type":"string"},{"name":"signature","type":"io.confluent.Signature"}]})
   end
 
   defp payment_json do
@@ -98,6 +112,6 @@ defmodule Avrora.SchemaTest do
   end
 
   defp message_json do
-    ~s({"namespace":"io.confluent","name":"Message","type":"record","fields":[{"name":"body","type":"string"},{"name":"attachments","type":{"type":"array","items":{"name":"Attachment","type":"record","fields":[{"name":"name","type":"string"}]}}}]})
+    ~s({"namespace":"io.confluent","name":"Message","type":"record","fields":[{"name":"body","type":"string"},{"name":"attachments","type":{"type":"array","items":{"name":"Attachment","type":"record","fields":[{"name":"name","type":"string"},{"name":"signature","type":{"name":"Signature","type":"record","fields":[{"name":"checksum","type":{"name":"SignatureChecksum","type":"fixed","size":1048576}}]}}]}}}]})
   end
 end

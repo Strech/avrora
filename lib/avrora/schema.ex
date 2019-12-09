@@ -82,9 +82,9 @@ defmodule Avrora.Schema do
              end
            end),
          schemas <-
-           Enum.map(payloads, fn payload ->
-             case do_parse(payload) do
-               {:ok, schema} -> schema
+           Enum.flat_map(payloads, fn payload ->
+             case parse_recursive(payload, reference_lookup) do
+               {:ok, schemas} -> schemas
                {:error, error} -> throw(error)
              end
            end) do
@@ -92,17 +92,6 @@ defmodule Avrora.Schema do
     end
   catch
     error -> {:error, error}
-  end
-
-  defp parse_recursive_2(payload, reference_lookup) do
-    with {:ok, schema} <- do_parse(payload),
-         {:ok, references} <- ReferenceCollector.collect(schema),
-         payloads <- Enum.map(references, &reference_lookup.(&1)),
-         :ok <- Enum.find(payloads, :ok, &(elem(&1, 0) == :error)),
-         schemas <- Enum.map(payloads, &do_parse(elem(&1, 1))),
-         :ok <- Enum.find(schemas, :ok, &(elem(&1, 0) == :error)) do
-      {:ok, [schema | Enum.map(schemas, &elem(&1, 1))]}
-    end
   end
 
   # Compile complete version of the `erlavro` format with all references
