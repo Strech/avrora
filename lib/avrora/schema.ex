@@ -16,7 +16,7 @@ defmodule Avrora.Schema do
         }
 
   @type reference_lookup_fun :: (String.t() -> {:ok, String.t()} | {:error, term()})
-  @default_reference_lookup &__MODULE__.reference_lookup/1
+  @reference_lookup_fun &__MODULE__.reference_lookup/1
 
   @doc """
   Parse Avro schema JSON and convert to struct.
@@ -29,11 +29,11 @@ defmodule Avrora.Schema do
       "io.confluent.Payment"
   """
   @spec parse(String.t(), reference_lookup_fun) :: {:ok, t()} | {:error, term()}
-  def parse(payload, reference_lookup \\ @default_reference_lookup) when is_binary(payload) do
-    with {:ok, [schema | _] = schemas} <- parse_recursive(payload, reference_lookup),
+  def parse(payload, reference_lookup_fun \\ @reference_lookup_fun) when is_binary(payload) do
+    lookup_table = :avro_schema_store.new()
+
+    with {:ok, [schema | _]} <- parse_recursive(payload, lookup_table, reference_lookup_fun),
          {_, _, _, _, _, _, full_name, _} <- schema,
-         lookup_table <- :avro_schema_store.new(),
-         :ok <- Enum.each(schemas, &:avro_schema_store.add_type(&1, lookup_table)),
          {:ok, schema} <- do_compile(full_name, lookup_table) do
       {
         :ok,
@@ -45,6 +45,10 @@ defmodule Avrora.Schema do
           json: :avro_json_encoder.encode_type(schema)
         }
       }
+    else
+      error ->
+        :avro_schema_store.close(lookup_table)
+        error
     end
   end
 
@@ -71,20 +75,20 @@ defmodule Avrora.Schema do
   def to_erlavro(%__MODULE__{} = schema),
     do: do_compile(schema.full_name, schema.lookup_table)
 
-  # FIXME: This is suboptimal way to traverse references because
-  #        the same reference from difference schemas will be
-  #        parsed and loaded twice or more times.
-  defp parse_recursive(payload, reference_lookup) do
+  defp parse_recursive(payload, lookup_table, reference_lookup_fun) do
     with {:ok, schema} <- do_parse(payload),
-         {:ok, references} <- ReferenceCollector.collect(schema) do
+         {:ok, references} <- ReferenceCollector.collect(schema),
+         lookup_table <- :avro_schema_store.add_type(schema, lookup_table) do
       payloads =
-        Enum.map(references, fn reference ->
-          reference |> reference_lookup.() |> unwrap!()
+        references
+        |> Enum.reject(&:avro_schema_store.lookup_type(&1, lookup_table))
+        |> Enum.map(fn reference ->
+          reference |> reference_lookup_fun.() |> unwrap!()
         end)
 
       schemas =
         Enum.flat_map(payloads, fn payload ->
-          payload |> parse_recursive(reference_lookup) |> unwrap!()
+          payload |> parse_recursive(lookup_table, reference_lookup_fun) |> unwrap!()
         end)
 
       {:ok, [schema | schemas]}

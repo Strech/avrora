@@ -12,7 +12,7 @@ defmodule Avrora.Storage.FileTest do
       assert schema.full_name == "io.confluent.Payment"
     end
 
-    test "when schema file was found and contains nested references" do
+    test "when schema file was found and contains nested references with two io.confluent.Payment references" do
       output =
         capture_log(fn ->
           {:ok, schema} = File.get("io.confluent.Account")
@@ -28,9 +28,7 @@ defmodule Avrora.Storage.FileTest do
       assert output =~ "reading schema `io.confluent.Image`"
       assert output =~ "reading schema `io.confluent.File`"
 
-      # FIXME: Due to suboptimal reference traversal file with path `io/confluent/File.avsc`
-      #        will be read twice. Improvement will be in the next version.
-      # assert length(Regex.scan(~r/reading schema .*`/, output)) == 7
+      assert length(Regex.scan(~r/reading schema .*`/, output)) == 7
     end
 
     test "when schema name contains version and when schema file was found" do
