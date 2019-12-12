@@ -1,6 +1,6 @@
 defmodule Avrora.Schema.ReferenceCollector do
   @moduledoc """
-  Collect non local type references from `erlavro` structures
+  Collect non local type references from `erlavro` structures.
   """
 
   @builtin_types ~w(
