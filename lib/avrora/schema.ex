@@ -47,7 +47,7 @@ defmodule Avrora.Schema do
       }
     else
       {:error, reason} ->
-        :avro_schema_store.close(lookup_table)
+        :ok = :avro_schema_store.close(lookup_table)
         {:error, reason}
     end
   end
