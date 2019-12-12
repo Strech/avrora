@@ -96,7 +96,6 @@ defmodule Avrora.MixProject do
 
   defp aliases do
     [
-      test: ["test --max-cases 1"],
       docso: ["docs", "cmd open doc/index.html"],
       check: ["cmd mix coveralls", "dialyzer", "credo"],
       release: [
