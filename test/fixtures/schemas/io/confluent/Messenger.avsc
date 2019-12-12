@@ -14,6 +14,21 @@
             {
               "name": "text",
               "type": "string"
+            },
+            {
+              "name": "recepients",
+              "type": {
+                "type": "map",
+                "values": "string"
+              }
+            },
+            {
+              "name": "attachment",
+              "type": [
+                "io.confluent.File",
+                "io.confluent.Image",
+                "io.confluent.Payment"
+              ]
             }
           ]
         }

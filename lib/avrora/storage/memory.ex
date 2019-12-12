@@ -140,7 +140,7 @@ defmodule Avrora.Storage.Memory do
       iex> {:ok, _} = Avrora.Storage.Memory.expire("my-key", 100)
       iex> Avrora.Storage.Memory.get("my-key")
       {:ok, %Avrora.Schema{id: nil, json: "{}"}}
-      iex> Process.sleep(100)
+      iex> Process.sleep(200)
       iex> Avrora.Storage.Memory.get("my-key")
       {:ok, nil}
   """

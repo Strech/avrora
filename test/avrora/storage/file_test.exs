@@ -12,6 +12,25 @@ defmodule Avrora.Storage.FileTest do
       assert schema.full_name == "io.confluent.Payment"
     end
 
+    test "when schema file was found and contains nested references with two io.confluent.Payment references" do
+      output =
+        capture_log(fn ->
+          {:ok, schema} = File.get("io.confluent.Account")
+
+          assert schema.full_name == "io.confluent.Account"
+        end)
+
+      assert output =~ "reading schema `io.confluent.Account`"
+      assert output =~ "reading schema `io.confluent.PaymentHistory`"
+      assert output =~ "reading schema `io.confluent.Payment`"
+      assert output =~ "reading schema `io.confluent.Messenger`"
+      assert output =~ "reading schema `io.confluent.Email`"
+      assert output =~ "reading schema `io.confluent.Image`"
+      assert output =~ "reading schema `io.confluent.File`"
+
+      assert length(Regex.scan(~r/reading schema .*`/, output)) == 7
+    end
+
     test "when schema name contains version and when schema file was found" do
       output =
         capture_log(fn ->
@@ -20,7 +39,7 @@ defmodule Avrora.Storage.FileTest do
           assert schema.full_name == "io.confluent.Payment"
         end)
 
-      assert output =~ "schema with version is not allowed"
+      assert output =~ "schema file with version is not allowed"
     end
 
     test "when schema file is not a valid json" do

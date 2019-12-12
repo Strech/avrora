@@ -1,0 +1,37 @@
+{
+  "type": "record",
+  "name": "Image",
+  "namespace": "io.confluent",
+  "aliases": ["Picture", "Photo"],
+  "fields": [
+    {
+      "name": "name",
+      "type": "string"
+    },
+    {
+      "name": "extension",
+      "type": "string"
+    },
+    {
+      "name": "blob",
+      "type": {
+        "type": "fixed",
+        "name": "ImageSize",
+        "size": 1048576
+      }
+    },
+    {
+      "name": "orientation",
+      "type": {
+        "type": "enum",
+        "name": "OrientationVariants",
+        "symbols": ["landscape", "portrait"]
+      }
+    },
+    {
+      "name": "created_at",
+      "type": "long",
+      "logicalType": "timestamp-millis"
+    }
+  ]
+}

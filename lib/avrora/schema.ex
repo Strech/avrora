@@ -3,6 +3,8 @@ defmodule Avrora.Schema do
   Convenience wrapper struct for `AvroEx.Schema` and Confluent Schema Registry.
   """
 
+  alias Avrora.Schema.ReferenceCollector
+
   defstruct [:id, :version, :full_name, :lookup_table, :json]
 
   @type t :: %__MODULE__{
@@ -12,6 +14,9 @@ defmodule Avrora.Schema do
           lookup_table: reference(),
           json: String.t()
         }
+
+  @type reference_lookup_fun :: (String.t() -> {:ok, String.t()} | {:error, term()})
+  @reference_lookup_fun &__MODULE__.reference_lookup/1
 
   @doc """
   Parse Avro schema JSON and convert to struct.
@@ -23,12 +28,13 @@ defmodule Avrora.Schema do
       iex> schema.full_name
       "io.confluent.Payment"
   """
-  @spec parse(String.t()) :: {:ok, t()} | {:error, term()}
-  def parse(payload) when is_binary(payload) do
-    with {:ok, schema} <- do_parse(payload),
+  @spec parse(String.t(), reference_lookup_fun) :: {:ok, t()} | {:error, term()}
+  def parse(payload, reference_lookup_fun \\ @reference_lookup_fun) when is_binary(payload) do
+    lookup_table = :avro_schema_store.new()
+
+    with {:ok, [schema | _]} <- parse_recursive(payload, lookup_table, reference_lookup_fun),
          {_, _, _, _, _, _, full_name, _} <- schema,
-         lookup_table <- :avro_schema_store.new(),
-         lookup_table <- :avro_schema_store.add_type(schema, lookup_table) do
+         {:ok, schema} <- do_compile(full_name, lookup_table) do
       {
         :ok,
         %__MODULE__{
@@ -36,11 +42,21 @@ defmodule Avrora.Schema do
           version: nil,
           full_name: full_name,
           lookup_table: lookup_table,
-          json: payload
+          json: :avro_json_encoder.encode_type(schema)
         }
       }
+    else
+      {:error, reason} ->
+        :ok = :avro_schema_store.close(lookup_table)
+        {:error, reason}
     end
   end
+
+  @doc """
+  An example of a reference lookup which returns empty JSON body
+  """
+  @spec reference_lookup(String.t()) :: {:ok, String.t()} | {:error, term()}
+  def reference_lookup(_), do: {:ok, ~s({})}
 
   @doc """
   Convert struct to `erlavro` format and look up in `avro_schema_store`.
@@ -55,13 +71,47 @@ defmodule Avrora.Schema do
       iex> type
       :avro_record_type
   """
-  @spec parse(t()) :: {:ok, term()} | {:error, term()}
+  @spec to_erlavro(t()) :: {:ok, term()} | {:error, term()}
   def to_erlavro(%__MODULE__{} = schema),
-    do: :avro_schema_store.lookup_type(schema.full_name, schema.lookup_table)
+    do: do_compile(schema.full_name, schema.lookup_table)
 
-  # Parse schema, converting errors to error return
+  defp parse_recursive(payload, lookup_table, reference_lookup_fun) do
+    with {:ok, schema} <- do_parse(payload),
+         {:ok, references} <- ReferenceCollector.collect(schema),
+         lookup_table <- :avro_schema_store.add_type(schema, lookup_table) do
+      payloads =
+        references
+        |> Enum.reject(&:avro_schema_store.lookup_type(&1, lookup_table))
+        |> Enum.map(fn reference ->
+          reference |> reference_lookup_fun.() |> unwrap!()
+        end)
+
+      schemas =
+        Enum.flat_map(payloads, fn payload ->
+          payload |> parse_recursive(lookup_table, reference_lookup_fun) |> unwrap!()
+        end)
+
+      {:ok, [schema | schemas]}
+    end
+  catch
+    error -> {:error, error}
+  end
+
+  defp unwrap!({:ok, result}), do: result
+  defp unwrap!({:error, error}), do: throw(error)
+
+  # Compile complete version of the `erlavro` format with all references
+  # being resolved, converting errors to error return
+  defp do_compile(full_name, lookup_table) do
+    {:ok, :avro_util.expand_type(full_name, lookup_table)}
+  rescue
+    _ in MatchError -> {:error, :bad_reference}
+    error in ErlangError -> {:error, error.original}
+  end
+
+  # Parse schema to `erlavro` format, converting errors to error return
   defp do_parse(payload) do
-    {:ok, :avro_json_decoder.decode_schema(payload)}
+    {:ok, :avro_json_decoder.decode_schema(payload, allow_bad_references: true)}
   rescue
     error in ArgumentError -> {:error, error.message}
     error in ErlangError -> {:error, error.original}

@@ -1,0 +1,21 @@
+{
+  "type": "record",
+  "name": "PaymentHistory",
+  "namespace": "io.confluent",
+  "fields": [
+    {
+      "name": "incoming",
+      "type": {
+        "type": "array",
+        "items": "io.confluent.Payment"
+      }
+    },
+    {
+      "name": "outgoing",
+      "type": {
+        "type": "array",
+        "items": "io.confluent.Payment"
+      }
+    }
+  ]
+}

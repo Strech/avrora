@@ -1,0 +1,19 @@
+{
+  "type": "record",
+  "name": "Email",
+  "namespace": "io.confluent",
+  "fields": [
+    {
+      "name": "address",
+      "type": "string"
+    },
+    {
+      "name": "visibility",
+      "type": {
+        "type": "enum",
+        "name": "VisibilityVariants",
+        "symbols": ["private", "public"]
+      }
+    }
+  ]
+}
