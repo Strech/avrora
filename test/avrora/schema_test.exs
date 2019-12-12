@@ -6,8 +6,12 @@ defmodule Avrora.SchemaTest do
 
   describe "parse/2" do
     test "when payload is a valid json schema" do
+      tables_count = length(:ets.all())
+
       {:ok, schema} = Schema.parse(payment_json())
       {:ok, {type, _, _, _, _, fields, full_name, _}} = Schema.to_erlavro(schema)
+
+      assert length(:ets.all()) == tables_count + 1
 
       assert type == :avro_record_type
       assert full_name == "io.confluent.Payment"
@@ -18,6 +22,8 @@ defmodule Avrora.SchemaTest do
     end
 
     test "when payload is a valid json schema with external reference and callback returns valid schema" do
+      tables_count = length(:ets.all())
+
       {:ok, schema} =
         Schema.parse(message_with_reference_json(), fn name ->
           case name do
@@ -28,6 +34,8 @@ defmodule Avrora.SchemaTest do
         end)
 
       {:ok, {type, _, _, _, _, fields, full_name, _}} = Schema.to_erlavro(schema)
+
+      assert length(:ets.all()) == tables_count + 1
 
       assert type == :avro_record_type
       assert full_name == "io.confluent.Message"
@@ -55,22 +63,28 @@ defmodule Avrora.SchemaTest do
     end
 
     test "when payload is a valid json schema with external reference and callback returns invalid schema" do
+      tables_count = length(:ets.all())
+
       result =
         Schema.parse(message_with_reference_json(), fn name ->
           assert name == "io.confluent.Attachment"
           {:ok, ~s({})}
         end)
 
-      {:error, {:not_found, "type"}} = result
+      assert length(:ets.all()) == tables_count
+      assert {:error, {:not_found, "type"}} == result
     end
 
     test "when payload is a valid json schema with external reference and callback returns error" do
+      tables_count = length(:ets.all())
+
       result =
         Schema.parse(message_with_reference_json(), fn name ->
           assert name == "io.confluent.Attachment"
           {:error, :bad_thing_happen}
         end)
 
+      assert length(:ets.all()) == tables_count
       assert {:error, :bad_thing_happen} == result
     end
 
