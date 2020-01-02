@@ -45,7 +45,7 @@ Configure the library in `config/config.exs`:
 ```elixir
 config :avrora,
   registry_url: "http://localhost:8081",
-  schemas_path: Path.expand("./priv/schemas")
+  schemas_path: Path.expand("./priv/schemas"),
   names_cache_ttl: :timer.minutes(5)
 ```
 
