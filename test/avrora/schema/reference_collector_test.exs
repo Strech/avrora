@@ -53,6 +53,12 @@ defmodule Avrora.Schema.ReferenceCollectorTest do
 
       assert references == []
     end
+
+    test "when schema contains many fields" do
+      {:ok, references} = ReferenceCollector.collect(record_with_many_fields())
+
+      assert references == []
+    end
   end
 
   defp record_with_fixed do
@@ -243,6 +249,13 @@ defmodule Avrora.Schema.ReferenceCollectorTest do
         ]
       }
     ) |> decode_schema()
+  end
+
+  defp record_with_many_fields do
+    File.read!(
+      Path.join(__DIR__, "../../../test/fixtures/schemas/io/confluent/MailgunEvent.avsc")
+    )
+    |> decode_schema()
   end
 
   defp decode_schema(json), do: :avro_json_decoder.decode_schema(json, allow_bad_references: true)
