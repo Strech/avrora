@@ -56,7 +56,7 @@ defmodule Avrora.Schema.ReferenceCollector do
   defp do_collect({:avro_union_type, _, _} = type) do
     type
     |> :avro_union.get_types()
-    |> List.foldl([], fn typ, memo -> memo ++ do_collect(typ) end)
+    |> Enum.flat_map(&do_collect/1)
   end
 
   defp do_collect({:avro_array_type, type, _}), do: do_collect(type)
