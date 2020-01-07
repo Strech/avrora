@@ -252,9 +252,9 @@ defmodule Avrora.Schema.ReferenceCollectorTest do
   end
 
   defp record_with_many_fields do
-    File.read!(
-      Path.join(__DIR__, "../../../test/fixtures/schemas/io/confluent/MailgunEvent.avsc")
-    )
+    "./test/fixtures/schemas/com/mailgun/Event.avsc"
+    |> Path.expand()
+    |> File.read!()
     |> decode_schema()
   end
 

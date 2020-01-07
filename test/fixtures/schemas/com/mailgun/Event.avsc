@@ -1,85 +1,18 @@
 {
-  "namespace": "io.confluent",
-  "name": "MailgunEvent",
+  "namespace": "com.mailgun",
+  "name": "Event",
   "type": "record",
   "fields": [
-    {
-      "name": "event",
-      "type": "string"
-    },
-    {
-      "name": "id",
-      "type": "string"
-    },
-    {
-      "name": "timestamp",
-      "type": "float"
-    },
-    {
-      "name": "log_level",
-      "type": {
-        "type": "string"
-      }
-    },
-    {
-      "name": "recipient",
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    {
-      "name": "recipient_domain",
-      "type": [
-        "null",
-        {
-          "type": "string"
-        }
-      ]
-    },
-    {
-      "name": "reason",
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    {
-      "name": "severity",
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    {
-      "name": "url",
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    {
-      "name": "tags",
-      "type": [
-        "null",
-        {
-          "type": "array",
-          "items": "string"
-        }
-      ]
-    },
     {
       "name": "user_variables",
       "type": {
         "type": "record",
         "name": "UserVariables",
+        "bq.source_name": "user-variables",
         "fields": [
           {
             "name": "thread_id",
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         ]
       }
@@ -94,24 +27,15 @@
           "fields": [
             {
               "name": "sender",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             {
               "name": "transport",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             {
               "name": "targets",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           ]
         }
@@ -124,27 +48,23 @@
         {
           "type": "record",
           "name": "DeliveryStatus",
+          "bq.source_name": "delivery-status",
           "fields": [
             {
               "name": "message",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             {
               "name": "description",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             {
               "name": "attempt_no",
               "type": [
                 "null",
                 {
-                  "type": "int"
+                  "type": "int",
+                  "bq.source_name": "attempt-no"
                 }
               ]
             }
@@ -159,13 +79,15 @@
         {
           "type": "record",
           "name": "ClientInfo",
+          "bq.source_name": "client-info",
           "fields": [
             {
               "name": "client_type",
               "type": [
                 "null",
                 {
-                  "type": "string"
+                  "type": "string",
+                  "bq.source_name": "client-type"
                 }
               ]
             },
@@ -174,7 +96,8 @@
               "type": [
                 "null",
                 {
-                  "type": "string"
+                  "type": "string",
+                  "bq.source_name": "client-os"
                 }
               ]
             },
@@ -183,7 +106,8 @@
               "type": [
                 "null",
                 {
-                  "type": "string"
+                  "type": "string",
+                  "bq.source_name": "device-type"
                 }
               ]
             },
@@ -192,7 +116,8 @@
               "type": [
                 "null",
                 {
-                  "type": "string"
+                  "type": "string",
+                  "bq.source_name": "client-name"
                 }
               ]
             },
@@ -201,7 +126,8 @@
               "type": [
                 "null",
                 {
-                  "type": "string"
+                  "type": "string",
+                  "bq.source_name": "user-agent"
                 }
               ]
             }
@@ -219,36 +145,21 @@
           "fields": [
             {
               "name": "country",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             {
               "name": "region",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             {
               "name": "city",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           ]
         }
       ]
     },
-    {
-      "name": "ip",
-      "type": [
-        "null",
-        "string"
-      ]
-    },
+
     {
       "name": "message",
       "type": [
@@ -267,33 +178,25 @@
                   "fields": [
                     {
                       "name": "to",
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     {
                       "name": "message_id",
                       "type": [
                         "null",
                         {
-                          "type": "string"
+                          "type": "string",
+                          "bq.source_name": "message-id"
                         }
                       ]
                     },
                     {
                       "name": "from",
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     {
                       "name": "subject",
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     }
                   ]
                 }
@@ -301,10 +204,7 @@
             },
             {
               "name": "size",
-              "type": [
-                "null",
-                "int"
-              ]
+              "type": ["null", "int"]
             }
           ]
         }
