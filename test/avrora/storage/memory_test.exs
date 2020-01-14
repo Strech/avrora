@@ -7,17 +7,17 @@ defmodule Avrora.Storage.MemoryTest do
   setup do
     pid = start_supervised!({Memory, name: :test_schema_storage})
 
-    %{schema_storage: pid}
+    %{memory: pid}
   end
 
   describe "put/3" do
-    test "when key is new", %{schema_storage: pid} do
+    test "when key is new", %{memory: pid} do
       assert get(pid, "my-key") == {:ok, nil}
       assert put(pid, "my-key", schema()) == {:ok, schema()}
       assert get(pid, "my-key") == {:ok, schema()}
     end
 
-    test "when key already exists", %{schema_storage: pid} do
+    test "when key already exists", %{memory: pid} do
       {:ok, _} = put(pid, "my-key", schema())
 
       assert get(pid, "my-key") == {:ok, schema()}
@@ -27,19 +27,19 @@ defmodule Avrora.Storage.MemoryTest do
   end
 
   describe "get/2" do
-    test "when key already exists", %{schema_storage: pid} do
+    test "when key already exists", %{memory: pid} do
       {:ok, _} = put(pid, "my-key", schema())
 
       assert get(pid, "my-key") == {:ok, schema()}
     end
 
-    test "when key does not exist", %{schema_storage: pid} do
+    test "when key does not exist", %{memory: pid} do
       assert get(pid, "my-key") == {:ok, nil}
     end
   end
 
   describe "expire/3" do
-    test "when key already exists", %{schema_storage: pid} do
+    test "when key already exists", %{memory: pid} do
       {:ok, _} = put(pid, "my-key-to-expire", schema())
       {:ok, _} = expire(pid, "my-key-to-expire", 200)
 
@@ -48,7 +48,7 @@ defmodule Avrora.Storage.MemoryTest do
       assert get(pid, "my-key-to-expire") == {:ok, nil}
     end
 
-    test "when key does not exist", %{schema_storage: pid} do
+    test "when key does not exist", %{memory: pid} do
       {:ok, _} = expire(pid, "my-key-to-expire", 100)
 
       assert get(pid, "my-key-to-expire") == {:ok, nil}
@@ -58,7 +58,7 @@ defmodule Avrora.Storage.MemoryTest do
   end
 
   describe "delete/2" do
-    test "when key already exists", %{schema_storage: pid} do
+    test "when key already exists", %{memory: pid} do
       {:ok, _} = put(pid, "my-key-to-delete", schema())
 
       assert get(pid, "my-key-to-delete") == {:ok, schema()}
@@ -66,10 +66,21 @@ defmodule Avrora.Storage.MemoryTest do
       assert get(pid, "my-key-to-delete") == {:ok, nil}
     end
 
-    test "when key does not exist", %{schema_storage: pid} do
+    test "when key does not exist", %{memory: pid} do
       assert get(pid, "my-key-to-delete") == {:ok, nil}
       assert {:ok, true} = delete(pid, "my-key-to-delete")
       assert get(pid, "my-key-to-delete") == {:ok, nil}
+    end
+  end
+
+  describe "flush/0" do
+    test "when everything was cleaned", %{memory: pid} do
+      assert get(pid, "my-key") == {:ok, nil}
+      assert put(pid, "my-key", schema()) == {:ok, schema()}
+      assert get(pid, "my-key") == {:ok, schema()}
+
+      assert flush(pid) == {:ok, true}
+      assert get(pid, "my-key") == {:ok, nil}
     end
   end
 
@@ -77,6 +88,7 @@ defmodule Avrora.Storage.MemoryTest do
   defp put(pid, key, value), do: Memory.put(pid, key, value)
   defp delete(pid, key), do: Memory.delete(pid, key)
   defp expire(pid, key, ttl), do: Memory.expire(pid, key, ttl)
+  defp flush(pid), do: Memory.flush(pid)
 
   defp schema,
     do: %Avrora.Schema{

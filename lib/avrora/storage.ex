@@ -27,5 +27,7 @@ defmodule Avrora.Storage do
 
     @callback expire(key :: Storage.schema_id(), ttl :: timeout()) ::
                 {:ok, timestamp :: timestamp()} | {:error, reason :: term()}
+
+    @callback flush() :: {:ok, result :: boolean()} | {:error, reason :: term()}
   end
 end

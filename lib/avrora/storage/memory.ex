@@ -70,6 +70,12 @@ defmodule Avrora.Storage.Memory do
     {:reply, :ets.delete(table, key), state}
   end
 
+  @impl true
+  def handle_call({:flush}, _from, state) do
+    {:ok, table} = Keyword.fetch(state, :table)
+    {:reply, :ets.delete_all_objects(table), state}
+  end
+
   @doc """
   Get schema by key.
 
@@ -154,6 +160,25 @@ defmodule Avrora.Storage.Memory do
   @spec expire(pid() | atom(), Storage.schema_id(), timeout()) ::
           {:ok, Storage.Transient.timestamp()} | {:error, term()}
   def expire(pid, key, ttl), do: {GenServer.cast(pid, {:expire, key, ttl}), timestamp(ttl)}
+
+  @doc """
+  Complete clean up of the storage. Useful for testing.
+
+  ## Examples
+      iex> _ = Avrora.Storage.Memory.start_link()
+      iex> schema = %Avrora.Schema{id: nil, json: "{}"}
+      iex> Avrora.Storage.Memory.put("my-key", schema)
+      {:ok, %Avrora.Schema{id: nil, json: "{}"}}
+      iex> {:ok, _} = Avrora.Storage.Memory.flush()
+      iex> Avrora.Storage.Memory.get("my-key")
+      {:ok, nil}
+  """
+  @impl true
+  def flush, do: flush(__MODULE__)
+
+  @doc false
+  @spec flush(pid() | atom()) :: {:ok, boolean()} | {:error, term()}
+  def flush(pid), do: {:ok, GenServer.call(pid, {:flush})}
 
   defp timestamp(shift), do: trunc(System.system_time(:second) + shift / 1_000)
 end
