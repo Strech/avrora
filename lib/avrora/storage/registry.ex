@@ -9,7 +9,8 @@ defmodule Avrora.Storage.Registry do
 
   require Logger
 
-  alias Avrora.{Config, Name, Schema}
+  alias Avrora.{Config, Schema}
+  alias Avrora.Schema.Name
 
   @behaviour Avrora.Storage
   @content_type "application/vnd.schemaregistry.v1+json"

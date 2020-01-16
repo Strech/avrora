@@ -1,4 +1,4 @@
-defmodule Avrora.Name do
+defmodule Avrora.Schema.Name do
   @moduledoc """
   Struct for versioned schema names like `io.confluent.Payment:42`.
   """
@@ -17,10 +17,10 @@ defmodule Avrora.Name do
 
   ## Examples
 
-      iex> Avrora.Name.parse("Payment")
-      {:ok, %Avrora.Name{name: "Payment", version: nil}}
-      iex> Avrora.Name.parse("io.confluent.Payment:42")
-      {:ok, %Avrora.Name{name: "io.confluent.Payment", version: 42}}
+      iex> Avrora.Schema.Name.parse("Payment")
+      {:ok, %Avrora.Schema.Name{name: "Payment", version: nil}}
+      iex> Avrora.Schema.Name.parse("io.confluent.Payment:42")
+      {:ok, %Avrora.Schema.Name{name: "io.confluent.Payment", version: 42}}
   """
   @spec parse(String.t()) :: {:ok, t()} | {:error, term()}
   def parse(payload) when is_binary(payload) do
