@@ -12,9 +12,10 @@ defmodule Avrora do
   @impl true
   def init(_state \\ []) do
     children = [
+      Avrora.ETS,
       Avrora.Storage.Memory
     ]
 
-    Supervisor.init(children, strategy: :one_for_one)
+    Supervisor.init(children, strategy: :one_for_all)
   end
 end
