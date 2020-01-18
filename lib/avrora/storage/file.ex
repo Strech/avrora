@@ -7,7 +7,8 @@ defmodule Avrora.Storage.File do
   """
 
   require Logger
-  alias Avrora.{Config, Name, Schema}
+  alias Avrora.{Config, Schema}
+  alias Avrora.Schema.Name
 
   @behaviour Avrora.Storage
   @extension ".avsc"

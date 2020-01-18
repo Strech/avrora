@@ -14,6 +14,7 @@ defmodule Avrora.Config do
       * `memory_storage` module which handles memory operations, default `Avrora.Storage.Memory`
       * `registry_storage` module which handles Schema Registry requests, default `Avrora.Storage.Registry`
       * `http_client` module which handles HTTP client requests to Schema Registry, default `Avrora.HTTPClient`
+      * `ets_lib` module which creates ETS tables with call `Module.new/0`
   """
 
   @doc false
@@ -36,6 +37,9 @@ defmodule Avrora.Config do
 
   @doc false
   def http_client, do: get_env(:http_client, Avrora.HTTPClient)
+
+  @doc false
+  def ets_lib, do: get_env(:ets_lib, Avrora.ETS)
 
   defp get_env(name, default), do: Application.get_env(:avrora, name, default)
 end

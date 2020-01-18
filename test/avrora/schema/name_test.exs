@@ -1,8 +1,8 @@
-defmodule Avrora.NameTest do
+defmodule Avrora.Schema.NameTest do
   use ExUnit.Case, async: true
-  doctest Avrora.Name
+  doctest Avrora.Schema.Name
 
-  alias Avrora.Name
+  alias Avrora.Schema.Name
 
   describe "parse/1" do
     test "when only name part is present" do

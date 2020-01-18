@@ -4,7 +4,8 @@ defmodule Avrora.Resolver do
   """
 
   require Logger
-  alias Avrora.{Config, Name}
+  alias Avrora.Config
+  alias Avrora.Schema.Name
 
   @doc """
   Resolve schema, trying multiple methods. First tries integer id, then string name.

@@ -3,6 +3,7 @@ defmodule Avrora.Schema do
   Convenience wrapper struct for `AvroEx.Schema` and Confluent Schema Registry.
   """
 
+  alias Avrora.Config
   alias Avrora.Schema.ReferenceCollector
 
   defstruct [:id, :version, :full_name, :lookup_table, :json]
@@ -30,7 +31,7 @@ defmodule Avrora.Schema do
   """
   @spec parse(String.t(), reference_lookup_fun) :: {:ok, t()} | {:error, term()}
   def parse(payload, reference_lookup_fun \\ @reference_lookup_fun) when is_binary(payload) do
-    lookup_table = :avro_schema_store.new()
+    lookup_table = ets().new()
 
     with {:ok, [schema | _]} <- parse_recursive(payload, lookup_table, reference_lookup_fun),
          {_, _, _, _, _, _, full_name, _} <- schema,
@@ -47,7 +48,7 @@ defmodule Avrora.Schema do
       }
     else
       {:error, reason} ->
-        :ok = :avro_schema_store.close(lookup_table)
+        true = :ets.delete(lookup_table)
         {:error, reason}
     end
   end
@@ -116,4 +117,6 @@ defmodule Avrora.Schema do
     error in ArgumentError -> {:error, error.message}
     error in ErlangError -> {:error, error.original}
   end
+
+  defp ets, do: Config.ets_lib()
 end
