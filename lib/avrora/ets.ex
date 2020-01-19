@@ -3,7 +3,7 @@ defmodule Avrora.ETS do
   A host process for ets tables. It is used only to create new
   tables.
 
-  This process will be in the save supervision tree as `Avrora.Storage.Memory`
+  This process will be in the same supervision tree as `Avrora.Storage.Memory`
   with a stragety `one for all`.
 
   See more:
