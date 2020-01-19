@@ -5,9 +5,9 @@
 
 <span id="badges">
 
-[![Hex pm](https://img.shields.io/hexpm/v/avrora.svg?style=flat)](https://hex.pm/packages/avrora)
-[![Hex Docs](https://img.shields.io/badge/api-docs-blue.svg?style=flat)](https://hexdocs.pm/avrora)
-[![Build Status](https://travis-ci.org/Strech/avrora.svg?branch=master)](https://travis-ci.org/Strech/avrora)
+[![Hex pm](https://img.shields.io/hexpm/v/avrora.svg?style=for-the-badge)](https://hex.pm/packages/avrora)
+[![Hex Docs](https://img.shields.io/badge/api-docs-blue.svg?style=for-the-badge)](https://hexdocs.pm/avrora)
+[![Build Status](https://img.shields.io/travis/Strech/avrora?style=for-the-badge)](https://travis-ci.org/Strech/avrora)
 
 </span>
 
