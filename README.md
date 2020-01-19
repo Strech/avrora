@@ -21,7 +21,7 @@ data in memory for performance.
 
 It supports reading and writing data Kafka [wire format](https://docs.confluent.io/current/schema-registry/serializer-formatter.html#wire-format)
 prefix and from [Object Container Files](https://avro.apache.org/docs/1.8.1/spec.html#Object+Container+Files)
-formats. And has [Inter-Schema references](#inter-schema-references) feature.
+formats. And has [Inter-Schema references](https://github.com/Strech/avrora/wiki/Inter-Schema-references) feature.
 
 Many thanks to the [AvroTurf](https://github.com/dasch/avro_turf) Ruby gem for
 the inspiration.
@@ -201,99 +201,3 @@ message =
 {:ok, decoded} = Avrora.decode(message)
 [%{"id" => "tx-1", "amount" => 15.99}]
 ```
-
-## Add-Ons
-
-In addition to the standard `Avro` specification, `Avrora` provides a few new features.
-
-### Inter-Schema references
-
-It allows you to reference one schema from another without a need for duplication.
-
-This is similar to [avro_turf Inter-Schema references](https://github.com/dasch/avro_turf#inter-schema-references),
-but unlike `avro_turf` after the type references got resolved and embeded
-to the main schema (compiled) all local type names will be de-canonicalized.
-
-For example you have a `Messenger` schema which contains the references to
-the `Message` schema:
-
-`priv/schemas/io/confluent/Messenger.avsc`
-
-```json
-{
-  "type": "record",
-  "name": "Messenger",
-  "namespace": "io.confluent",
-  "fields": [
-    {
-      "name": "inbox",
-      "type": {
-        "type": "array",
-        "items": "io.confluent.Message"
-      }
-    },
-    {
-      "name": "archive",
-      "type": {
-        "type": "array",
-        "items": "io.confluent.Message"
-      }
-    }
-  ]
-}
-```
-
-`priv/schemas/io/confluent/Message.avsc`
-
-```json
-{
-  "type": "record",
-  "name": "Message",
-  "namespace": "io.confluent",
-  "fields": [
-    {
-      "name": "text",
-      "type": "string"
-    }
-  ]
-}
-```
-
-Final compiled schema which will be stored and registered in the Confluent
-Schema Registry, will looks like this:
-
-```json
-{
-  "type": "record",
-  "name": "Messenger",
-  "namespace": "io.confluent",
-  "fields": [
-    {
-      "name": "inbox",
-      "type": {
-        "type": "array",
-        "items": {
-          "type": "record",
-          "name": "Message",
-          "fields": [
-            {
-              "name": "text",
-              "type": "string"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "name": "archive",
-      "type": {
-        "type": "array",
-        "items": "Message"
-      }
-    }
-  ]
-}
-```
-
-:anger: In case of `avro_turf` field `archive` will keep its canonical items
-type reference `io.confluent.Message` instead of local reference `Message`.
