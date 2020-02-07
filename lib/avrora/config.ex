@@ -39,7 +39,7 @@ defmodule Avrora.Config do
   def http_client, do: get_env(:http_client, Avrora.HTTPClient)
 
   @doc false
-  def ets_lib, do: get_env(:ets_lib, Avrora.ETS)
+  def ets_lib, do: get_env(:ets_lib, Avrora.AvroSchemaStore)
 
   defp get_env(name, default), do: Application.get_env(:avrora, name, default)
 end

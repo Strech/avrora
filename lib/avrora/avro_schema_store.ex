@@ -1,7 +1,7 @@
-defmodule Avrora.ETS do
+defmodule Avrora.AvroSchemaStore do
   @moduledoc """
-  A host process for ets tables. It is used only to create new
-  tables.
+  A host process and a wrapper for :avro_schema_store produced tables.
+  It is used only to create new tables and no other functionality is coverd.
 
   This process will be in the same supervision tree as `Avrora.Storage.Memory`
   with a stragety `one for all`.
@@ -24,18 +24,15 @@ defmodule Avrora.ETS do
   def init(_state \\ []), do: {:ok, []}
 
   @impl true
-  def handle_call({:new}, _from, state) do
-    table = :ets.new(__MODULE__, [:public, {:read_concurrency, true}])
-    {:reply, table, state}
-  end
+  def handle_call({:new}, _from, state), do: {:reply, :avro_schema_store.new(), state}
 
   @doc """
   Creates a new Erlang Term Store.
 
   ## Examples:
 
-      iex> {:ok, _} = Avrora.ETS.start_link()
-      iex> Avrora.ETS.new() |> :ets.info() |> Keyword.get(:size)
+      iex> {:ok, _} = Avrora.AvroSchemaStore.start_link()
+      iex> Avrora.AvroSchemaStore.new() |> :ets.info() |> Keyword.get(:size)
       0
   """
   def new, do: new(__MODULE__)

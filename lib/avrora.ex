@@ -12,7 +12,7 @@ defmodule Avrora do
   @impl true
   def init(_state \\ []) do
     children = [
-      Avrora.ETS,
+      Avrora.AvroSchemaStore,
       Avrora.Storage.Memory
     ]
 
