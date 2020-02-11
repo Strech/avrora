@@ -33,7 +33,7 @@ Add Avrora to `mix.exs` as a dependency:
 ```elixir
 def deps do
   [
-    {:avrora, "~> 0.8"}
+    {:avrora, "~> 0.9"}
   ]
 end
 ```
