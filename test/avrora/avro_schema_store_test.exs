@@ -1,11 +1,11 @@
-defmodule Avrora.ETSTest do
+defmodule Avrora.AvroSchemaStoreTest do
   use ExUnit.Case, async: true
-  doctest Avrora.ETS
+  doctest Avrora.AvroSchemaStore
 
-  alias Avrora.ETS
+  alias Avrora.AvroSchemaStore
 
   setup do
-    pid = start_supervised!({ETS, name: :test_ets})
+    pid = start_supervised!({AvroSchemaStore, name: :test_ets})
 
     %{ets: pid}
   end
@@ -14,7 +14,7 @@ defmodule Avrora.ETSTest do
     test "when table was created", %{ets: pid} do
       table_size =
         pid
-        |> ETS.new()
+        |> AvroSchemaStore.new()
         |> :ets.info()
         |> Keyword.get(:size)
 
