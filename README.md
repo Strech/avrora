@@ -51,10 +51,10 @@ config :avrora,
 
 - `registry_url` - URL for the Confluent Schema Registry, default `nil`
 - `schemas_path` - Base path for locally stored schema files, default `./priv/schemas`
-- `names_cache_ttl` - Time in ms to cache schemas in memory, default 300_000.
+- `names_cache_ttl` - Time in ms to cache schemas by name in memory, default `300_000`.
 
 Set `names_cache_ttl` to `:infinity` to cache forever. This is safe when
-schemas are resolved in the Schema Registry by numeric id or versioned name, as
+schemas are resolved in the Schema Registry by numeric id or **versioned** name, as
 it is unique. If the schema is resolved by name, then someone may update the
 schema, so the TTL ensures that it will be reloaded to use the latest version.
 
