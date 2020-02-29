@@ -93,18 +93,68 @@ defmodule Avrora.Storage.Registry do
   @spec configured?() :: true | false
   def configured?, do: !is_nil(Config.registry_url())
 
+  defp handle_http_client(path, http_client_function) do
+    with {:ok, url} <- handle_url(path),
+         {:ok, headers} <- handle_headers(url) do
+      url |> http_client_function.(headers) |> handle()
+    end
+  end
+
   defp http_client_get(path) do
-    if configured?(),
-      do: path |> to_url() |> http_client().get() |> handle(),
-      else: {:error, :unconfigured_registry_url}
+    handle_http_client(path, fn url, headers ->
+      http_client().get(url, headers: headers)
+    end)
   end
 
   defp http_client_post(path, payload) do
-    if configured?() do
-      path |> to_url() |> http_client().post(payload, content_type: @content_type) |> handle()
-    else
-      {:error, :unconfigured_registry_url}
+    handle_http_client(path, fn url, headers ->
+      http_client().post(url, payload, headers: headers, content_type: @content_type)
+    end)
+  end
+
+  defp handle_url(path) do
+    if configured?(),
+      do: {:ok, to_url(path)},
+      else: {:error, :unconfigured_registry_url}
+  end
+
+  defp handle_headers(url) do
+    with {:ok, authorization} <- sasl() do
+      url =~ "http://" &&
+        Logger.warn("unsecure `http` call over sasl, consider using `https` instead")
+
+      {:ok, [authorization]}
     end
+  end
+
+  defp sasl do
+    case registry_sasl() do
+      nil ->
+        {:ok, []}
+
+      {:plain, file_path} = sasl when is_binary(file_path) ->
+        to_authorization(sasl)
+
+      {:plain, user, pass} = sasl when is_binary(user) and is_binary(pass) ->
+        to_authorization(sasl)
+
+      _unknown ->
+        {:error, :malformed_registry_sasl}
+    end
+  end
+
+  defp to_authorization({:plain, path}) do
+    [user, pass] = read_file_lines!(path, 2)
+    to_authorization({:plain, user, pass})
+  rescue
+    File.Error ->
+      Logger.warn("no such registry sasl file found #{path}")
+      {:error, :no_such_registry_sasl_file}
+  end
+
+  defp to_authorization({:plain, user, pass}) do
+    base64 = :base64.encode_to_string("#{user}:#{pass}")
+    {:ok, {'Authorization', 'Basic #{base64}'}}
   end
 
   defp to_url(path), do: "#{Config.registry_url()}/#{path}"
@@ -125,5 +175,14 @@ defmodule Avrora.Storage.Registry do
 
   defp handle(response), do: response
 
+  defp registry_sasl, do: Config.registry_sasl()
+
   defp http_client, do: Config.http_client()
+
+  defp read_file_lines!(path, lines) do
+    File.stream!(path)
+    |> Stream.take(lines)
+    |> Stream.map(&String.trim/1)
+    |> Enum.to_list()
+  end
 end
