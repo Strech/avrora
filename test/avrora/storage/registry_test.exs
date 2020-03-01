@@ -11,7 +11,7 @@ defmodule Avrora.Storage.RegistryTest do
   describe "get/1" do
     test "when request by subject name without version was successful" do
       Avrora.HTTPClientMock
-      |> expect(:get, fn url ->
+      |> expect(:get, fn url, _ ->
         assert url == "http://reg.loc/subjects/io.confluent.Payment/versions/latest"
 
         {
@@ -34,7 +34,7 @@ defmodule Avrora.Storage.RegistryTest do
 
     test "when request by subject name with version was successful" do
       Avrora.HTTPClientMock
-      |> expect(:get, fn url ->
+      |> expect(:get, fn url, _ ->
         assert url == "http://reg.loc/subjects/io.confluent.Payment/versions/10"
 
         {
@@ -57,7 +57,7 @@ defmodule Avrora.Storage.RegistryTest do
 
     test "when request by subject name was unsuccessful" do
       Avrora.HTTPClientMock
-      |> expect(:get, fn url ->
+      |> expect(:get, fn url, _ ->
         assert url == "http://reg.loc/subjects/io.confluent.Payment/versions/latest"
 
         {:error, subject_not_found_parsed_error()}
@@ -68,7 +68,7 @@ defmodule Avrora.Storage.RegistryTest do
 
     test "when request by global ID was successful" do
       Avrora.HTTPClientMock
-      |> expect(:get, fn url ->
+      |> expect(:get, fn url, _ ->
         assert url == "http://reg.loc/schemas/ids/1"
 
         {:ok, %{"schema" => json_schema()}}
@@ -83,7 +83,7 @@ defmodule Avrora.Storage.RegistryTest do
 
     test "when request by global ID was unsuccessful" do
       Avrora.HTTPClientMock
-      |> expect(:get, fn url ->
+      |> expect(:get, fn url, _ ->
         assert url == "http://reg.loc/schemas/ids/1"
 
         {:error, version_not_found_parsed_error()}
@@ -160,6 +160,84 @@ defmodule Avrora.Storage.RegistryTest do
                {:error, :unconfigured_registry_url}
 
       Application.put_env(:avrora, :registry_url, registry_url)
+    end
+
+    test "when registry auth is malformed" do
+      registry_auth = Application.get_env(:avrora, :registry_auth)
+      Application.put_env(:avrora, :registry_auth, {:basic, "user", "pass", "unknown"})
+
+      assert Registry.put("anything", ~s({"type":"string"})) == {:error, :malformed_registry_auth}
+
+      Application.put_env(:avrora, :registry_auth, registry_auth)
+    end
+
+    test "when registry auth file not exists" do
+      registry_auth = Application.get_env(:avrora, :registry_auth)
+      Application.put_env(:avrora, :registry_auth, {:basic, "unknown"})
+
+      output =
+        capture_log(fn ->
+          assert Registry.put("anything", ~s({"type":"string"})) ==
+                   {:error, :no_such_registry_auth_file}
+        end)
+
+      output =~ "no such registry auth file found unknown"
+
+      Application.put_env(:avrora, :registry_auth, registry_auth)
+    end
+
+    test "when registry auth basic file is configured" do
+      Avrora.HTTPClientMock
+      |> expect(:post, fn url, payload, headers: headers, content_type: _ ->
+        base64 = :base64.encode_to_string("avrora_username:avrora_password")
+
+        assert url == "https://reg.loc/subjects/io.confluent.Payment/versions"
+        assert payload == json_schema()
+        assert headers == [{'Authorization', 'Basic #{base64}'}]
+
+        {:ok, %{"id" => 1}}
+      end)
+
+      registry_url = Application.get_env(:avrora, :registry_url)
+      registry_auth = Application.get_env(:avrora, :registry_auth)
+      Application.put_env(:avrora, :registry_url, "https://reg.loc")
+      Application.put_env(:avrora, :registry_auth, {:basic, "./test/fixtures/auth"})
+
+      {:ok, schema} = Registry.put("io.confluent.Payment", json_schema())
+
+      assert schema.id == 1
+      assert is_nil(schema.version)
+      assert schema.full_name == "io.confluent.Payment"
+
+      Application.put_env(:avrora, :registry_url, registry_url)
+      Application.put_env(:avrora, :registry_auth, registry_auth)
+    end
+
+    test "when registry auth basic is configured" do
+      Avrora.HTTPClientMock
+      |> expect(:post, fn url, payload, headers: headers, content_type: _ ->
+        base64 = :base64.encode_to_string("avrora_username:avrora_password")
+
+        assert url == "https://reg.loc/subjects/io.confluent.Payment/versions"
+        assert payload == json_schema()
+        assert headers == [{'Authorization', 'Basic #{base64}'}]
+
+        {:ok, %{"id" => 1}}
+      end)
+
+      registry_url = Application.get_env(:avrora, :registry_url)
+      registry_auth = Application.get_env(:avrora, :registry_auth)
+      Application.put_env(:avrora, :registry_url, "https://reg.loc")
+      Application.put_env(:avrora, :registry_auth, {:basic, "avrora_username", "avrora_password"})
+
+      {:ok, schema} = Registry.put("io.confluent.Payment", json_schema())
+
+      assert schema.id == 1
+      assert is_nil(schema.version)
+      assert schema.full_name == "io.confluent.Payment"
+
+      Application.put_env(:avrora, :registry_url, registry_url)
+      Application.put_env(:avrora, :registry_auth, registry_auth)
     end
   end
 

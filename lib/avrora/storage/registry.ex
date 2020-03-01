@@ -93,18 +93,65 @@ defmodule Avrora.Storage.Registry do
   @spec configured?() :: true | false
   def configured?, do: !is_nil(Config.registry_url())
 
+  defp handle_http_client(path, http_client_function) do
+    with {:ok, url} <- handle_url(path),
+         {:ok, headers} <- handle_headers() do
+      url |> http_client_function.(headers) |> handle()
+    end
+  end
+
   defp http_client_get(path) do
-    if configured?(),
-      do: path |> to_url() |> http_client().get() |> handle(),
-      else: {:error, :unconfigured_registry_url}
+    handle_http_client(path, fn url, headers ->
+      http_client().get(url, headers: headers)
+    end)
   end
 
   defp http_client_post(path, payload) do
-    if configured?() do
-      path |> to_url() |> http_client().post(payload, content_type: @content_type) |> handle()
-    else
-      {:error, :unconfigured_registry_url}
+    handle_http_client(path, fn url, headers ->
+      http_client().post(url, payload, headers: headers, content_type: @content_type)
+    end)
+  end
+
+  defp handle_url(path) do
+    if configured?(),
+      do: {:ok, to_url(path)},
+      else: {:error, :unconfigured_registry_url}
+  end
+
+  defp handle_headers do
+    with {:ok, authorization} <- auth() do
+      {:ok, [authorization]}
     end
+  end
+
+  defp auth do
+    case registry_auth() do
+      nil ->
+        {:ok, []}
+
+      {:basic, file_path} = auth when is_binary(file_path) ->
+        to_authorization(auth)
+
+      {:basic, user, pass} = auth when is_binary(user) and is_binary(pass) ->
+        to_authorization(auth)
+
+      _unknown ->
+        {:error, :malformed_registry_auth}
+    end
+  end
+
+  defp to_authorization({:basic, path}) do
+    [user, pass] = read_file_lines!(path, 2)
+    to_authorization({:basic, user, pass})
+  rescue
+    File.Error ->
+      Logger.warn("no such registry auth file found #{path}")
+      {:error, :no_such_registry_auth_file}
+  end
+
+  defp to_authorization({:basic, user, pass}) do
+    base64 = :base64.encode_to_string("#{user}:#{pass}")
+    {:ok, {'Authorization', 'Basic #{base64}'}}
   end
 
   defp to_url(path), do: "#{Config.registry_url()}/#{path}"
@@ -125,5 +172,14 @@ defmodule Avrora.Storage.Registry do
 
   defp handle(response), do: response
 
+  defp registry_auth, do: Config.registry_auth()
+
   defp http_client, do: Config.http_client()
+
+  defp read_file_lines!(path, lines) do
+    File.stream!(path)
+    |> Stream.take(lines)
+    |> Stream.map(&String.trim/1)
+    |> Enum.to_list()
+  end
 end

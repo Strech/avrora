@@ -24,6 +24,9 @@ defmodule Avrora.Config do
   def registry_url, do: get_env(:registry_url, nil)
 
   @doc false
+  def registry_auth, do: get_env(:registry_auth, nil)
+
+  @doc false
   def names_cache_ttl, do: get_env(:names_cache_ttl, :timer.minutes(5))
 
   @doc false
