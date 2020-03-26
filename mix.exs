@@ -85,7 +85,7 @@ defmodule Avrora.MixProject do
   defp deps do
     [
       {:jason, "~> 1.1"},
-      {:erlavro, "~> 2.8.1"},
+      {:erlavro, "~> 2.9.0"},
       {:mox, "~> 0.5", only: :test},
       {:ex_doc, "~> 0.21", only: :dev, runtime: false},
       {:dialyxir, "~> 1.0.0-rc.7", only: :dev, runtime: false},
