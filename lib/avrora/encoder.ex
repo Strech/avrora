@@ -28,7 +28,7 @@ defmodule Avrora.Encoder do
       ...> Avrora.Encoder.decode(payload)
       {:ok, %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}}
   """
-  @spec decode(binary()) :: {:ok, map()} | {:error, term()}
+  @spec decode(binary()) :: {:ok, map() | list(map())} | {:error, term()}
   def decode(payload) when is_binary(payload) do
     case payload do
       <<@registry_magic_bytes, <<id::size(32)>>, body::binary>> ->
@@ -53,7 +53,7 @@ defmodule Avrora.Encoder do
       ...> Avrora.Encoder.decode(payload, schema_name: "io.confluent.Payment")
       {:ok, %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}}
   """
-  @spec decode(binary(), keyword(String.t())) :: {:ok, map()} | {:error, term()}
+  @spec decode(binary(), keyword(String.t())) :: {:ok, map() | list(map())} | {:error, term()}
   def decode(payload, schema_name: schema_name) when is_binary(payload) do
     with {:ok, schema_name} <- Name.parse(schema_name) do
       unless is_nil(schema_name.version) do
