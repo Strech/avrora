@@ -76,33 +76,28 @@ defmodule Avrora.Resolver do
   @spec resolve(String.t()) :: {:ok, Avrora.Schema.t()} | {:error, term()}
   def resolve(name) when is_binary(name) do
     with {:ok, schema_name} <- Name.parse(name),
-         {:ok, nil} <- memory_storage().get(name) do
-      case registry_storage().get(name) do
+         {:ok, nil} <- memory_storage().get(name),
+         {:ok, schema} <- file_storage().get(name) do
+      response =
+        if is_nil(schema_name.version),
+          do: registry_storage().put(schema_name.name, schema.json),
+          else: registry_storage().get(name)
+
+      case response do
         {:ok, schema} ->
-          with {:ok, schema} <-
-                 memory_storage().put("#{schema_name.name}:#{schema.version}", schema),
+          with {:ok, schema} <- memory_storage().put(schema.id, schema),
                {:ok, schema} <- memory_storage().put(schema_name.name, schema),
                {:ok, timestamp} <- memory_storage().expire(schema_name.name, names_ttl()) do
             if timestamp == :infinity,
               do: Logger.debug("schema `#{schema_name.name}` will be always resolved from memory")
 
-            memory_storage().put(schema.id, schema)
-          end
-
-        {:error, :unknown_subject} ->
-          with {:ok, schema} <- file_storage().get(schema_name.name),
-               {:ok, schema} <- registry_storage().put(schema_name.name, schema.json),
-               {:ok, schema} <- memory_storage().put(schema_name.name, schema),
-               {:ok, timestamp} <- memory_storage().expire(schema_name.name, names_ttl()) do
-            if timestamp == :infinity,
-              do: Logger.debug("schema `#{schema_name.name}` will be always resolved from memory")
-
-            memory_storage().put(schema.id, schema)
+            if is_nil(schema.version),
+              do: {:ok, schema},
+              else: memory_storage().put("#{schema_name.name}:#{schema.version}", schema)
           end
 
         {:error, :unconfigured_registry_url} ->
-          with {:ok, schema} <- file_storage().get(name),
-               do: memory_storage().put(schema_name.name, schema)
+          memory_storage().put(schema_name.name, schema)
 
         {:error, reason} ->
           {:error, reason}
