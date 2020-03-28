@@ -60,11 +60,6 @@ defmodule Avrora.ResolverTest do
 
         {:error, :unknown_subject}
       end)
-      |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
-
-        {:error, :unknown_subject}
-      end)
       |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
         assert value == json_schema()
@@ -106,11 +101,6 @@ defmodule Avrora.ResolverTest do
 
         {:error, :unknown_subject}
       end)
-      |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
-
-        {:error, :unknown_subject}
-      end)
 
       Avrora.Storage.FileMock
       |> expect(:get, fn key ->
@@ -127,7 +117,7 @@ defmodule Avrora.ResolverTest do
       assert output =~ "fail to resolve schema by identifier"
     end
 
-    test "when registry is not configured and was not found in memory" do
+    test "when registry is not configured and schema was not found in memory" do
       schema_without_id_and_version = schema_without_id_and_version()
 
       Avrora.Storage.MemoryMock
@@ -154,8 +144,9 @@ defmodule Avrora.ResolverTest do
 
         {:error, :unconfigured_registry_url}
       end)
-      |> expect(:get, fn key ->
+      |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
+        assert value == json_schema()
 
         {:error, :unconfigured_registry_url}
       end)
