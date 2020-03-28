@@ -1,7 +1,7 @@
-language: elixir
+os: linux
+dist: xenial
 
-notifications:
-  email: false
+language: elixir
 
 elixir:
   - 1.9.1
@@ -9,7 +9,7 @@ elixir:
 otp_release:
   - 22.0
 
-matrix:
+jobs:
   include:
     - elixir: "1.6"
       otp_release: "19.0"
@@ -31,3 +31,6 @@ cache:
     - priv/plts
     - _build
     - deps
+
+notifications:
+  email: false
