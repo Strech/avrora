@@ -18,7 +18,6 @@ This library supports convenient encoding and decoding of [Avro](https://avro.ap
 It can read the Avro schema from local files or the [Confluent® Schema
 Registry](https://www.confluent.io/confluent-schema-registry), caching
 data in memory for performance.
-
 It supports reading and writing data Kafka [wire format](https://docs.confluent.io/current/schema-registry/serializer-formatter.html#wire-format)
 prefix and from [Object Container Files](https://avro.apache.org/docs/1.8.1/spec.html#Object+Container+Files)
 formats. And has [Inter-Schema references](https://github.com/Strech/avrora/wiki/Inter-Schema-references) feature.
@@ -51,12 +50,16 @@ config :avrora,
 
 - `registry_url` - URL for the Confluent Schema Registry, default `nil`
 - `schemas_path` - Base path for locally stored schema files, default `./priv/schemas`
-- `names_cache_ttl` - Time in ms to cache schemas by name in memory, default `300_000`.
+- `names_cache_ttl` - Time in ms to cache schemas by name in memory, default
+  `:infinity` (since [v0.10.0](https://github.com/Strech/avrora/releases/tag/v0.10.0))
 
-Set `names_cache_ttl` to `:infinity` to cache forever. This is safe when
-schemas are resolved in the Schema Registry by numeric id or **versioned** name, as
-it is unique. If the schema is resolved by name, then someone may update the
-schema, so the TTL ensures that it will be reloaded to use the latest version.
+Set `names_cache_ttl` to `:infinity` will cache forever (no more disk reads will
+happen). This is safe when schemas are resolved in the Schema Registry by
+numeric id or **versioned** name, as it is unique. If you need to reload schema
+from the disk periodically, TTL different from `:infinity` ensures that.
+
+If the schema is resolved by name it will be always overwritten with the latest
+schema received from Schema Registry (this is a new behavior since [v0.10.0](https://github.com/Strech/avrora/releases/tag/v0.10.0)).
 
 ## Start cache process
 
