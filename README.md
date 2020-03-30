@@ -45,7 +45,7 @@ Configure the library in `config/config.exs`:
 config :avrora,
   registry_url: "http://localhost:8081",
   schemas_path: Path.expand("./priv/schemas"),
-  names_cache_ttl: :timer.minutes(5)
+  names_cache_ttl: :timer.minutes(5) # if you want periodic disk reads
 ```
 
 - `registry_url` - URL for the Confluent Schema Registry, default `nil`
