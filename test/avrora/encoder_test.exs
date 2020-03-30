@@ -82,8 +82,9 @@ defmodule Avrora.EncoderTest do
       end)
 
       Avrora.Storage.RegistryMock
-      |> expect(:get, fn key ->
+      |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
+        assert value == payment_json_schema()
 
         {:error, :unconfigured_registry_url}
       end)
@@ -102,7 +103,7 @@ defmodule Avrora.EncoderTest do
     end
 
     test "when payload was encoded without magic byte and registry is configured" do
-      payment_payment_schema_with_id_and_version = payment_payment_schema_with_id_and_version()
+      payment_schema_with_id = payment_schema_with_id()
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
@@ -111,14 +112,14 @@ defmodule Avrora.EncoderTest do
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment:3"
-        assert value == payment_payment_schema_with_id_and_version
+        assert key == 42
+        assert value == payment_schema_with_id
 
         {:ok, value}
       end)
       |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
-        assert value == payment_payment_schema_with_id_and_version
+        assert value == payment_schema_with_id
 
         {:ok, value}
       end)
@@ -128,18 +129,20 @@ defmodule Avrora.EncoderTest do
 
         {:ok, :infinity}
       end)
-      |> expect(:put, fn key, value ->
-        assert key == 42
-        assert value == payment_payment_schema_with_id_and_version
 
-        {:ok, value}
-      end)
-
-      Avrora.Storage.RegistryMock
+      Avrora.Storage.FileMock
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment"
 
-        {:ok, payment_payment_schema_with_id_and_version}
+        {:ok, payment_schema()}
+      end)
+
+      Avrora.Storage.RegistryMock
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.Payment"
+        assert value == payment_json_schema()
+
+        {:ok, payment_schema_with_id}
       end)
 
       {:ok, decoded} =
@@ -157,8 +160,6 @@ defmodule Avrora.EncoderTest do
 
         {:ok, nil}
       end)
-
-      Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment"
 
@@ -177,8 +178,9 @@ defmodule Avrora.EncoderTest do
 
         {:error, :unconfigured_registry_url}
       end)
-      |> expect(:get, fn key ->
+      |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
+        assert value == payment_json_schema()
 
         {:error, :unconfigured_registry_url}
       end)
@@ -247,8 +249,9 @@ defmodule Avrora.EncoderTest do
       end)
 
       Avrora.Storage.RegistryMock
-      |> expect(:get, fn key ->
+      |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
+        assert value == payment_json_schema()
 
         {:error, :unconfigured_registry_url}
       end)
@@ -300,8 +303,9 @@ defmodule Avrora.EncoderTest do
       end)
 
       Avrora.Storage.RegistryMock
-      |> expect(:get, fn key ->
+      |> expect(:put, fn key, value ->
         assert key == "io.confluent.Messenger"
+        assert value == messenger_json_schema_with_local_reference()
 
         {:error, :unconfigured_registry_url}
       end)
@@ -341,8 +345,9 @@ defmodule Avrora.EncoderTest do
       end)
 
       Avrora.Storage.RegistryMock
-      |> expect(:get, fn key ->
+      |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
+        assert value == payment_json_schema()
 
         {:error, :unconfigured_registry_url}
       end)
@@ -375,8 +380,9 @@ defmodule Avrora.EncoderTest do
       end)
 
       Avrora.Storage.RegistryMock
-      |> expect(:get, fn key ->
+      |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
+        assert value == payment_json_schema()
 
         {:error, :unconfigured_registry_url}
       end)
@@ -395,7 +401,7 @@ defmodule Avrora.EncoderTest do
     end
 
     test "when registry is configured and schema is found, but format is given explicitly" do
-      payment_payment_schema_with_id_and_version = payment_payment_schema_with_id_and_version()
+      payment_schema_with_id = payment_schema_with_id()
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
@@ -404,14 +410,14 @@ defmodule Avrora.EncoderTest do
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment:3"
-        assert value == payment_payment_schema_with_id_and_version
+        assert key == 42
+        assert value == payment_schema_with_id
 
         {:ok, value}
       end)
       |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
-        assert value == payment_payment_schema_with_id_and_version
+        assert value == payment_schema_with_id
 
         {:ok, value}
       end)
@@ -421,18 +427,20 @@ defmodule Avrora.EncoderTest do
 
         {:ok, :infinity}
       end)
-      |> expect(:put, fn key, value ->
-        assert key == 42
-        assert value == payment_payment_schema_with_id_and_version
 
-        {:ok, value}
-      end)
-
-      Avrora.Storage.RegistryMock
+      Avrora.Storage.FileMock
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment"
 
-        {:ok, payment_payment_schema_with_id_and_version}
+        {:ok, payment_schema()}
+      end)
+
+      Avrora.Storage.RegistryMock
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.Payment"
+        assert value == payment_json_schema()
+
+        {:ok, payment_schema_with_id}
       end)
 
       {:ok, encoded} =
@@ -441,15 +449,20 @@ defmodule Avrora.EncoderTest do
       assert is_payment_ocf(encoded)
     end
 
-    test "when registry is configured, but schema not found" do
+    test "when registry is configured and schema not found (same as found)" do
       payment_schema_with_id = payment_schema_with_id()
-      payment_schema = payment_schema()
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment"
 
         {:ok, nil}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == 42
+        assert value == payment_schema_with_id
+
+        {:ok, value}
       end)
       |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
@@ -463,19 +476,8 @@ defmodule Avrora.EncoderTest do
 
         {:ok, :infinity}
       end)
-      |> expect(:put, fn key, value ->
-        assert key == 42
-        assert value == payment_schema_with_id
-
-        {:ok, value}
-      end)
 
       Avrora.Storage.RegistryMock
-      |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
-
-        {:error, :unknown_subject}
-      end)
       |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
         assert value == payment_json_schema()
@@ -487,52 +489,7 @@ defmodule Avrora.EncoderTest do
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment"
 
-        {:ok, payment_schema}
-      end)
-
-      {:ok, encoded} = Encoder.encode(payment_payload(), schema_name: "io.confluent.Payment")
-      assert payment_registry_message() == encoded
-    end
-
-    test "when registry is configured and schema was found" do
-      payment_payment_schema_with_id_and_version = payment_payment_schema_with_id_and_version()
-
-      Avrora.Storage.MemoryMock
-      |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
-
-        {:ok, nil}
-      end)
-      |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment:3"
-        assert value == payment_payment_schema_with_id_and_version
-
-        {:ok, value}
-      end)
-      |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
-        assert value == payment_payment_schema_with_id_and_version
-
-        {:ok, value}
-      end)
-      |> expect(:expire, fn key, ttl ->
-        assert key == "io.confluent.Payment"
-        assert ttl == :infinity
-
-        {:ok, :infinity}
-      end)
-      |> expect(:put, fn key, value ->
-        assert key == 42
-        assert value == payment_payment_schema_with_id_and_version
-
-        {:ok, value}
-      end)
-
-      Avrora.Storage.RegistryMock
-      |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
-
-        {:ok, payment_payment_schema_with_id_and_version}
+        {:ok, payment_schema()}
       end)
 
       {:ok, encoded} = Encoder.encode(payment_payload(), schema_name: "io.confluent.Payment")
@@ -556,8 +513,9 @@ defmodule Avrora.EncoderTest do
       end)
 
       Avrora.Storage.RegistryMock
-      |> expect(:get, fn key ->
+      |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
+        assert value == payment_json_schema()
 
         {:error, :unconfigured_registry_url}
       end)
@@ -600,8 +558,9 @@ defmodule Avrora.EncoderTest do
       end)
 
       Avrora.Storage.RegistryMock
-      |> expect(:get, fn key ->
+      |> expect(:put, fn key, value ->
         assert key == "io.confluent.Messenger"
+        assert value == messenger_json_schema_with_local_reference()
 
         {:error, :unconfigured_registry_url}
       end)
@@ -671,11 +630,6 @@ defmodule Avrora.EncoderTest do
     %{schema | id: nil, version: nil}
   end
 
-  defp payment_payment_schema_with_id_and_version do
-    {:ok, schema} = Schema.parse(payment_json_schema())
-    %{schema | id: 42, version: 3}
-  end
-
   defp payment_schema_with_id do
     {:ok, schema} = Schema.parse(payment_json_schema())
     %{schema | id: 42, version: nil}
@@ -688,6 +642,10 @@ defmodule Avrora.EncoderTest do
 
   defp messenger_json_schema do
     ~s({"namespace":"io.confluent","name":"Messenger","type":"record","fields":[{"name":"inbox","type":{"type":"array","items":{"type":"record","name":"Message","fields":[{"name":"text","type":"string"}]}}},{"name":"archive","type":{"type":"array","items":"io.confluent.Message"}}]})
+  end
+
+  defp messenger_json_schema_with_local_reference do
+    ~s({"namespace":"io.confluent","name":"Messenger","type":"record","fields":[{"name":"inbox","type":{"type":"array","items":{"name":"Message","type":"record","fields":[{"name":"text","type":"string"}]}}},{"name":"archive","type":{"type":"array","items":"Message"}}]})
   end
 
   defp payment_json_schema do
