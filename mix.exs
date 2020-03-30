@@ -4,7 +4,7 @@ defmodule Avrora.MixProject do
   def project do
     [
       app: :avrora,
-      version: "0.9.1",
+      version: "0.10.0",
       elixir: "~> 1.6",
       description: description(),
       package: package(),
@@ -84,11 +84,11 @@ defmodule Avrora.MixProject do
 
   defp deps do
     [
-      {:jason, "~> 1.1"},
+      {:jason, "~> 1.2"},
       {:erlavro, "~> 2.9.0"},
       {:mox, "~> 0.5", only: :test},
       {:ex_doc, "~> 0.21", only: :dev, runtime: false},
-      {:dialyxir, "~> 1.0.0-rc.7", only: :dev, runtime: false},
+      {:dialyxir, "~> 1.0.0", only: :dev, runtime: false},
       {:credo, "~> 1.0", only: :dev, runtime: false},
       {:excoveralls, "~> 0.11", only: :test}
     ]
