@@ -86,9 +86,8 @@ Or start the cache process manually:
 The primary way to use the library is via the `Avrora.encode/2` and
 `Avrora.decode/2` functions. These functions load the Avro schema for you.
 
-If `registry_url` is defined, they first search the Schema Registry, falling
-back to local files. If the schema is then found locally but not in the
-registry, they will register the schema.
+If `registry_url` is defined, it enables Schema Registry storage. If the schema
+file found locally but not in the registry, either fuction will register the schema.
 
 These examples assume you have a `Payment` schema stored in the file
 `priv/schemas/io/confluent/Payment.avsc`:
