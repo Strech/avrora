@@ -44,8 +44,9 @@ Configure the library in `config/config.exs`:
 ```elixir
 config :avrora,
   registry_url: "http://localhost:8081",
+  registy_auth: {:basic, ["username", "password"]}, # optional
   schemas_path: Path.expand("./priv/schemas"),
-  names_cache_ttl: :timer.minutes(5) # if you want periodic disk reads
+  names_cache_ttl: :timer.minutes(5) # optional: if you want periodic disk reads
 ```
 
 - `registry_url` - URL for the Confluent Schema Registry, default `nil`
