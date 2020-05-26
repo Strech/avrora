@@ -2,8 +2,11 @@ defmodule Avrora.Storage.FileTest do
   use ExUnit.Case, async: true
   doctest Avrora.Storage.File
 
+  import Support.Config
   import ExUnit.CaptureLog
   alias Avrora.Storage.File
+
+  setup :support_config
 
   describe "get/1" do
     test "when schema file was found" do

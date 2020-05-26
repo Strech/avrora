@@ -105,8 +105,8 @@ defmodule Avrora.Resolver do
     end
   end
 
-  defp file_storage, do: Config.file_storage()
-  defp memory_storage, do: Config.memory_storage()
-  defp registry_storage, do: Config.registry_storage()
-  defp names_ttl, do: Config.names_cache_ttl()
+  defp file_storage, do: Config.self().file_storage()
+  defp memory_storage, do: Config.self().memory_storage()
+  defp registry_storage, do: Config.self().registry_storage()
+  defp names_ttl, do: Config.self().names_cache_ttl()
 end

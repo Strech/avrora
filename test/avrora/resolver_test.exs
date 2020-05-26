@@ -3,10 +3,12 @@ defmodule Avrora.ResolverTest do
   doctest Avrora.Resolver
 
   import Mox
+  import Support.Config
   import ExUnit.CaptureLog
   alias Avrora.{Resolver, Schema}
 
   setup :verify_on_exit!
+  setup :support_config
 
   describe "resolve_any/1" do
     test "when registry is configured and schema was not found in memory, but registry" do

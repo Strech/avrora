@@ -2,7 +2,10 @@ defmodule Avrora.SchemaTest do
   use ExUnit.Case, async: true
   doctest Avrora.Schema
 
+  import Support.Config
   alias Avrora.Schema
+
+  setup :support_config
 
   describe "parse/2" do
     test "when payload is a valid json schema" do
