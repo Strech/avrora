@@ -27,7 +27,7 @@ defmodule Avrora.HTTPClient do
     end
   end
 
-  defp extract_headers(options \\ []) do
+  defp extract_headers(options) do
     case Keyword.get(options, :authorization) do
       nil -> {:ok, []}
       credentials -> {:ok, [{'Authorization', '#{credentials}'}]}
