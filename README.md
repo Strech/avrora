@@ -50,6 +50,7 @@ config :avrora,
 ```
 
 - `registry_url` - URL for the Confluent Schema Registry, default `nil`
+- `registry_auth` – Credentials to authenticate in Confluent Schema Registry, default `nil`
 - `schemas_path` - Base path for locally stored schema files, default `./priv/schemas`
 - `names_cache_ttl` - Time in ms to cache schemas by name in memory, default
   `:infinity` (since [v0.10.0](https://github.com/Strech/avrora/releases/tag/v0.10.0))
