@@ -3,10 +3,12 @@ defmodule Avrora.EncoderTest do
   doctest Avrora.Encoder
 
   import Mox
+  import Support.Config
   import ExUnit.CaptureLog
   alias Avrora.{Encoder, Schema}
 
   setup :verify_on_exit!
+  setup :support_config
 
   describe "decode/1" do
     test "when payload was encoded with OCF magic byte" do

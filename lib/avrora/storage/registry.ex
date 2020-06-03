@@ -91,23 +91,36 @@ defmodule Avrora.Storage.Registry do
 
   @doc false
   @spec configured?() :: true | false
-  def configured?, do: !is_nil(Config.registry_url())
+  def configured?, do: !is_nil(registry_url())
 
   defp http_client_get(path) do
     if configured?(),
-      do: path |> to_url() |> http_client().get() |> handle(),
+      do: path |> to_url() |> http_client().get(headers()) |> handle(),
       else: {:error, :unconfigured_registry_url}
   end
 
   defp http_client_post(path, payload) do
     if configured?() do
-      path |> to_url() |> http_client().post(payload, content_type: @content_type) |> handle()
+      headers = headers() |> Keyword.put(:content_type, @content_type)
+      path |> to_url() |> http_client().post(payload, headers) |> handle()
     else
       {:error, :unconfigured_registry_url}
     end
   end
 
-  defp to_url(path), do: "#{Config.registry_url()}/#{path}"
+  # NOTE: Maybe move to compile-time?
+  defp headers do
+    case registry_auth() do
+      {:basic, [username, password]} ->
+        credentials = :base64.encode("#{username}:#{password}")
+        [authorization: "Basic #{credentials}"]
+
+      nil ->
+        []
+    end
+  end
+
+  defp to_url(path), do: "#{registry_url()}/#{path}"
 
   defp handle({:error, payload} = _response) when is_map(payload) do
     reason =
@@ -125,5 +138,7 @@ defmodule Avrora.Storage.Registry do
 
   defp handle(response), do: response
 
-  defp http_client, do: Config.http_client()
+  defp http_client, do: Config.self().http_client()
+  defp registry_url, do: Config.self().registry_url()
+  defp registry_auth, do: Config.self().registry_auth()
 end

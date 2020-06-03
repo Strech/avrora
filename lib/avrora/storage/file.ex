@@ -65,5 +65,5 @@ defmodule Avrora.Storage.File do
     Path.join(schemas_path(), filename)
   end
 
-  defp schemas_path, do: Config.schemas_path()
+  defp schemas_path, do: Config.self().schemas_path()
 end

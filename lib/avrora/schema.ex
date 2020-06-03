@@ -118,5 +118,5 @@ defmodule Avrora.Schema do
     error in ErlangError -> {:error, error.original}
   end
 
-  defp ets, do: Config.ets_lib()
+  defp ets, do: Config.self().ets_lib()
 end
