@@ -18,6 +18,31 @@ defmodule Avrora.Encoder do
   }
 
   @doc """
+  Extract schema from binary Avro
+
+  ## Examples
+
+      ...> payload = <<0, 0, 0, 0, 8, 72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48,
+      48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 48,
+      48, 48, 48, 48, 48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64>>
+      ...> Avrora.Encoder.extract_schema(payload)
+      {:ok, %Avrora.Schema{"full_name" => "io.confluent.Payment", "id" => 42}}
+  """
+  def extract_schema(payload) when is_binary(payload) do
+    case payload do
+      <<@registry_magic_bytes, <<id::size(32)>>, _body::binary>> ->
+        Resolver.resolve(id)
+
+      <<@object_container_magic_bytes, _::binary>> ->
+        {_, schema_info,_} = :avro_ocf.decode_binary(payload)
+        {:ok, %Avrora.Schema{full_name: elem(schema_info, 6)}}
+
+      _ ->
+        {:error, :undecodable}
+    end
+  end
+
+  @doc """
   Decode binary Avro message, loading schema from Schema Registry or Object Container Files.
 
   ## Examples
