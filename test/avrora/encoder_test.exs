@@ -52,7 +52,6 @@ defmodule Avrora.EncoderTest do
         {:ok, payment_schema_with_id_and_version}
       end)
 
-
       {:ok, schema } = Encoder.extract_schema(payment_registry_message())
       assert %Avrora.Schema{full_name: "io.confluent.Payment", id: 42, version: 24} = schema
     end
@@ -62,7 +61,7 @@ defmodule Avrora.EncoderTest do
     end
 
     test "when payload was encoded with OCF magic byte" do
-      {:ok, %Avrora.Schema{ full_name: "io.confluent.Payment"}} = Encoder.extract_schema(payment_ocf_message())
+      {:ok, %Avrora.Schema{full_name: "io.confluent.Payment"}} = Encoder.extract_schema(payment_ocf_message())
     end
   end
 

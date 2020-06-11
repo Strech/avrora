@@ -16,6 +16,7 @@ defmodule Avrora.Encoder do
     map_type: :proplist,
     record_type: :map
   }
+  @ocf_schema_full_name_pos 6
 
   @doc """
   Extract schema from binary Avro
@@ -34,8 +35,8 @@ defmodule Avrora.Encoder do
         Resolver.resolve(id)
 
       <<@object_container_magic_bytes, _::binary>> ->
-        {_, schema_info,_} = :avro_ocf.decode_binary(payload)
-        {:ok, %Avrora.Schema{full_name: elem(schema_info, 6)}}
+        {_, schema_info, _} = :avro_ocf.decode_binary(payload)
+        {:ok, %Avrora.Schema{full_name: elem(schema_info, @ocf_schema_full_name_pos)}}
 
       _ ->
         {:error, :undecodable}
