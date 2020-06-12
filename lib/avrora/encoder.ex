@@ -5,12 +5,11 @@ defmodule Avrora.Encoder do
 
   require Logger
   alias Avrora.{Mapper, Resolver, Schema}
-  alias Avrora.Schema.{Name, OCFMapper}
+  alias Avrora.Schema.Name
+  alias Avrora.ObjectContainerFile
 
   @registry_magic_bytes <<0::size(8)>>
   @object_container_magic_bytes <<"Obj", 1>>
-  @object_container_full_name_pos 6
-
   @decoder_options %{
     encoding: :avro_binary,
     hook: &__MODULE__.__hook__/4,
@@ -36,14 +35,7 @@ defmodule Avrora.Encoder do
         Resolver.resolve(id)
 
       <<@object_container_magic_bytes, _::binary>> ->
-        {_, schema_info, _} = :avro_ocf.decode_binary(payload)
-        {
-          :ok,
-          %Avrora.Schema{
-            full_name: elem(schema_info, @object_container_full_name_pos),
-            json: OCFMapper.parse(schema_info) |> Poison.encode!
-          }
-        }
+        ObjectContainerFile.extract_schema(payload)
 
       _ ->
         {:error, :schema_not_found}

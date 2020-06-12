@@ -62,9 +62,24 @@ defmodule Avrora.EncoderTest do
     end
 
     test "when payload was encoded with OCF magic byte" do
+      payment_schema = payment_schema()
+      Avrora.Storage.MemoryMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.Payment"
+
+        {:ok, nil}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.Payment"
+        assert payment_schema.full_name == value.full_name
+        assert payment_schema.json == value.json
+
+        {:ok, value}
+      end)
+
       {:ok, schema} = Encoder.extract_schema(payment_ocf_message())
       assert %Avrora.Schema{full_name: "io.confluent.Payment", json: json } = schema
-      assert Poison.decode!(json) == Poison.decode!(payment_json_schema())
+      assert json == payment_json_schema()
     end
   end
 
