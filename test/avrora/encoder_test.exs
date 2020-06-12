@@ -30,7 +30,7 @@ defmodule Avrora.EncoderTest do
     end
 
     test "when payload was encoded with magic byte and registry is configured" do
-      payment_schema_with_id_and_version = payment_schema_with_id_and_version()
+      payment_schema_with_id = payment_schema_with_id()
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
@@ -40,7 +40,7 @@ defmodule Avrora.EncoderTest do
       end)
       |> expect(:put, fn key, value ->
         assert key == 42
-        assert payment_schema_with_id_and_version = value
+        assert payment_schema_with_id == value
 
         {:ok, value}
       end)
@@ -49,19 +49,22 @@ defmodule Avrora.EncoderTest do
       |> expect(:get, fn key ->
         assert key == 42
 
-        {:ok, payment_schema_with_id_and_version}
+        {:ok, payment_schema_with_id}
       end)
 
-      {:ok, schema } = Encoder.extract_schema(payment_registry_message())
-      assert %Avrora.Schema{full_name: "io.confluent.Payment", id: 42, version: 24} = schema
+      {:ok, schema} = Encoder.extract_schema(payment_registry_message())
+      assert %Avrora.Schema{full_name: "io.confluent.Payment", id: 42, json: json} = schema
+      assert Poison.decode!(json) == Poison.decode!(payment_json_schema())
     end
 
     test "when message in in plain format" do
-      {:error, :undecodable} = Encoder.extract_schema(messenger_plain_message())
+      {:error, :schema_not_found} = Encoder.extract_schema(messenger_plain_message())
     end
 
     test "when payload was encoded with OCF magic byte" do
-      {:ok, %Avrora.Schema{full_name: "io.confluent.Payment"}} = Encoder.extract_schema(payment_ocf_message())
+      {:ok, schema} = Encoder.extract_schema(payment_ocf_message())
+      assert %Avrora.Schema{full_name: "io.confluent.Payment", json: json } = schema
+      assert Poison.decode!(json) == Poison.decode!(payment_json_schema())
     end
   end
 
@@ -690,11 +693,6 @@ defmodule Avrora.EncoderTest do
   defp payment_schema_with_id do
     {:ok, schema} = Schema.parse(payment_json_schema())
     %{schema | id: 42, version: nil}
-  end
-
-  defp payment_schema_with_id_and_version do
-    {:ok, schema} = Schema.parse(payment_json_schema())
-    %{schema | id: 42, version: 24}
   end
 
   defp messenger_schema do
