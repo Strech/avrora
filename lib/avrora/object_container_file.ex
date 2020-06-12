@@ -26,12 +26,7 @@ defmodule Avrora.ObjectContainerFile do
         %Avrora.Schema{
           full_name: "io.confluent.Payment",
           id: nil,
-          json: %{
-            fields: [%{name: "id", type: "string"}, %{name: "amount", type: "double"}],
-            name: "Payment",
-            namespace: "io.confluent",
-            type: "record"
-          },
+          json: nil,
           lookup_table: nil,
           version: nil
         }
@@ -43,28 +38,13 @@ defmodule Avrora.ObjectContainerFile do
     {_, schema_info, _} = :avro_ocf.decode_binary(payload)
     full_name = elem(schema_info, @object_container_full_name_pos)
     with {:ok, nil} <- memory_storage().get(full_name),
-          json <- do_extract(schema_info) |> Poison.encode!(),
-          {:ok, schema} <- Avrora.Schema.parse(json) do
+          {:ok, schema} <- Avrora.Schema.parse(schema_info) do
             memory_storage().put(full_name, schema)
             {:ok, schema}
     else
       {:ok, schema} -> {:ok, schema}
       {:error, reason} -> {:error, reason}
     end
-  end
-
-  defp do_extract({:avro_record_type, name, namespace, _, _, fields, _, _}) do
-    %{}
-        |> Map.put(:namespace, namespace)
-        |> Map.put(:name, name)
-        |> Map.put(:type, "record")
-        |> Map.put(:fields, Enum.map(fields, &do_extract/1))
-  end
-
-  defp do_extract({:avro_record_field, name, _, {_, type, _} = _field_type, _, _, _}) do
-      %{}
-        |> Map.put(:name, name)
-        |> Map.put(:type, type)
   end
 
   defp memory_storage, do: Config.self().memory_storage()

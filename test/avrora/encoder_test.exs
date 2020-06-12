@@ -54,7 +54,7 @@ defmodule Avrora.EncoderTest do
 
       {:ok, schema} = Encoder.extract_schema(payment_registry_message())
       assert %Avrora.Schema{full_name: "io.confluent.Payment", id: 42, json: json} = schema
-      assert Poison.decode!(json) == Poison.decode!(payment_json_schema())
+      assert json == payment_json_schema()
     end
 
     test "when message in in plain format" do
