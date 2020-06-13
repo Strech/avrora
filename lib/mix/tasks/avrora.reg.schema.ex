@@ -27,12 +27,17 @@ defmodule Mix.Tasks.Avrora.Reg.Schema do
       mix avrora.reg.schema --all
   """
 
+  require Logger
   alias Avrora.Config
+  alias Avrora.Schema.Name
 
   @shortdoc "Register schema(s) in the Confluent Schema Registry"
 
   @impl Mix.Task
   def run(argv) do
+    {:ok, _} = Application.ensure_all_started(:avrora)
+    {:ok, _} = Avrora.start_link()
+
     case argv do
       ["--all"] ->
         [schemas_path(), "**", "*.avsc"]
@@ -47,7 +52,7 @@ defmodule Mix.Tasks.Avrora.Reg.Schema do
         end)
 
       ["--name", name] ->
-        register(name)
+        name |> String.trim() |> register()
 
       _ ->
         message = """
@@ -60,9 +65,18 @@ defmodule Mix.Tasks.Avrora.Reg.Schema do
     end
   end
 
-  defp register(schema_name) do
-    IO.puts("Registering #{schema_name}")
+  defp register(name) do
+    with {:ok, schema_name} <- Name.parse(name),
+         {:ok, schema} <- file_storage().get(name) do
+      Logger.info("schema `#{schema_name.name}` will be registered")
+      registry_storage().put(schema_name.name, schema.json)
+    else
+      {:error, error} ->
+        Logger.warn("schema #{name} will be skipped due to an error `#{error}'")
+    end
   end
 
   defp schemas_path, do: Config.self().schemas_path()
+  defp file_storage, do: Config.self().file_storage()
+  defp registry_storage, do: Config.self().registry_storage()
 end
