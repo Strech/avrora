@@ -41,7 +41,6 @@ defmodule Avrora.ObjectContainerFile do
       lookup_table = :avro_schema_store.add_type(erlavro, Schema.lookup_table())
       schema = %{schema | full_name: full_name, lookup_table: lookup_table, json: json}
       memory_storage().put(full_name, schema)
-      {:ok, schema}
     end
   end
 

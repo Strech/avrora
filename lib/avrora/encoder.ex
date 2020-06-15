@@ -4,8 +4,7 @@ defmodule Avrora.Encoder do
   """
 
   require Logger
-  alias Avrora.ObjectContainerFile
-  alias Avrora.{Mapper, Resolver, Schema}
+  alias Avrora.{Mapper, ObjectContainerFile, Resolver, Schema}
   alias Avrora.Schema.Name
 
   @registry_magic_bytes <<0::size(8)>>
