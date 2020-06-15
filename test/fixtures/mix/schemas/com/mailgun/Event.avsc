@@ -1,0 +1,11 @@
+{
+  "namespace": "com.mailgun",
+  "name": "Event",
+  "type": "record",
+  "fields": [
+    {
+      "name": "id",
+      "type": "string"
+    }
+  ]
+}

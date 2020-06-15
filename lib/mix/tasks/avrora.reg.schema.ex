@@ -27,7 +27,6 @@ defmodule Mix.Tasks.Avrora.Reg.Schema do
       mix avrora.reg.schema --all
   """
 
-  require Logger
   alias Avrora.Config
   alias Avrora.Schema.Name
 
@@ -60,7 +59,7 @@ defmodule Mix.Tasks.Avrora.Reg.Schema do
         please use #{IO.ANSI.yellow()}mix help avrora.reg.schema#{IO.ANSI.reset()} for help
         """
 
-        IO.puts(:stderr, message)
+        Mix.shell().error(message)
         exit({:shutdown, 1})
     end
   end
@@ -68,11 +67,11 @@ defmodule Mix.Tasks.Avrora.Reg.Schema do
   defp register(name) do
     with {:ok, schema_name} <- Name.parse(name),
          {:ok, schema} <- file_storage().get(name) do
-      Logger.info("schema `#{schema_name.name}` will be registered")
+      Mix.shell().info("schema `#{schema_name.name}` will be registered")
       registry_storage().put(schema_name.name, schema.json)
     else
       {:error, error} ->
-        Logger.warn("schema #{name} will be skipped due to an error `#{error}'")
+        Mix.shell().error("schema `#{name}' will be skipped due to an error `#{error}'")
     end
   end
 
