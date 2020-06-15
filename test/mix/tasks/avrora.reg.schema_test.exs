@@ -1,5 +1,5 @@
 defmodule Mix.Tasks.Avrora.Reg.SchemaTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case
   doctest Mix.Tasks.Avrora.Reg.Schema
 
   import Mox
