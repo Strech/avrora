@@ -26,7 +26,8 @@ defmodule Avrora.EncoderTest do
         {:error, :unconfigured_registry_url}
       end)
 
-      assert {:error, :unconfigured_registry_url} = Encoder.extract_schema(payment_registry_message())
+      assert {:error, :unconfigured_registry_url} =
+               Encoder.extract_schema(payment_registry_message())
     end
 
     test "when payload was encoded with magic byte and registry is configured" do
@@ -53,8 +54,9 @@ defmodule Avrora.EncoderTest do
       end)
 
       {:ok, schema} = Encoder.extract_schema(payment_registry_message())
-      assert %Avrora.Schema{full_name: "io.confluent.Payment", id: 42, json: json} = schema
-      assert json == payment_json_schema()
+      assert schema.full_name == "io.confluent.Payment"
+      assert schema.id === 42
+      assert schema.json == payment_json_schema()
     end
 
     test "when message in in plain format" do
@@ -62,7 +64,6 @@ defmodule Avrora.EncoderTest do
     end
 
     test "when payload was encoded with OCF magic byte" do
-      payment_schema = payment_schema()
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment"
@@ -71,15 +72,14 @@ defmodule Avrora.EncoderTest do
       end)
       |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
-        assert payment_schema.full_name == value.full_name
-        assert payment_schema.json == value.json
+        assert value.full_name == "io.confluent.Payment"
 
         {:ok, value}
       end)
 
       {:ok, schema} = Encoder.extract_schema(payment_ocf_message())
-      assert %Avrora.Schema{full_name: "io.confluent.Payment", json: json } = schema
-      assert json == payment_json_schema()
+      assert schema.full_name == "io.confluent.Payment"
+      assert schema.json == payment_json_schema()
     end
   end
 

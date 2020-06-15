@@ -2,8 +2,7 @@ defmodule Avrora.ObjectContainerFile do
   @moduledoc """
   Function to extract schema from elavro tuple
   """
-  alias Avrora.Config
-  @object_container_full_name_pos 6
+  alias Avrora.{Config, Schema}
 
   @doc """
   Extract schema from an OCF message
@@ -33,18 +32,28 @@ defmodule Avrora.ObjectContainerFile do
       }
   """
 
-  @spec extract_schema(binary()) :: {:ok, Avrora.Schema.t()}
+  @spec extract_schema(binary()) :: {:ok, Schema.t()}
   def extract_schema(payload) when is_binary(payload) do
-    {_, schema_info, _} = :avro_ocf.decode_binary(payload)
-    full_name = elem(schema_info, @object_container_full_name_pos)
-    with {:ok, nil} <- memory_storage().get(full_name),
-          {:ok, schema} <- Avrora.Schema.parse(schema_info) do
-            memory_storage().put(full_name, schema)
-            {:ok, schema}
-    else
-      {:ok, schema} -> {:ok, schema}
-      {:error, reason} -> {:error, reason}
+    with {:ok, {headers, {_, _, _, _, _, _, full_name, _} = erlavro, _}} <- do_decode(payload),
+         {:ok, nil} <- memory_storage().get(full_name),
+         {:ok, json} <- extract_json(headers),
+         {:ok, schema} <- Schema.blank() do
+      lookup_table = :avro_schema_store.add_type(erlavro, Schema.lookup_table())
+      schema = %{schema | full_name: full_name, lookup_table: lookup_table, json: json}
+      memory_storage().put(full_name, schema)
+      {:ok, schema}
     end
+  end
+
+  defp extract_json(headers) do
+    with {_, _, meta, _} <- headers,
+         {"avro.schema", json} <- Enum.find(meta, fn {key, _} -> key == "avro.schema" end) do
+      {:ok, json}
+    end
+  end
+
+  defp do_decode(payload) do
+    {:ok, :avro_ocf.decode_binary(payload)}
   end
 
   defp memory_storage, do: Config.self().memory_storage()
