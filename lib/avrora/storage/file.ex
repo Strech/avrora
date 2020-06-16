@@ -31,7 +31,7 @@ defmodule Avrora.Storage.File do
 
   ## Examples
 
-      iex> {:ok, schema} = Avrora.Storage.File.get("io.confluent.examples.Payment")
+      iex> {:ok, schema} = Avrora.Storage.File.get("io.confluent.Payment")
       iex> schema.full_name
       "io.confluent.Payment"
   """

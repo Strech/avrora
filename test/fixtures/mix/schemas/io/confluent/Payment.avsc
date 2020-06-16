@@ -1,0 +1,15 @@
+{
+  "type": "record",
+  "name": "Payment",
+  "namespace": "io.confluent",
+  "fields": [
+    {
+      "name": "id",
+      "type": "string"
+    },
+    {
+      "name": "amount",
+      "type": "double"
+    }
+  ]
+}

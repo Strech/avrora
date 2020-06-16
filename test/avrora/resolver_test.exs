@@ -78,7 +78,7 @@ defmodule Avrora.ResolverTest do
 
       output =
         capture_log(fn ->
-          assert {:error, :unknown_error} = Resolver.resolve_any([1, "io.confluent.Payment"])
+          assert {:error, :unknown_error} == Resolver.resolve_any([1, "io.confluent.Payment"])
         end)
 
       assert output =~ "fail to resolve schema by identifier"
