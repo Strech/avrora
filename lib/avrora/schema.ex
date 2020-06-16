@@ -23,9 +23,12 @@ defmodule Avrora.Schema do
   Returns a blank Avrora.Schema
 
   ## Examples
-  iex> {:ok, schema} = Avrora.Schema.blank()
-  iex> {:ok, %Avrora.Schema{id: nil, version: nil, full_name: nil, lookup_table: nil, json: nil}}
+
+    iex> {:ok, schema} = Avrora.Schema.blank()
+    iex> schema
+    %Avrora.Schema{id: nil, version: nil, full_name: nil, lookup_table: nil, json: nil}
   """
+
   @spec blank :: {:ok, t()}
   def blank do
     {
