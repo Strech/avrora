@@ -60,8 +60,8 @@ defmodule Avrora.Schema do
       iex> schema.full_name
       "io.confluent.Payment"
   """
-  @spec parse(String.t() | tuple(), reference_lookup_fun) :: {:ok, t()} | {:error, term()}
-  def parse(payload, reference_lookup_fun \\ @reference_lookup_fun) do
+  @spec parse(String.t(), reference_lookup_fun) :: {:ok, t()} | {:error, term()}
+  def parse(payload, reference_lookup_fun \\ @reference_lookup_fun) when is_binary(payload) do
     lookup_table = lookup_table()
 
     with {:ok, [schema | _]} <- parse_recursive(payload, lookup_table, reference_lookup_fun),
@@ -142,14 +142,12 @@ defmodule Avrora.Schema do
   end
 
   # Parse schema to `erlavro` format, converting errors to error return
-  defp do_parse(payload) when is_binary(payload) do
+  defp do_parse(payload) do
     {:ok, :avro_json_decoder.decode_schema(payload, allow_bad_references: true)}
   rescue
     error in ArgumentError -> {:error, error.message}
     error in ErlangError -> {:error, error.original}
   end
-
-  defp do_parse(payload) when is_tuple(payload), do: {:ok, payload}
 
   defp ets, do: Config.self().ets_lib()
 end
