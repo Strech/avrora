@@ -7,18 +7,6 @@ defmodule Avrora.SchemaTest do
 
   setup :support_config
 
-  describe "blank/0" do
-    test "when everything is fine" do
-      assert {:ok, schema} = Schema.blank()
-
-      assert is_nil(schema.id)
-      assert is_nil(schema.json)
-      assert is_nil(schema.version)
-      assert is_nil(schema.full_name)
-      assert is_reference(schema.lookup_table)
-    end
-  end
-
   describe "parse/2" do
     test "when payload is a valid json schema" do
       {:ok, schema} = Schema.parse(payment_json())
@@ -108,6 +96,40 @@ defmodule Avrora.SchemaTest do
       assert full_name == "io.confluent.Payment"
       assert length(fields) == 2
     end
+  end
+
+  describe "from_erlavro/2" do
+    test "when payload is valid and no attributes are given" do
+      {:ok, schema} = Schema.from_erlavro(payment_erlavro())
+
+      assert is_nil(schema.id)
+      assert is_nil(schema.version)
+      assert is_reference(schema.lookup_table)
+
+      assert schema.full_name == "io.confluent.Payment"
+      assert schema.json == payment_json()
+    end
+
+    test "when payload is valid and JSON attribute is given" do
+      {:ok, schema} = Schema.from_erlavro(payment_erlavro(), json: "{}")
+
+      assert is_nil(schema.id)
+      assert is_nil(schema.version)
+      assert is_reference(schema.lookup_table)
+
+      assert schema.full_name == "io.confluent.Payment"
+      assert schema.json == "{}"
+    end
+  end
+
+  defp payment_erlavro do
+    {:avro_record_type, "Payment", "io.confluent", "", [],
+     [
+       {:avro_record_field, "id", "", {:avro_primitive_type, "string", []}, :undefined,
+        :ascending, []},
+       {:avro_record_field, "amount", "", {:avro_primitive_type, "double", []}, :undefined,
+        :ascending, []}
+     ], "io.confluent.Payment", []}
   end
 
   defp signature_json do

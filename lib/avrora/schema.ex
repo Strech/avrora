@@ -11,31 +11,13 @@ defmodule Avrora.Schema do
   @type t :: %__MODULE__{
           id: nil | integer(),
           version: nil | integer(),
-          full_name: nil | String.t(),
+          full_name: String.t(),
           lookup_table: reference(),
-          json: nil | String.t()
+          json: String.t()
         }
 
   @type reference_lookup_fun :: (String.t() -> {:ok, String.t()} | {:error, term()})
   @reference_lookup_fun &__MODULE__.reference_lookup/1
-
-  @doc """
-  Creates a blank Avrora.Schema struct.
-
-  ## Examples
-
-    iex> {:ok, schema} = Avrora.Schema.blank()
-    iex> schema.full_name
-    nil
-  """
-
-  @spec blank :: {:ok, t()}
-  def blank do
-    {
-      :ok,
-      %__MODULE__{id: nil, version: nil, full_name: nil, lookup_table: ets().new(), json: nil}
-    }
-  end
 
   @doc """
   Parse Avro schema JSON and convert to struct.
@@ -61,7 +43,7 @@ defmodule Avrora.Schema do
           version: nil,
           full_name: full_name,
           lookup_table: lookup_table,
-          json: :avro_json_encoder.encode_type(schema)
+          json: to_json(schema)
         }
       }
     else
@@ -78,7 +60,50 @@ defmodule Avrora.Schema do
   def reference_lookup(_), do: {:ok, ~s({})}
 
   @doc """
-  Convert struct to `erlavro` format and look up in `avro_schema_store`.
+  Convert `erlavro` format to the struct.
+
+  ## Examples
+
+      iex> payload =
+      ...>   {:avro_record_type, "Payment", "io.confluent", "", [],
+      ...>        [
+      ...>          {:avro_record_field, "id", "", {:avro_primitive_type, "string", []}, :undefined,
+      ...>           :ascending, []},
+      ...>          {:avro_record_field, "amount", "", {:avro_primitive_type, "double", []}, :undefined,
+      ...>           :ascending, []}
+      ...>        ], "io.confluent.Payment", []}
+      iex> {:ok, schema} = Avrora.Schema.from_erlavro(payload)
+      iex> schema.id
+      nil
+      iex> schema.full_name
+      "io.confluent.Payment"
+  """
+  @spec from_erlavro(term(), keyword()) :: {:ok, t()} | {:error, term()}
+  def from_erlavro(schema, attributes \\ []) do
+    lookup_table = ets().new()
+
+    with {_, _, _, _, _, _, full_name, _} <- schema,
+         lookup_table <- :avro_schema_store.add_type(schema, lookup_table),
+         json <- Keyword.get_lazy(attributes, :json, fn -> to_json(schema) end) do
+      {
+        :ok,
+        %__MODULE__{
+          id: nil,
+          version: nil,
+          full_name: full_name,
+          lookup_table: lookup_table,
+          json: json
+        }
+      }
+    else
+      {:error, reason} ->
+        true = :ets.delete(lookup_table)
+        {:error, reason}
+    end
+  end
+
+  @doc """
+  Convert struct to `erlavro` format and look it up in `avro_schema_store`.
 
   ## Examples
 
@@ -93,6 +118,8 @@ defmodule Avrora.Schema do
   @spec to_erlavro(t()) :: {:ok, term()} | {:error, term()}
   def to_erlavro(%__MODULE__{} = schema),
     do: do_compile(schema.full_name, schema.lookup_table)
+
+  defp to_json(schema), do: :avro_json_encoder.encode_type(schema)
 
   defp parse_recursive(payload, lookup_table, reference_lookup_fun) do
     with {:ok, schema} <- do_parse(payload),
