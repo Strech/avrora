@@ -18,16 +18,20 @@ defmodule Avrora.Encoder do
   }
 
   @doc """
-  Extract schema from binary Avro
+  Extract schema from the binary Avro message.
 
   ## Examples
 
       ...> payload = <<0, 0, 0, 0, 8, 72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48,
       48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 48,
       48, 48, 48, 48, 48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64>>
-      ...> Avrora.Encoder.extract_schema(payload)
-      {:ok, %Avrora.Schema{"full_name" => "io.confluent.Payment", "id" => 42}}
+      ...> {:ok, schema} = Avrora.Encoder.extract_schema(payload)
+      ...> schema.id
+      42
+      ...> schema.full_name
+      "io.confluent.Payment"
   """
+  @spec extract_schema(binary()) :: {:ok, Schema.t()} | {:error, term()}
   def extract_schema(payload) when is_binary(payload) do
     case payload do
       <<@registry_magic_bytes, <<id::size(32)>>, _body::binary>> ->
@@ -174,11 +178,9 @@ defmodule Avrora.Encoder do
   def __hook__(_type, _sub_name_or_id, data, decode_fun), do: decode_fun.(data)
 
   defp do_decode(payload) do
-    {_, _, decoded} = :avro_ocf.decode_binary(payload)
-
-    {:ok, Mapper.to_map(decoded)}
-  rescue
-    error -> {:error, error}
+    with {:ok, {_, _, decoded}} <- ObjectContainerFile.decode(payload) do
+      {:ok, Mapper.to_map(decoded)}
+    end
   end
 
   defp do_decode(schema, payload) do
