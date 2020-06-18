@@ -1,10 +1,10 @@
 defmodule Avrora.Mapper do
   @moduledoc """
-  Functions to convert between common Elixir structures and erlavro structures.
+  Functions to convert between common Elixir structures and `erlavro` structures.
   """
 
   @doc """
-  Convert tuple-based structure returned by erlavro to Elixir map.
+  Convert tuple-based structure returned by `erlavro` to Elixir map.
 
   ## Examples
 
