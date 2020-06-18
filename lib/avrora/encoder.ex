@@ -4,7 +4,7 @@ defmodule Avrora.Encoder do
   """
 
   require Logger
-  alias Avrora.{Mapper, Resolver, Schema}
+  alias Avrora.{Mapper, ObjectContainerFile, Resolver, Schema}
   alias Avrora.Schema.Name
 
   @registry_magic_bytes <<0::size(8)>>
@@ -16,6 +16,30 @@ defmodule Avrora.Encoder do
     map_type: :proplist,
     record_type: :map
   }
+
+  @doc """
+  Extract schema from binary Avro
+
+  ## Examples
+
+      ...> payload = <<0, 0, 0, 0, 8, 72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48,
+      48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 48,
+      48, 48, 48, 48, 48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64>>
+      ...> Avrora.Encoder.extract_schema(payload)
+      {:ok, %Avrora.Schema{"full_name" => "io.confluent.Payment", "id" => 42}}
+  """
+  def extract_schema(payload) when is_binary(payload) do
+    case payload do
+      <<@registry_magic_bytes, <<id::size(32)>>, _body::binary>> ->
+        Resolver.resolve(id)
+
+      <<@object_container_magic_bytes, _::binary>> ->
+        ObjectContainerFile.extract_schema(payload)
+
+      _ ->
+        {:error, :schema_not_found}
+    end
+  end
 
   @doc """
   Decode binary Avro message, loading schema from Schema Registry or Object Container Files.

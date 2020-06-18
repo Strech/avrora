@@ -10,6 +10,79 @@ defmodule Avrora.EncoderTest do
   setup :verify_on_exit!
   setup :support_config
 
+  describe "extract_schema/1" do
+    test "when payload was encoded with magic byte and registry is not configured" do
+      Avrora.Storage.MemoryMock
+      |> expect(:get, fn key ->
+        assert key == 42
+
+        {:ok, nil}
+      end)
+
+      Avrora.Storage.RegistryMock
+      |> expect(:get, fn key ->
+        assert key == 42
+
+        {:error, :unconfigured_registry_url}
+      end)
+
+      assert {:error, :unconfigured_registry_url} =
+               Encoder.extract_schema(payment_registry_message())
+    end
+
+    test "when payload was encoded with magic byte and registry is configured" do
+      payment_schema_with_id = payment_schema_with_id()
+
+      Avrora.Storage.MemoryMock
+      |> expect(:get, fn key ->
+        assert key == 42
+
+        {:ok, nil}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == 42
+        assert payment_schema_with_id == value
+
+        {:ok, value}
+      end)
+
+      Avrora.Storage.RegistryMock
+      |> expect(:get, fn key ->
+        assert key == 42
+
+        {:ok, payment_schema_with_id}
+      end)
+
+      {:ok, schema} = Encoder.extract_schema(payment_registry_message())
+      assert schema.full_name == "io.confluent.Payment"
+      assert schema.id === 42
+      assert schema.json == payment_json_schema()
+    end
+
+    test "when message in in plain format" do
+      {:error, :schema_not_found} = Encoder.extract_schema(messenger_plain_message())
+    end
+
+    test "when payload was encoded with OCF magic byte" do
+      Avrora.Storage.MemoryMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.Payment"
+
+        {:ok, nil}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.Payment"
+        assert value.full_name == "io.confluent.Payment"
+
+        {:ok, value}
+      end)
+
+      {:ok, schema} = Encoder.extract_schema(payment_ocf_message())
+      assert schema.full_name == "io.confluent.Payment"
+      assert schema.json == payment_json_schema()
+    end
+  end
+
   describe "decode/1" do
     test "when payload was encoded with OCF magic byte" do
       {:ok, decoded} = Encoder.decode(payment_ocf_message())

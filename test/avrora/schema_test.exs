@@ -98,6 +98,13 @@ defmodule Avrora.SchemaTest do
     end
   end
 
+  describe "blank" do
+    test "returns an empty schema" do
+      {:ok, schema} = Schema.blank()
+      assert %Avrora.Schema{full_name: nil, json: nil, version: nil, lookup_table: nil} = schema
+    end
+  end
+
   defp signature_json do
     ~s({"namespace":"io.confluent","name":"Signature","type":"record","fields":[{"name":"checksum","type":{"name":"SignatureChecksum","type":"fixed","size":1048576}}]})
   end

@@ -20,6 +20,37 @@ defmodule Avrora.Schema do
   @reference_lookup_fun &__MODULE__.reference_lookup/1
 
   @doc """
+  Returns a blank Avrora.Schema
+
+  ## Examples
+
+    iex> {:ok, schema} = Avrora.Schema.blank()
+    iex> schema
+    %Avrora.Schema{id: nil, version: nil, full_name: nil, lookup_table: nil, json: nil}
+  """
+
+  @spec blank :: {:ok, t()}
+  def blank do
+    {
+      :ok,
+      %__MODULE__{
+        id: nil,
+        version: nil,
+        full_name: nil,
+        lookup_table: nil,
+        json: nil
+      }
+    }
+  end
+
+  @doc """
+  Returns an empty ets table
+  """
+
+  @spec lookup_table :: any
+  def lookup_table, do: ets().new()
+
+  @doc """
   Parse Avro schema JSON and convert to struct.
 
   ## Examples
@@ -31,7 +62,7 @@ defmodule Avrora.Schema do
   """
   @spec parse(String.t(), reference_lookup_fun) :: {:ok, t()} | {:error, term()}
   def parse(payload, reference_lookup_fun \\ @reference_lookup_fun) when is_binary(payload) do
-    lookup_table = ets().new()
+    lookup_table = lookup_table()
 
     with {:ok, [schema | _]} <- parse_recursive(payload, lookup_table, reference_lookup_fun),
          {_, _, _, _, _, _, full_name, _} <- schema,
