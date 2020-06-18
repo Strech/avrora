@@ -54,7 +54,6 @@ defmodule Avrora.ObjectContainerFileTest do
 
       assert is_nil(schema.id)
       assert is_nil(schema.version)
-      assert is_reference(schema.lookup_table)
 
       assert schema.full_name == "io.confluent.Payment"
       assert schema.json == payment_json()
@@ -72,7 +71,6 @@ defmodule Avrora.ObjectContainerFileTest do
 
       assert is_nil(schema.id)
       assert is_nil(schema.version)
-      assert is_reference(schema.lookup_table)
 
       assert schema.full_name == "io.confluent.Payment"
       assert schema.json == payment_json()
