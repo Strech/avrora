@@ -1,6 +1,6 @@
 defmodule Avrora.Schema do
   @moduledoc """
-  Convenience wrapper struct for `AvroEx.Schema` and Confluent Schema Registry.
+  Convenience wrapper struct for erlavro records.
   """
 
   alias Avrora.Config
@@ -11,44 +11,31 @@ defmodule Avrora.Schema do
   @type t :: %__MODULE__{
           id: nil | integer(),
           version: nil | integer(),
-          full_name: String.t(),
+          full_name: nil | String.t(),
           lookup_table: reference(),
-          json: String.t()
+          json: nil | String.t()
         }
 
   @type reference_lookup_fun :: (String.t() -> {:ok, String.t()} | {:error, term()})
   @reference_lookup_fun &__MODULE__.reference_lookup/1
 
   @doc """
-  Returns a blank Avrora.Schema
+  Creates a blank Avrora.Schema struct.
 
   ## Examples
 
     iex> {:ok, schema} = Avrora.Schema.blank()
-    iex> schema
-    %Avrora.Schema{id: nil, version: nil, full_name: nil, lookup_table: nil, json: nil}
+    iex> schema.full_name
+    nil
   """
 
   @spec blank :: {:ok, t()}
   def blank do
     {
       :ok,
-      %__MODULE__{
-        id: nil,
-        version: nil,
-        full_name: nil,
-        lookup_table: nil,
-        json: nil
-      }
+      %__MODULE__{id: nil, version: nil, full_name: nil, lookup_table: ets().new(), json: nil}
     }
   end
-
-  @doc """
-  Returns an empty ets table
-  """
-
-  @spec lookup_table :: any
-  def lookup_table, do: ets().new()
 
   @doc """
   Parse Avro schema JSON and convert to struct.
@@ -62,7 +49,7 @@ defmodule Avrora.Schema do
   """
   @spec parse(String.t(), reference_lookup_fun) :: {:ok, t()} | {:error, term()}
   def parse(payload, reference_lookup_fun \\ @reference_lookup_fun) when is_binary(payload) do
-    lookup_table = lookup_table()
+    lookup_table = ets().new()
 
     with {:ok, [schema | _]} <- parse_recursive(payload, lookup_table, reference_lookup_fun),
          {_, _, _, _, _, _, full_name, _} <- schema,

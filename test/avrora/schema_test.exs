@@ -7,6 +7,18 @@ defmodule Avrora.SchemaTest do
 
   setup :support_config
 
+  describe "blank/0" do
+    test "when everything is fine" do
+      assert {:ok, schema} = Schema.blank()
+
+      assert is_nil(schema.id)
+      assert is_nil(schema.json)
+      assert is_nil(schema.version)
+      assert is_nil(schema.full_name)
+      assert is_reference(schema.lookup_table)
+    end
+  end
+
   describe "parse/2" do
     test "when payload is a valid json schema" do
       {:ok, schema} = Schema.parse(payment_json())
@@ -87,7 +99,7 @@ defmodule Avrora.SchemaTest do
     end
   end
 
-  describe "to_erlavro" do
+  describe "to_erlavro/1" do
     test "when payload is a valid json schema" do
       {:ok, schema} = Schema.parse(payment_json())
       {:ok, {type, _, _, _, _, fields, full_name, _}} = Schema.to_erlavro(schema)
@@ -95,13 +107,6 @@ defmodule Avrora.SchemaTest do
       assert type == :avro_record_type
       assert full_name == "io.confluent.Payment"
       assert length(fields) == 2
-    end
-  end
-
-  describe "blank" do
-    test "returns an empty schema" do
-      {:ok, schema} = Schema.blank()
-      assert %Avrora.Schema{full_name: nil, json: nil, version: nil, lookup_table: nil} = schema
     end
   end
 
