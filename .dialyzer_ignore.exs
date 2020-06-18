@@ -4,7 +4,9 @@
   #       https://github.com/klarna/erlavro/blob/3dcb4a90af88bfe297ca60781265fbba025db48d/src/avro_binary_encoder.erl#L87-L88
   {":0:unknown_function Function ExUnit.Callbacks.on_exit/1 does not exist."},
   {"lib/avrora/encoder.ex", :call_without_opaque},
-  {"lib/avrora/encoder.ex", :pattern_match, 118},
-  {"lib/avrora/encoder.ex", :unused_fun, 185},
-  {"lib/avrora/encoder.ex", :unused_fun, 191}
+  {"lib/avrora/encoder.ex", :pattern_match, 146},
+  {"lib/avrora/encoder.ex", :unused_fun, 211},
+  {"lib/avrora/encoder.ex", :unused_fun, 217},
+  {"lib/avrora/object_container_file.ex", :opaque_match, 39},
+  {"lib/avrora/object_container_file.ex", :opaque_match, 75}
 ]
