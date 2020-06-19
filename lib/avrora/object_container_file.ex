@@ -34,7 +34,7 @@ defmodule Avrora.ObjectContainerFile do
 
   @spec extract_schema(binary()) :: {:ok, Schema.t()} | {:error, term()}
   def extract_schema(payload) when is_binary(payload) do
-    with {:ok, {headers, {_, _, _, _, _, _, full_name, _} = erlavro, _}} <- decode(payload),
+    with {:ok, {headers, {_, _, _, _, _, _, full_name, _} = erlavro, _}} <- do_decode(payload),
          {:ok, nil} <- memory_storage().get(full_name),
          {:ok, json} <- extract_json_schema(headers),
          {:ok, schema} <- Schema.from_erlavro(erlavro, json: json) do
@@ -42,7 +42,7 @@ defmodule Avrora.ObjectContainerFile do
     end
   end
 
-  defp decode(payload) do
+  defp do_decode(payload) do
     {:ok, :avro_ocf.decode_binary(payload)}
   rescue
     error -> {:error, error}
