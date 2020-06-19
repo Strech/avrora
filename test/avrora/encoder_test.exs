@@ -54,13 +54,10 @@ defmodule Avrora.EncoderTest do
       end)
 
       {:ok, schema} = Encoder.extract_schema(payment_registry_message())
-      assert schema.full_name == "io.confluent.Payment"
-      assert schema.id === 42
-      assert schema.json == payment_json_schema()
-    end
 
-    test "when message in in plain format" do
-      {:error, :schema_not_found} = Encoder.extract_schema(messenger_plain_message())
+      assert schema.id == 42
+      assert schema.full_name == "io.confluent.Payment"
+      assert schema.json == payment_json_schema()
     end
 
     test "when payload was encoded with OCF magic byte" do
@@ -72,14 +69,22 @@ defmodule Avrora.EncoderTest do
       end)
       |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
-        assert value.full_name == "io.confluent.Payment"
+        assert value.json == payment_json_schema()
 
         {:ok, value}
       end)
 
       {:ok, schema} = Encoder.extract_schema(payment_ocf_message())
+
+      assert is_nil(schema.id)
+      assert is_nil(schema.version)
+
       assert schema.full_name == "io.confluent.Payment"
       assert schema.json == payment_json_schema()
+    end
+
+    test "when payload was encoded with plain format" do
+      {:error, :schema_not_found} = Encoder.extract_schema(messenger_plain_message())
     end
   end
 
