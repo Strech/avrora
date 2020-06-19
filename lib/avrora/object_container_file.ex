@@ -1,6 +1,6 @@
 defmodule Avrora.ObjectContainerFile do
   @moduledoc """
-  An utility module to deal with Object Container File format messages.
+  A wrapper around `erlavro` Object Container File module.
   """
 
   alias Avrora.{Config, Schema}
