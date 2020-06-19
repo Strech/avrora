@@ -9,25 +9,6 @@ defmodule Avrora.ObjectContainerFileTest do
   setup :verify_on_exit!
   setup :support_config
 
-  describe "decode/1" do
-    test "when message is malformed" do
-      {status, message} = ObjectContainerFile.decode(<<0, 0, 1>>)
-
-      assert status == :error
-      assert message == %MatchError{term: <<0, 0, 1>>}
-    end
-
-    test "when message is valid" do
-      {:ok, {headers, schema, decoded}} = ObjectContainerFile.decode(payment_message())
-      {:header, _, [{"avro.codec", meta_codec}, {"avro.schema", meta_schema}], _} = headers
-
-      assert meta_codec == "null"
-      assert meta_schema == payment_json()
-      assert schema == payment_erlavro()
-      assert decoded == [[{"id", "00000000-0000-0000-0000-000000000000"}, {"amount", 15.99}]]
-    end
-  end
-
   describe "extract_schema/1" do
     test "when message is malformed" do
       {status, message} = ObjectContainerFile.extract_schema(<<0, 0, 1>>)
@@ -91,16 +72,6 @@ defmodule Avrora.ObjectContainerFileTest do
       48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 48, 48, 48, 48, 48,
       48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64, 236, 47, 96, 164, 206, 59, 152, 115, 80,
       243, 64, 50, 180, 153, 105, 34>>
-  end
-
-  defp payment_erlavro do
-    {:avro_record_type, "Payment", "io.confluent", "", [],
-     [
-       {:avro_record_field, "id", "", {:avro_primitive_type, "string", []}, :undefined,
-        :ascending, []},
-       {:avro_record_field, "amount", "", {:avro_primitive_type, "double", []}, :undefined,
-        :ascending, []}
-     ], "io.confluent.Payment", []}
   end
 
   defp payment_schema do

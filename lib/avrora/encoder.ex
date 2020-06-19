@@ -178,9 +178,11 @@ defmodule Avrora.Encoder do
   def __hook__(_type, _sub_name_or_id, data, decode_fun), do: decode_fun.(data)
 
   defp do_decode(payload) do
-    with {:ok, {_, _, decoded}} <- ObjectContainerFile.decode(payload) do
+    with {_, _, decoded} <- :avro_ocf.decode_binary(payload) do
       {:ok, Mapper.to_map(decoded)}
     end
+  rescue
+    error -> {:error, error}
   end
 
   defp do_decode(schema, payload) do
