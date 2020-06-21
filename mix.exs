@@ -4,7 +4,7 @@ defmodule Avrora.MixProject do
   def project do
     [
       app: :avrora,
-      version: "0.11.0",
+      version: "0.12.0",
       elixir: "~> 1.6",
       description: description(),
       package: package(),
@@ -72,8 +72,10 @@ defmodule Avrora.MixProject do
           var image = document.getElementById("avroraLogo");
           image.src = image.getAttribute("src").replace("/assets", "assets");
 
-          var badges = document.getElementById("badges");
-          badges.parentNode.removeChild(badges);
+          var nodoc = document.getElementsByClassName("nodoc");
+          while (nodoc.length > 0) {
+            nodoc[0].parentNode.removeChild(nodoc[0]);
+          }
         </script>
         """
       end,

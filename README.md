@@ -3,7 +3,7 @@
     <h1 align="center">Avrora</h1>
 </p>
 
-<span id="badges">
+<span class="nodoc">
 
 [![Hex pm](https://img.shields.io/hexpm/v/avrora.svg?style=for-the-badge)](https://hex.pm/packages/avrora)
 [![Hex Docs](https://img.shields.io/badge/api-docs-blue.svg?style=for-the-badge)](https://hexdocs.pm/avrora)
@@ -204,4 +204,69 @@ message =
 
 {:ok, decoded} = Avrora.decode(message)
 [%{"id" => "tx-1", "amount" => 15.99}]
+```
+
+<details class="nodoc">
+  <summary>:mag: Click to expand for all available functions</summary>
+
+### extract_schema/1
+
+Extracts a schema from the encoded message, useful when you would like to have
+some metadata about the schema used to encode the message. All the retrieved schemas
+will be cached accordingly to the settings.
+
+```elixir
+{:ok, pid} = Avrora.start_link()
+message =
+  <<79, 98, 106, 1, 3, 204, 2, 20, 97, 118, 114, 111, 46, 99, 111, 100, 101, 99,
+    8, 110, 117, 108, 108, 22, 97, 118, 114, 111, 46, 115, 99, 104, 101, 109, 97,
+    144, 2, 123, 34, 110, 97, 109, 101, 115, 112, 97, 99, 101, 34, 58, 34, 105,
+    111, 46, 99, 111, 110, 102, 108, 117, 101, 110, 116, 34, 44, 34, 110, 97, 109,
+    101, 34, 58, 34, 80, 97, 121, 109, 101, 110, 116, 34, 44, 34, 116, 121, 112,
+    101, 34, 58, 34, 114, 101, 99, 111, 114, 100, 34, 44, 34, 102, 105, 101, 108,
+    100, 115, 34, 58, 91, 123, 34, 110, 97, 109, 101, 34, 58, 34, 105, 100, 34, 44,
+    34, 116, 121, 112, 101, 34, 58, 34, 115, 116, 114, 105, 110, 103, 34, 125, 44,
+    123, 34, 110, 97, 109, 101, 34, 58, 34, 97, 109, 111, 117, 110, 116, 34, 44,
+    34, 116, 121, 112, 101, 34, 58, 34, 100, 111, 117, 98, 108, 101, 34, 125, 93,
+    125, 0, 84, 229, 97, 195, 95, 74, 85, 204, 143, 132, 4, 241, 94, 197, 178, 106,
+    2, 26, 8, 116, 120, 45, 49, 123, 20, 174, 71, 225, 250, 47, 64, 84, 229, 97,
+    195, 95, 74, 85, 204, 143, 132, 4, 241, 94, 197, 178, 106>>
+
+{:ok, schema} = Avrora.extract_schema(message)
+{:ok,
+ %Avrora.Schema{
+   full_name: "io.confluent.Payment",
+   id: nil,
+   json: "{\"namespace\":\"io.confluent\",\"name\":\"Payment\",\"type\":\"record\",\"fields\":[{\"name\":\"id\",\"type\":\"string\"},{\"name\":\"amount\",\"type\":\"double\"}]}",
+   lookup_table: #Reference<0.146116641.3853647878.152744>,
+   version: nil
+ }}
+```
+
+</details>
+
+## Mix tasks
+
+A separate mix task to register a specific schema or all found schemas in
+schemas folder (see [configuration](#configuration) section) is available
+since [v0.12.0](https://github.com/Strech/avrora/releases/tag/v0.12.0).
+
+For instance if you configure Avrora schemas folder to be at `./priv/schemas`
+and you want to register a schema `io/confluent/Payment.avsc` then you can use
+this command
+
+```console
+$ mix avrora.reg.schema --name io.confluent.Payment
+schema `io.confluent.Payment` will be registered
+```
+
+**NOTE:** It will search for schema `./priv/schemas/io/confluent/Payment.avsc`
+
+If you would like to register all schemas found under `./priv/schemas` then you
+can simply execute this command
+
+```console
+$ mix avrora.reg.schema --all
+schema `io.confluent.Payment` will be registered
+schema `io.confluent.Wrong' will be skipped due to an error `argument error'
 ```
