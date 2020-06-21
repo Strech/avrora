@@ -251,7 +251,7 @@ A separate mix task to register a specific schema or all found schemas in
 schemas folder (see [configuration](#configuration) section) is available
 since [v0.12.0](https://github.com/Strech/avrora/releases/tag/v0.12.0).
 
-For instance if you configure Avrora schemas folder to be at `./priv/schemas`
+For instance, if you configure Avrora schemas folder to be at `./priv/schemas`
 and you want to register a schema `io/confluent/Payment.avsc` then you can use
 this command
 
