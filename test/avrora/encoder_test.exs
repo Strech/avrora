@@ -84,7 +84,7 @@ defmodule Avrora.EncoderTest do
     end
 
     test "when payload was encoded with plain format" do
-      {:error, :schema_not_found} = Encoder.extract_schema(messenger_plain_message())
+      assert Encoder.extract_schema(messenger_plain_message()) == {:error, :schema_not_found}
     end
   end
 
