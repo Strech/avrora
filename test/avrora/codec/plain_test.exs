@@ -12,7 +12,7 @@ defmodule Avrora.Codec.PlainTest do
 
   describe "decodable?/1" do
     test "when payload is a valid binary" do
-      assert Codec.Plain.decodable?(payment_plain_message())
+      assert Codec.Plain.decodable?(payment_message())
     end
 
     test "when payload is not a valid binary" do
@@ -22,13 +22,13 @@ defmodule Avrora.Codec.PlainTest do
 
   describe "extract_schema/1" do
     test "when payload is a valid binary" do
-      assert Codec.Plain.extract_schema(payment_plain_message()) == {:error, :schema_not_found}
+      assert Codec.Plain.extract_schema(payment_message()) == {:error, :schema_not_found}
     end
   end
 
   describe "decode/2" do
     test "when payload is a valid binary and schema is not given" do
-      assert Codec.Plain.decode(payment_plain_message()) == {:error, :schema_required}
+      assert Codec.Plain.decode(payment_message()) == {:error, :schema_required}
     end
 
     test "when payload is not a valid binary and schema is not given" do
@@ -36,7 +36,7 @@ defmodule Avrora.Codec.PlainTest do
     end
 
     test "when payload is a valid binary and schema is given" do
-      {:ok, decoded} = Codec.Plain.decode(payment_plain_message(), schema: payment_schema())
+      {:ok, decoded} = Codec.Plain.decode(payment_message(), schema: payment_schema())
 
       assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
     end
@@ -65,7 +65,7 @@ defmodule Avrora.Codec.PlainTest do
           schema: payment_schema()
         )
 
-      assert encoded == payment_plain_message()
+      assert encoded == payment_message()
     end
   end
 
@@ -78,7 +78,7 @@ defmodule Avrora.Codec.PlainTest do
     ~s({"namespace":"io.confluent","name":"Payment","type":"record","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
   end
 
-  defp payment_plain_message do
+  defp payment_message do
     <<72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48,
       48, 45, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64>>
   end
