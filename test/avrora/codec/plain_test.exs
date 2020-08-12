@@ -50,12 +50,7 @@ defmodule Avrora.Codec.PlainTest do
   describe "encode/2" do
     test "when payload is not matching the schema" do
       assert Codec.Plain.encode(%{"hello" => "world"}, schema: payment_schema()) ==
-               {:error,
-                %ErlangError{
-                  original:
-                    {:"$avro_encode_error", :required_field_missed,
-                     [record: "io.confluent.Payment", field: "id"]}
-                }}
+               {:error, missing_field_error()}
     end
 
     test "when payload is matching the schema" do
@@ -67,6 +62,14 @@ defmodule Avrora.Codec.PlainTest do
 
       assert encoded == payment_message()
     end
+  end
+
+  defp missing_field_error do
+    %ErlangError{
+      original:
+        {:"$avro_encode_error", :required_field_missed,
+         [record: "io.confluent.Payment", field: "id"]}
+    }
   end
 
   defp payment_schema do
