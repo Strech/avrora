@@ -56,7 +56,7 @@ defmodule Avrora.Codec.Plain do
 
     {:ok, decoded}
   rescue
-    MatchError -> {:error, :undecodable}
+    MatchError -> {:error, :schema_mismatch}
     error -> {:error, error}
   end
 end

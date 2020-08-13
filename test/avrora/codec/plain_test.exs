@@ -43,7 +43,7 @@ defmodule Avrora.Codec.PlainTest do
 
     test "when payload is not a valid binary and schema is given" do
       assert Codec.Plain.decode(<<0, 1, 2>>, schema: payment_schema()) ==
-               {:error, :undecodable}
+               {:error, :schema_mismatch}
     end
   end
 
