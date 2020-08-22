@@ -6,7 +6,7 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
   import Support.Config
   import ExUnit.CaptureLog
 
-  alias Avrora.{Codec, Schema}
+  alias Avrora.{Codec, Schema, Storage}
 
   setup :verify_on_exit!
   setup :support_config
@@ -22,7 +22,39 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
   end
 
   describe "extract_schema/1" do
-    test "when payload is valid and contain schema" do
+    test "when payload is valid and contains schema but nothing found in memory" do
+      payment_json_schema = payment_json_schema()
+
+      Storage.MemoryMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.Payment"
+
+        {:ok, nil}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.Payment"
+        assert value.json == payment_json_schema
+
+        {:ok, value}
+      end)
+
+      {:ok, schema} = Codec.ObjectContainerFile.extract_schema(payment_message())
+
+      assert is_nil(schema.id)
+      assert is_nil(schema.version)
+
+      assert schema.full_name == "io.confluent.Payment"
+      assert schema.json == payment_json_schema
+    end
+
+    test "when payload is valid and contains schema which found in memory" do
+      Storage.MemoryMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.Payment"
+
+        {:ok, payment_schema()}
+      end)
+
       {:ok, schema} = Codec.ObjectContainerFile.extract_schema(payment_message())
 
       assert is_nil(schema.id)

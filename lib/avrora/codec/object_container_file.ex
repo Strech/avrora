@@ -11,7 +11,7 @@ defmodule Avrora.Codec.ObjectContainerFile do
   @meta_schema_key "avro.schema"
 
   require Logger
-  alias Avrora.{Codec, Mapper, Schema}
+  alias Avrora.{Codec, Config, Mapper, Schema}
 
   @impl true
   def decodable?(payload) when is_binary(payload) do
@@ -23,9 +23,11 @@ defmodule Avrora.Codec.ObjectContainerFile do
 
   @impl true
   def extract_schema(payload) when is_binary(payload) do
-    with {:ok, {headers, erlavro, _}} <- do_decode(payload),
-         {:ok, json} <- extract_json_schema(headers) do
-      Schema.from_erlavro(erlavro, json: json)
+    with {:ok, {headers, {_, _, _, _, _, _, full_name, _} = erlavro, _}} <- do_decode(payload),
+         {:ok, nil} <- memory_storage().get(full_name),
+         {:ok, json} <- extract_json_schema(headers),
+         {:ok, schema} <- Schema.from_erlavro(erlavro, json: json) do
+      memory_storage().put(full_name, schema)
     end
   end
 
@@ -71,4 +73,6 @@ defmodule Avrora.Codec.ObjectContainerFile do
       {:ok, json}
     end
   end
+
+  defp memory_storage, do: Config.self().memory_storage()
 end

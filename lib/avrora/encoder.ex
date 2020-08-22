@@ -4,7 +4,7 @@ defmodule Avrora.Encoder do
   """
 
   require Logger
-  alias Avrora.{Mapper, ObjectContainerFile, Resolver, Schema}
+  alias Avrora.{Codec, Mapper, Resolver, Schema}
   alias Avrora.Schema.Name
 
   @registry_magic_bytes <<0::size(8)>>
@@ -33,16 +33,9 @@ defmodule Avrora.Encoder do
   """
   @spec extract_schema(binary()) :: {:ok, Schema.t()} | {:error, term()}
   def extract_schema(payload) when is_binary(payload) do
-    case payload do
-      <<@registry_magic_bytes, <<id::size(32)>>, _body::binary>> ->
-        Resolver.resolve(id)
-
-      <<@object_container_magic_bytes, _::binary>> ->
-        ObjectContainerFile.extract_schema(payload)
-
-      _ ->
-        {:error, :schema_not_found}
-    end
+    [Codec.SchemaRegistry, Codec.ObjectContainerFile, Codec.Plain]
+    |> Enum.find(& &1.decodable?(payload))
+    |> apply(:extract_schema, [payload])
   end
 
   @doc """
