@@ -26,8 +26,8 @@ defmodule Avrora.EncoderTest do
         {:error, :unconfigured_registry_url}
       end)
 
-      assert {:error, :unconfigured_registry_url} =
-               Encoder.extract_schema(payment_registry_message())
+      assert Encoder.extract_schema(payment_registry_message()) ==
+               {:error, :unconfigured_registry_url}
     end
 
     test "when payload was encoded with magic byte and registry is configured" do
@@ -136,11 +136,11 @@ defmodule Avrora.EncoderTest do
         {:error, :unconfigured_registry_url}
       end)
 
-      assert {:error, :unconfigured_registry_url} = Encoder.decode(payment_registry_message())
+      assert Encoder.decode(payment_registry_message()) == {:error, :unconfigured_registry_url}
     end
 
     test "when payload was encoded with no magic bytes" do
-      assert {:error, :schema_required} = Encoder.decode(payment_plain_message())
+      assert Encoder.decode(payment_plain_message()) == {:error, :schema_required}
     end
   end
 
@@ -474,10 +474,10 @@ defmodule Avrora.EncoderTest do
         {:ok, payment_schema}
       end)
 
-      result =
+      encoded =
         Encoder.encode(payment_payload(), schema_name: "io.confluent.Payment", format: :registry)
 
-      assert {:error, :invalid_schema_id} = result
+      assert encoded == {:error, :invalid_schema_id}
     end
 
     test "when registry is configured and schema is found, but format is given explicitly" do
@@ -573,7 +573,7 @@ defmodule Avrora.EncoderTest do
       end)
 
       {:ok, encoded} = Encoder.encode(payment_payload(), schema_name: "io.confluent.Payment")
-      assert payment_registry_message() == encoded
+      assert encoded == payment_registry_message()
     end
 
     test "when schema name provided with version" do
@@ -615,7 +615,7 @@ defmodule Avrora.EncoderTest do
               format: :plain
             )
 
-          assert payment_plain_message() == encoded
+          assert encoded == payment_plain_message()
         end)
 
       assert output =~ "with schema version is not supported"
