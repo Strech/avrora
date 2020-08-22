@@ -101,11 +101,58 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
                {:error, missing_field_error()}
     end
 
-    test "when payload is matching the schema" do
+    test "when payload is matching the schema and schema is unusable" do
+      assert Codec.ObjectContainerFile.encode(
+               %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99},
+               schema: %Schema{}
+             ) == {:error, :unusable_schema}
+    end
+
+    test "when payload is matching the schema and schema is usable" do
       {:ok, encoded} =
         Codec.ObjectContainerFile.encode(
           %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99},
           schema: payment_schema()
+        )
+
+      assert is_payment_ocf(encoded)
+    end
+
+    test "when payload is matching the schema and schema is resolvable" do
+      payment_schema = payment_schema()
+
+      Avrora.Storage.MemoryMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.Payment"
+
+        {:ok, nil}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.Payment"
+        assert value == payment_schema
+
+        {:ok, value}
+      end)
+
+      Avrora.Storage.RegistryMock
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.Payment"
+        assert value == payment_json_schema()
+
+        {:error, :unconfigured_registry_url}
+      end)
+
+      Avrora.Storage.FileMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.Payment"
+
+        {:ok, payment_schema}
+      end)
+
+      {:ok, encoded} =
+        Codec.ObjectContainerFile.encode(
+          %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99},
+          schema: %Schema{full_name: "io.confluent.Payment"}
         )
 
       assert is_payment_ocf(encoded)

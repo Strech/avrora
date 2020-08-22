@@ -11,7 +11,7 @@ defmodule Avrora.Codec.ObjectContainerFile do
   @meta_schema_key "avro.schema"
 
   require Logger
-  alias Avrora.{Codec, Config, Mapper, Schema}
+  alias Avrora.{Codec, Config, Mapper, Resolver, Schema}
 
   @impl true
   def decodable?(payload) when is_binary(payload) do
@@ -44,9 +44,18 @@ defmodule Avrora.Codec.ObjectContainerFile do
 
   @impl true
   def encode(payload, schema: schema) when is_map(payload) do
-    with {:ok, body} <- Codec.Plain.encode(payload, schema: schema),
+    with {:ok, schema} <- resolve(schema),
+         {:ok, body} <- Codec.Plain.encode(payload, schema: schema),
          {:ok, schema} <- Schema.to_erlavro(schema) do
       do_encode(body, schema)
+    end
+  end
+
+  defp resolve(schema) do
+    cond do
+      Schema.usable?(schema) -> {:ok, schema}
+      is_binary(schema.full_name) -> Resolver.resolve(schema.full_name)
+      true -> {:error, :unusable_schema}
     end
   end
 

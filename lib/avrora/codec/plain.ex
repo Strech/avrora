@@ -28,34 +28,25 @@ defmodule Avrora.Codec.Plain do
 
   @impl true
   def decode(payload, schema: schema) when is_binary(payload) do
-    cond do
-      Schema.usable?(schema) ->
-        do_decode(payload, schema)
-
-      is_binary(schema.full_name) ->
-        with {:ok, schema} <- Resolver.resolve(schema.full_name),
-             do: do_decode(payload, schema)
-
-      true ->
-        {:error, :unusable_schema}
-    end
+    with {:ok, schema} <- resolve(schema), do: do_decode(payload, schema)
   end
 
   @impl true
   def encode(payload, schema: schema) when is_map(payload) do
-    encoded =
-      schema.lookup_table
-      |> :avro_binary_encoder.encode(schema.full_name, payload)
-      |> :erlang.list_to_binary()
-
-    {:ok, encoded}
-  rescue
-    error -> {:error, error}
+    with {:ok, schema} <- resolve(schema), do: do_encode(payload, schema)
   end
 
   # NOTE: `erlavro` supports setting a decoder hook, but we don't, at least for now
   @doc false
   def __hook__(_type, _sub_name_or_id, data, decode_fun), do: decode_fun.(data)
+
+  defp resolve(schema) do
+    cond do
+      Schema.usable?(schema) -> {:ok, schema}
+      is_binary(schema.full_name) -> Resolver.resolve(schema.full_name)
+      true -> {:error, :unusable_schema}
+    end
+  end
 
   defp do_decode(payload, schema) do
     decoded =
@@ -69,6 +60,17 @@ defmodule Avrora.Codec.Plain do
     {:ok, decoded}
   rescue
     MatchError -> {:error, :schema_mismatch}
+    error -> {:error, error}
+  end
+
+  defp do_encode(payload, schema) do
+    encoded =
+      schema.lookup_table
+      |> :avro_binary_encoder.encode(schema.full_name, payload)
+      |> :erlang.list_to_binary()
+
+    {:ok, encoded}
+  rescue
     error -> {:error, error}
   end
 end
