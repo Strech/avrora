@@ -5,6 +5,7 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
   import Mox
   import Support.Config
   import ExUnit.CaptureLog
+
   alias Avrora.{Codec, Schema}
 
   setup :verify_on_exit!
