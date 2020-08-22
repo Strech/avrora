@@ -54,6 +54,21 @@ defmodule Avrora.Schema do
   end
 
   @doc """
+  Check that schema can be used for encoding/decoding
+
+  ## Examples
+
+      iex> Avrora.Schema.usable?(%Avrora.Schema{})
+      false
+      iex> table = Avrora.Config.self().ets_lib().new()
+      iex> Avrora.Schema.usable?(%Avrora.Schema{full_name: "io.confluent", lookup_table: table})
+      true
+  """
+  @spec usable?(t()) :: boolean()
+  def usable?(%__MODULE__{} = schema),
+    do: is_binary(schema.full_name) && is_reference(schema.lookup_table)
+
+  @doc """
   An example of a reference lookup which returns empty JSON body
   """
   @spec reference_lookup(String.t()) :: {:ok, String.t()} | {:error, term()}

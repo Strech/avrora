@@ -309,7 +309,7 @@ defmodule Avrora.EncoderTest do
           assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
         end)
 
-      assert output =~ "message contains embeded global id, given schema name will be ignored"
+      assert output =~ "message already contains embeded schema id, given schema will be ignored"
     end
 
     test "when decoding with schema name containing version" do
@@ -363,7 +363,7 @@ defmodule Avrora.EncoderTest do
           assert decoded == [%{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}]
         end)
 
-      assert output =~ "given schema name will be ignored"
+      assert output =~ "message already contains embeded schema, given schema will be ignored"
     end
 
     test "when decoding plain message with type reference in it" do

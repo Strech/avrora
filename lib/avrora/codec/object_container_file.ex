@@ -32,12 +32,14 @@ defmodule Avrora.Codec.ObjectContainerFile do
   end
 
   @impl true
-  def decode(payload, opts \\ []) when is_binary(payload) do
-    unless is_nil(Keyword.get(opts, :schema)) do
-      Logger.warn("message already contains embeded schema, given schema will be ignored")
-    end
-
+  def decode(payload) when is_binary(payload) do
     with {:ok, {_, _, decoded}} <- do_decode(payload), do: {:ok, Mapper.to_map(decoded)}
+  end
+
+  @impl true
+  def decode(payload, schema: _schema) when is_binary(payload) do
+    Logger.warn("message already contains embeded schema, given schema will be ignored")
+    decode(payload)
   end
 
   @impl true

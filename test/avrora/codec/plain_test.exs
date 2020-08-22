@@ -35,13 +35,54 @@ defmodule Avrora.Codec.PlainTest do
       assert Codec.Plain.decode(<<0, 1, 2>>) == {:error, :schema_required}
     end
 
-    test "when payload is a valid binary and schema is given" do
+    test "when payload is a valid binary and complete schema is given" do
       {:ok, decoded} = Codec.Plain.decode(payment_message(), schema: payment_schema())
 
       assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
     end
 
-    test "when payload is not a valid binary and schema is given" do
+    test "when payload is a valid binary and resolvable schema is given" do
+      payment_schema = payment_schema()
+
+      Avrora.Storage.MemoryMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.Payment"
+
+        {:ok, nil}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.Payment"
+        assert value == payment_schema
+
+        {:ok, value}
+      end)
+
+      Avrora.Storage.RegistryMock
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.Payment"
+        assert value == payment_json_schema()
+
+        {:error, :unconfigured_registry_url}
+      end)
+
+      Avrora.Storage.FileMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.Payment"
+
+        {:ok, payment_schema}
+      end)
+
+      {:ok, decoded} = Codec.Plain.decode(payment_message(), schema: resolvable_payment_schema())
+
+      assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
+    end
+
+    test "when payload is a valid binary and non resolvable schema is given" do
+      assert Codec.Plain.decode(payment_message(), schema: %Schema{}) ==
+               {:error, :unusable_schema}
+    end
+
+    test "when payload is not a valid binary and complete schema is given" do
       assert Codec.Plain.decode(<<0, 1, 2>>, schema: payment_schema()) ==
                {:error, :schema_mismatch}
     end
@@ -70,6 +111,10 @@ defmodule Avrora.Codec.PlainTest do
         {:"$avro_encode_error", :required_field_missed,
          [record: "io.confluent.Payment", field: "id"]}
     }
+  end
+
+  defp resolvable_payment_schema do
+    %Schema{full_name: "io.confluent.Payment"}
   end
 
   defp payment_schema do

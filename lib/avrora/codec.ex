@@ -40,6 +40,21 @@ defmodule Avrora.Codec do
 
   ## Examples
 
+      ...> payload = <<0, 0, 0, 0, 8, 72, 48, 48, 48, 48, 48, 48, 48, 48, 45,
+      48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48,
+      48, 48, 48, 48, 48, 48, 48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64>>
+      ...> Avrora.Codec.SchemaRegistry.decode(payload)
+      {:ok, %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}}
+
+  """
+  @callback decode(payloadd :: binary()) ::
+              {:ok, result :: map() | list(map())} | {:error, reason :: term()}
+
+  @doc """
+  Decode a binary Avro message into the Elixir data with given schema.
+
+  ## Examples
+
       ...> payload = <<72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48, 48, 48, 48,
       45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 48, 48, 48,
       48, 48, 48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64>>

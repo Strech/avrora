@@ -15,6 +15,8 @@ defmodule Avrora.Codec.Plain do
     record_type: :map
   }
 
+  alias Avrora.{Resolver, Schema}
+
   @impl true
   def decodable?(payload) when is_binary(payload), do: true
 
@@ -22,10 +24,20 @@ defmodule Avrora.Codec.Plain do
   def extract_schema(_payload), do: {:error, :schema_not_found}
 
   @impl true
-  def decode(payload, opts \\ []) when is_binary(payload) do
-    case Keyword.get(opts, :schema) do
-      nil -> {:error, :schema_required}
-      schema -> do_decode(payload, schema)
+  def decode(_payload), do: {:error, :schema_required}
+
+  @impl true
+  def decode(payload, schema: schema) when is_binary(payload) do
+    cond do
+      Schema.usable?(schema) ->
+        do_decode(payload, schema)
+
+      is_binary(schema.full_name) ->
+        with {:ok, schema} <- Resolver.resolve(schema.full_name),
+             do: do_decode(payload, schema)
+
+      true ->
+        {:error, :unusable_schema}
     end
   end
 

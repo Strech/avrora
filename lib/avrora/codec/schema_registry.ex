@@ -29,14 +29,25 @@ defmodule Avrora.Codec.SchemaRegistry do
   end
 
   @impl true
-  def decode(payload, opts \\ []) when is_binary(payload) do
-    unless is_nil(Keyword.get(opts, :schema)) do
-      Logger.warn("message already contains embeded schema id, given schema will be ignored")
+  def decode(payload) when is_binary(payload) do
+    case payload do
+      <<@magic_bytes, <<id::size(32)>>, body::binary>> ->
+        with {:ok, schema} <- Resolver.resolve_any(id),
+             do: Codec.Plain.decode(body, schema: schema)
+
+      _ ->
+        {:error, :schema_not_found}
     end
+  end
+
+  @impl true
+  def decode(payload, schema: schema) when is_binary(payload) do
+    Logger.warn("message already contains embeded schema id, given schema will be ignored")
 
     case payload do
       <<@magic_bytes, <<id::size(32)>>, body::binary>> ->
-        with {:ok, schema} <- Resolver.resolve(id), do: Codec.Plain.decode(body, schema: schema)
+        with {:ok, schema} <- Resolver.resolve_any([id, schema.full_name]),
+             do: Codec.Plain.decode(body, schema: schema)
 
       _ ->
         {:error, :schema_not_found}

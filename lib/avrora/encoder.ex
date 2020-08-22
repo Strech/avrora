@@ -4,17 +4,9 @@ defmodule Avrora.Encoder do
   """
 
   require Logger
-  alias Avrora.{Codec, Mapper, Resolver, Schema, Schema.Name}
+  alias Avrora.{Codec, Resolver, Schema, Schema.Name}
 
   @registry_magic_bytes <<0::size(8)>>
-  @object_container_magic_bytes <<"Obj", 1>>
-  @decoder_options %{
-    encoding: :avro_binary,
-    hook: &__MODULE__.__hook__/4,
-    is_wrapped: true,
-    map_type: :proplist,
-    record_type: :map
-  }
 
   @doc """
   Extract schema from the binary Avro message.
@@ -75,28 +67,11 @@ defmodule Avrora.Encoder do
         )
       end
 
-      {schema_id, body} =
-        case payload do
-          <<@registry_magic_bytes, <<id::size(32)>>, body::binary>> ->
-            Logger.warn("message contains embeded global id, given schema name will be ignored")
-            {id, body}
+      schema = %Schema{full_name: schema_name.name}
 
-          <<@object_container_magic_bytes, _::binary>> ->
-            Logger.warn("message contains embeded schema, given schema name will be ignored")
-            {:embeded, payload}
-
-          <<body::binary>> ->
-            {schema_name.name, body}
-        end
-
-      case schema_id do
-        :embeded ->
-          do_decode(payload)
-
-        _ ->
-          with {:ok, schema} <- Resolver.resolve_any([schema_id, schema_name.name]),
-               do: do_decode(schema, body)
-      end
+      [Codec.SchemaRegistry, Codec.ObjectContainerFile, Codec.Plain]
+      |> Enum.find(& &1.decodable?(payload))
+      |> apply(:decode, [payload, [schema: schema]])
     end
   end
 
@@ -156,32 +131,6 @@ defmodule Avrora.Encoder do
           {:error, :unknown_format}
       end
     end
-  end
-
-  # NOTE: `erlavro` supports setting a decoder hook, but we don't, at least for now
-  @doc false
-  def __hook__(_type, _sub_name_or_id, data, decode_fun), do: decode_fun.(data)
-
-  defp do_decode(payload) do
-    {_, _, decoded} = :avro_ocf.decode_binary(payload)
-
-    {:ok, Mapper.to_map(decoded)}
-  rescue
-    error -> {:error, error}
-  end
-
-  defp do_decode(schema, payload) do
-    decoded =
-      :avro_binary_decoder.decode(
-        payload,
-        schema.full_name,
-        schema.lookup_table,
-        @decoder_options
-      )
-
-    {:ok, decoded}
-  rescue
-    error -> {:error, error}
   end
 
   defp do_encode(schema, payload) do
