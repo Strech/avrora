@@ -140,7 +140,7 @@ defmodule Avrora.EncoderTest do
     end
 
     test "when payload was encoded with no magic bytes" do
-      assert {:error, :undecodable} = Encoder.decode(payment_plain_message())
+      assert {:error, :schema_required} = Encoder.decode(payment_plain_message())
     end
   end
 
