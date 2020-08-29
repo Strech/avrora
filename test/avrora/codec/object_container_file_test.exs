@@ -11,13 +11,13 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
   setup :verify_on_exit!
   setup :support_config
 
-  describe "decodable?/1" do
+  describe "compatible?/1" do
     test "when payload is a valid binary" do
-      assert Codec.ObjectContainerFile.decodable?(payment_message())
+      assert Codec.ObjectContainerFile.compatible?(payment_message())
     end
 
     test "when payload is not a valid binary" do
-      refute Codec.ObjectContainerFile.decodable?(<<0, 1, 2>>)
+      refute Codec.ObjectContainerFile.compatible?(<<0, 1, 2>>)
     end
   end
 

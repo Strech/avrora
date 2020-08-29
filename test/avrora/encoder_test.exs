@@ -301,15 +301,10 @@ defmodule Avrora.EncoderTest do
         {:ok, payment_schema_with_id}
       end)
 
-      output =
-        capture_log(fn ->
-          {:ok, decoded} =
-            Encoder.decode(payment_registry_message(), schema_name: "io.confluent.Payment")
+      {:ok, decoded} =
+        Encoder.decode(payment_registry_message(), schema_name: "io.confluent.Payment")
 
-          assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
-        end)
-
-      assert output =~ "message already contains embeded schema id, given schema will be ignored"
+      assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
     end
 
     test "when decoding with schema name containing version" do

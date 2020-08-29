@@ -4,19 +4,18 @@ defmodule Avrora.Codec do
   """
 
   @doc """
-  Check either a given binary Avro message is decodable with a specific codec or not.
+  Check either a given binary Avro message is compatible with a specific codec or not.
 
-  NOTE: It's not guaranteed that a decodable binary message will be
-        successfuly decoded.
+  NOTE: It's not guaranteed that a compatible binary message will be successfuly decoded.
 
   ## Examples
 
-      ...> Avrora.Codec.Plain.decodable?(<<1, 2, 3>>)
+      ...> Avrora.Codec.Plain.compatible?(<<1, 2, 3>>)
       true
-      ...> Avrora.Codec.Plain.decodable?(123_123)
+      ...> Avrora.Codec.Plain.compatible?(123_123)
       false
   """
-  @callback decodable?(payload :: binary()) :: boolean
+  @callback compatible?(payload :: binary()) :: boolean
 
   @doc """
   Extract schema from the binary Avro message.

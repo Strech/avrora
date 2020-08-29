@@ -14,7 +14,7 @@ defmodule Avrora.Codec.ObjectContainerFile do
   alias Avrora.{Codec, Config, Mapper, Resolver, Schema}
 
   @impl true
-  def decodable?(payload) when is_binary(payload) do
+  def compatible?(payload) when is_binary(payload) do
     case payload do
       <<@magic_bytes, _::binary>> -> true
       _ -> false

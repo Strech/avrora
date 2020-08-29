@@ -11,15 +11,17 @@ defmodule Avrora.Codec.SchemaRegistryTest do
   setup :verify_on_exit!
   setup :support_config
 
-  describe "decodable?/1" do
+  describe "compatible?/1" do
     test "when payload is a valid binary" do
-      assert Codec.SchemaRegistry.decodable?(payment_message())
+      assert Codec.SchemaRegistry.compatible?(payment_message())
     end
 
     test "when payload is not a valid binary" do
-      assert Codec.SchemaRegistry.decodable?(<<0, 1, 2>>)
+      assert Codec.SchemaRegistry.compatible?(<<0, 1, 2>>)
     end
   end
+
+  # FIXME: Split decode/1 and decode/2
 
   describe "extract_schema/1" do
     test "when payload was valid and registry is not configured" do
@@ -77,7 +79,7 @@ defmodule Avrora.Codec.SchemaRegistryTest do
     end
   end
 
-  describe "decode/2" do
+  describe "decode/1" do
     test "when payload is valid and registry is configured" do
       payment_schema_with_id = payment_schema_with_id()
 
@@ -124,7 +126,55 @@ defmodule Avrora.Codec.SchemaRegistryTest do
                {:error, :unconfigured_registry_url}
     end
 
-    test "when payload is valid, registry is configured and schema is given" do
+    test "when payload is not a valid binary" do
+      assert Codec.SchemaRegistry.decode(<<0, 1, 2>>) == {:error, :schema_not_found}
+    end
+
+    test "when payload is not a valid binary and contains schema id" do
+      payment_schema_with_id = payment_schema_with_id()
+
+      Storage.MemoryMock
+      |> expect(:get, fn key ->
+        assert key == 42
+
+        {:ok, nil}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == 42
+        assert value == payment_schema_with_id
+
+        {:ok, value}
+      end)
+
+      Storage.RegistryMock
+      |> expect(:get, fn key ->
+        assert key == 42
+
+        {:ok, payment_schema_with_id}
+      end)
+
+      assert Codec.SchemaRegistry.decode(<<0, 0, 0, 0, 42, 72, 48, 48, 48, 48, 48>>) ==
+               {:error, :schema_mismatch}
+    end
+  end
+
+  describe "decode/2" do
+    test "when payload is valid, registry is configured and usable schema is given" do
+      payment_schema_with_id = payment_schema_with_id()
+
+      output =
+        capture_log(fn ->
+          {:ok, decoded} =
+            Codec.SchemaRegistry.decode(payment_message(), schema: payment_schema_with_id)
+
+          assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
+        end)
+
+      assert output =~
+               "message already contains embeded schema id, given schema id will be ignored"
+    end
+
+    test "when payload is valid, registry is configured and resolvable schema is given" do
       payment_schema_with_id = payment_schema_with_id()
 
       Storage.MemoryMock
@@ -150,42 +200,24 @@ defmodule Avrora.Codec.SchemaRegistryTest do
       output =
         capture_log(fn ->
           {:ok, decoded} =
-            Codec.SchemaRegistry.decode(payment_message(), schema: payment_schema_with_id)
+            Codec.SchemaRegistry.decode(payment_message(),
+              schema: %Schema{id: 42, full_name: "io.confluent.Payment"}
+            )
 
           assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
         end)
 
-      assert output =~ "message already contains embeded schema id, given schema will be ignored"
+      assert output =~
+               "message already contains embeded schema id, given schema id will be ignored"
     end
 
     test "when payload is not a valid binary" do
-      assert Codec.SchemaRegistry.decode(<<0, 1, 2>>) == {:error, :schema_not_found}
+      assert Codec.SchemaRegistry.decode(<<0, 1, 2>>, schema: payment_schema_with_id()) ==
+               {:error, :schema_not_found}
     end
 
-    test "when payload is not a valid binary, but contains schema id" do
-      payment_schema_with_id = payment_schema_with_id()
-
-      Storage.MemoryMock
-      |> expect(:get, fn key ->
-        assert key == 42
-
-        {:ok, nil}
-      end)
-      |> expect(:put, fn key, value ->
-        assert key == 42
-        assert value == payment_schema_with_id
-
-        {:ok, value}
-      end)
-
-      Storage.RegistryMock
-      |> expect(:get, fn key ->
-        assert key == 42
-
-        {:ok, payment_schema_with_id}
-      end)
-
-      assert Codec.SchemaRegistry.decode(<<0, 0, 0, 0, 42, 72, 48, 48, 48, 48, 48>>) ==
+    test "when payload is not a valid binary and contains schema id" do
+      assert Codec.SchemaRegistry.decode(<<0, 0, 0, 0, 42, 72>>, schema: payment_schema_with_id()) ==
                {:error, :schema_mismatch}
     end
   end
