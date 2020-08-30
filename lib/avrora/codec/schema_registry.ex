@@ -51,7 +51,16 @@ defmodule Avrora.Codec.SchemaRegistry do
         end
 
         schema = %Schema{schema | id: id}
-        with {:ok, schema} <- resolve(schema), do: Codec.Plain.decode(body, schema: schema)
+
+        with {:ok, schema} <- resolve(schema) do
+          if id != schema.id do
+            Logger.warn(
+              "message embeded schema id is different from the resolved and used schema id"
+            )
+          end
+
+          Codec.Plain.decode(body, schema: schema)
+        end
 
       _ ->
         {:error, :schema_not_found}
@@ -60,25 +69,21 @@ defmodule Avrora.Codec.SchemaRegistry do
 
   @impl true
   def encode(payload, schema: schema) when is_map(payload) do
-    # TODO: Should we try to resolve the schema with only name to get ID?
-    #       it will allow us to remove Resolve on the level of encoder
-    if is_nil(schema.id),
-      do: {:error, :invalid_schema_id},
-      else: do_encode(payload, schema)
-  end
+    with {:ok, schema} <- resolve(schema) do
+      schema = if is_nil(schema.id), do: {:error, :invalid_schema_id}, else: {:ok, schema}
 
-  defp do_encode(payload, schema) do
-    with {:ok, schema} <- resolve(schema),
-         {:ok, body} <- Codec.Plain.encode(payload, schema: schema) do
-      encoded = <<@magic_bytes, <<schema.id::size(32)>>, body::binary>>
+      with {:ok, schema} <- schema,
+           {:ok, body} <- Codec.Plain.encode(payload, schema: schema) do
+        encoded = <<@magic_bytes, <<schema.id::size(32)>>, body::binary>>
 
-      {:ok, encoded}
+        {:ok, encoded}
+      end
     end
   end
 
   defp resolve(schema) do
     cond do
-      Schema.usable?(schema) ->
+      is_integer(schema.id) && Schema.usable?(schema) ->
         {:ok, schema}
 
       is_integer(schema.id) && is_binary(schema.full_name) ->
