@@ -4,7 +4,7 @@ defmodule Avrora.Encoder do
   """
 
   require Logger
-  alias Avrora.{Codec, Resolver, Schema, Schema.Name}
+  alias Avrora.{Codec, Schema, Schema.Name}
 
   @doc """
   Extract schema from the binary Avro message.
@@ -100,21 +100,20 @@ defmodule Avrora.Encoder do
 
   # TODO: 1. :guess format should take both and find first non-error
   #       2. schema should not be resolved and only schema with name given
-  #       3. Codec.SchemaRegistry should resolve the schema by itself
   def encode(payload, schema_name: schema_name, format: format) when is_map(payload) do
-    with {:ok, schema_name} <- Name.parse(schema_name),
-         {:ok, schema} <- Resolver.resolve(schema_name.name) do
+    with {:ok, schema_name} <- Name.parse(schema_name) do
       unless is_nil(schema_name.version) do
         Logger.warn(
           "encoding message with schema version is not supported yet, `#{schema_name.name}` used instead"
         )
       end
 
+      schema = %Schema{full_name: schema_name.name}
+
       case format do
         :guess ->
-          if is_nil(schema.id),
-            do: Codec.ObjectContainerFile.encode(payload, schema: schema),
-            else: Codec.SchemaRegistry.encode(payload, schema: schema)
+          with {:error, _} <- Codec.SchemaRegistry.encode(payload, schema: schema),
+               do: Codec.ObjectContainerFile.encode(payload, schema: schema)
 
         :registry ->
           Codec.SchemaRegistry.encode(payload, schema: schema)

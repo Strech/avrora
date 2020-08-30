@@ -418,6 +418,11 @@ defmodule Avrora.EncoderTest do
 
         {:ok, value}
       end)
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.Payment"
+
+        {:ok, payment_schema}
+      end)
 
       Avrora.Storage.RegistryMock
       |> expect(:put, fn key, value ->
