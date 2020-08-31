@@ -11,7 +11,7 @@ otp_release:
 jobs:
   include:
     - elixir: "1.6"
-      otp_release: "19.0"
+      otp_release: "20.0"
     - elixir: "1.8"
       otp_release: "21.1"
     - elixir: "1.9"
