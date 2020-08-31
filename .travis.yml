@@ -6,21 +6,21 @@ elixir:
   - 1.9.4
 
 otp_release:
-  - 22.3.4
+  - 22
 
 jobs:
   include:
     - elixir: "1.6"
-      otp_release: "20.3.8"
+      otp_release: "20"
     - elixir: "1.8"
-      otp_release: "21.3.8"
+      otp_release: "21"
     - elixir: "1.9"
-      otp_release: "22.3.4"
+      otp_release: "22"
       env:
         - DIALYZER=true
         - CREDO=true
     - elixir: "1.10"
-      otp_release: "23.0.3"
+      otp_release: "23"
 
 script:
   - mix test
