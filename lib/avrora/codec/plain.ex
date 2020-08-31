@@ -18,7 +18,7 @@ defmodule Avrora.Codec.Plain do
   alias Avrora.Resolver
 
   @impl true
-  def compatible?(payload) when is_binary(payload), do: true
+  def is_decodable(payload) when is_binary(payload), do: true
 
   @impl true
   def extract_schema(_payload), do: {:error, :schema_not_found}

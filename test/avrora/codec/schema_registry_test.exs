@@ -11,13 +11,13 @@ defmodule Avrora.Codec.SchemaRegistryTest do
   setup :verify_on_exit!
   setup :support_config
 
-  describe "compatible?/1" do
+  describe "is_decodable/1" do
     test "when payload is a valid binary" do
-      assert Codec.SchemaRegistry.compatible?(payment_message())
+      assert Codec.SchemaRegistry.is_decodable(payment_message())
     end
 
     test "when payload is not a valid binary" do
-      assert Codec.SchemaRegistry.compatible?(<<0, 1, 2>>)
+      assert Codec.SchemaRegistry.is_decodable(<<0, 1, 2>>)
     end
   end
 

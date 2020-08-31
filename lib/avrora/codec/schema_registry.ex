@@ -13,7 +13,7 @@ defmodule Avrora.Codec.SchemaRegistry do
   alias Avrora.{Codec, Resolver, Schema}
 
   @impl true
-  def compatible?(payload) when is_binary(payload) do
+  def is_decodable(payload) when is_binary(payload) do
     case payload do
       <<@magic_bytes, _::binary>> -> true
       _ -> false

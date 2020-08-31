@@ -23,7 +23,7 @@ defmodule Avrora.Encoder do
   @spec extract_schema(binary()) :: {:ok, Schema.t()} | {:error, term()}
   def extract_schema(payload) when is_binary(payload) do
     [Codec.SchemaRegistry, Codec.ObjectContainerFile, Codec.Plain]
-    |> Enum.find(& &1.compatible?(payload))
+    |> Enum.find(& &1.is_decodable(payload))
     |> apply(:extract_schema, [payload])
   end
 
@@ -41,7 +41,7 @@ defmodule Avrora.Encoder do
   @spec decode(binary()) :: {:ok, map() | list(map())} | {:error, term()}
   def decode(payload) when is_binary(payload) do
     [Codec.SchemaRegistry, Codec.ObjectContainerFile, Codec.Plain]
-    |> Enum.find(& &1.compatible?(payload))
+    |> Enum.find(& &1.is_decodable(payload))
     |> apply(:decode, [payload])
   end
 
@@ -68,7 +68,7 @@ defmodule Avrora.Encoder do
       schema = %Schema{full_name: schema_name.name}
 
       [Codec.SchemaRegistry, Codec.ObjectContainerFile, Codec.Plain]
-      |> Enum.find(& &1.compatible?(payload))
+      |> Enum.find(& &1.is_decodable(payload))
       |> apply(:decode, [payload, [schema: schema]])
     end
   end

@@ -10,13 +10,13 @@ defmodule Avrora.Codec.PlainTest do
   setup :verify_on_exit!
   setup :support_config
 
-  describe "compatible?/1" do
+  describe "is_decodable/1" do
     test "when payload is a valid binary" do
-      assert Codec.Plain.compatible?(payment_message())
+      assert Codec.Plain.is_decodable(payment_message())
     end
 
     test "when payload is not a valid binary" do
-      assert Codec.Plain.compatible?(<<0, 1, 2>>)
+      assert Codec.Plain.is_decodable(<<0, 1, 2>>)
     end
   end
 

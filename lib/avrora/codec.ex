@@ -4,25 +4,25 @@ defmodule Avrora.Codec do
   """
 
   @doc """
-  Check either a given binary Avro message is compatible with a specific codec or not.
+  Check either a given binary Avro message is decodable with a specific codec or not.
 
-  NOTE: It's not guaranteed that a compatible binary message will be successfuly decoded.
+  NOTE: It's not guaranteed that a decodable binary message will be successfuly decoded.
 
   ## Examples
 
-      ...> Avrora.Codec.Plain.compatible?(<<1, 2, 3>>)
+      ...> Avrora.Codec.Plain.is_decodable(<<1, 2, 3>>)
       true
-      ...> Avrora.Codec.Plain.compatible?(123_123)
+      ...> Avrora.Codec.SchemaRegistry.is_decodable(<<1, 2, 3>>)
       false
   """
-  @callback compatible?(payload :: binary()) :: boolean
+  @callback is_decodable(payload :: binary()) :: boolean
 
   @doc """
   Extract schema from the binary Avro message.
 
   ## Examples
 
-      ...> payload = <<0, 0, 0, 0, 8, 72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48,
+      ...> payload = <<0, 0, 0, 0, 42, 72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48,
       48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 48,
       48, 48, 48, 48, 48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64>>
       ...> {:ok, schema} = Avrora.Codec.SchemaRegistry.extract_schema(payload)
