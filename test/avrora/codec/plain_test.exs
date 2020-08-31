@@ -96,18 +96,12 @@ defmodule Avrora.Codec.PlainTest do
     end
 
     test "when payload is matching the schema and schema is unusable" do
-      assert Codec.Plain.encode(
-               %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99},
-               schema: %Schema{}
-             ) == {:error, :unusable_schema}
+      assert Codec.Plain.encode(payment_payload(), schema: %Schema{}) ==
+               {:error, :unusable_schema}
     end
 
     test "when payload is matching the schema and schema is usable" do
-      {:ok, encoded} =
-        Codec.Plain.encode(
-          %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99},
-          schema: payment_schema()
-        )
+      {:ok, encoded} = Codec.Plain.encode(payment_payload(), schema: payment_schema())
 
       assert encoded == payment_message()
     end
@@ -144,10 +138,7 @@ defmodule Avrora.Codec.PlainTest do
       end)
 
       {:ok, encoded} =
-        Codec.Plain.encode(
-          %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99},
-          schema: %Schema{full_name: "io.confluent.Payment"}
-        )
+        Codec.Plain.encode(payment_payload(), schema: %Schema{full_name: "io.confluent.Payment"})
 
       assert encoded == payment_message()
     end
@@ -160,6 +151,8 @@ defmodule Avrora.Codec.PlainTest do
          [record: "io.confluent.Payment", field: "id"]}
     }
   end
+
+  defp payment_payload, do: %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
 
   defp payment_schema do
     {:ok, schema} = Schema.parse(payment_json_schema())

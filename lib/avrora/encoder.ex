@@ -22,9 +22,11 @@ defmodule Avrora.Encoder do
   """
   @spec extract_schema(binary()) :: {:ok, Schema.t()} | {:error, term()}
   def extract_schema(payload) when is_binary(payload) do
-    [Codec.SchemaRegistry, Codec.ObjectContainerFile, Codec.Plain]
-    |> Enum.find(& &1.is_decodable(payload))
-    |> apply(:extract_schema, [payload])
+    codec =
+      [Codec.SchemaRegistry, Codec.ObjectContainerFile, Codec.Plain]
+      |> Enum.find(& &1.is_decodable(payload))
+
+    codec.extract_schema(payload)
   end
 
   @doc """
@@ -40,9 +42,11 @@ defmodule Avrora.Encoder do
   """
   @spec decode(binary()) :: {:ok, map() | list(map())} | {:error, term()}
   def decode(payload) when is_binary(payload) do
-    [Codec.SchemaRegistry, Codec.ObjectContainerFile, Codec.Plain]
-    |> Enum.find(& &1.is_decodable(payload))
-    |> apply(:decode, [payload])
+    codec =
+      [Codec.SchemaRegistry, Codec.ObjectContainerFile, Codec.Plain]
+      |> Enum.find(& &1.is_decodable(payload))
+
+    codec.decode(payload)
   end
 
   @doc """
@@ -67,9 +71,11 @@ defmodule Avrora.Encoder do
 
       schema = %Schema{full_name: schema_name.name}
 
-      [Codec.SchemaRegistry, Codec.ObjectContainerFile, Codec.Plain]
-      |> Enum.find(& &1.is_decodable(payload))
-      |> apply(:decode, [payload, [schema: schema]])
+      codec =
+        [Codec.SchemaRegistry, Codec.ObjectContainerFile, Codec.Plain]
+        |> Enum.find(& &1.is_decodable(payload))
+
+      codec.decode(payload, schema: schema)
     end
   end
 
@@ -98,8 +104,6 @@ defmodule Avrora.Encoder do
   def encode(payload, schema_name: schema_name) when is_map(payload),
     do: encode(payload, schema_name: schema_name, format: :guess)
 
-  # TODO: 1. :guess format should take both and find first non-error
-  #       2. schema should not be resolved and only schema with name given
   def encode(payload, schema_name: schema_name, format: format) when is_map(payload) do
     with {:ok, schema_name} <- Name.parse(schema_name) do
       unless is_nil(schema_name.version) do
