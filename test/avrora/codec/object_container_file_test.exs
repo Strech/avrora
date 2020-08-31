@@ -102,18 +102,13 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
     end
 
     test "when payload is matching the schema and schema is unusable" do
-      assert Codec.ObjectContainerFile.encode(
-               %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99},
-               schema: %Schema{}
-             ) == {:error, :unusable_schema}
+      assert Codec.ObjectContainerFile.encode(payment_payload(), schema: %Schema{}) ==
+               {:error, :unusable_schema}
     end
 
     test "when payload is matching the schema and schema is usable" do
       {:ok, encoded} =
-        Codec.ObjectContainerFile.encode(
-          %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99},
-          schema: payment_schema()
-        )
+        Codec.ObjectContainerFile.encode(payment_payload(), schema: payment_schema())
 
       assert is_payment_ocf(encoded)
     end
@@ -150,8 +145,7 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
       end)
 
       {:ok, encoded} =
-        Codec.ObjectContainerFile.encode(
-          %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99},
+        Codec.ObjectContainerFile.encode(payment_payload(),
           schema: %Schema{full_name: "io.confluent.Payment"}
         )
 
@@ -180,6 +174,8 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
     {:ok, schema} = Schema.parse(payment_json_schema())
     %{schema | id: nil, version: nil}
   end
+
+  defp payment_payload, do: %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
 
   defp payment_json_schema do
     ~s({"namespace":"io.confluent","name":"Payment","type":"record","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
