@@ -15,7 +15,7 @@ defmodule Avrora.Codec.Plain do
     record_type: :map
   }
 
-  alias Avrora.{Resolver, Schema}
+  alias Avrora.Resolver
 
   @impl true
   def compatible?(payload) when is_binary(payload), do: true
@@ -42,7 +42,7 @@ defmodule Avrora.Codec.Plain do
 
   defp resolve(schema) do
     cond do
-      Schema.usable?(schema) -> {:ok, schema}
+      is_binary(schema.full_name) && is_reference(schema.lookup_table) -> {:ok, schema}
       is_binary(schema.full_name) -> Resolver.resolve(schema.full_name)
       true -> {:error, :unusable_schema}
     end

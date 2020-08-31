@@ -3,7 +3,7 @@ defmodule Avrora.SchemaTest do
   doctest Avrora.Schema
 
   import Support.Config
-  alias Avrora.{Config, Schema}
+  alias Avrora.Schema
 
   setup :support_config
 
@@ -84,22 +84,6 @@ defmodule Avrora.SchemaTest do
     test "when payload is an invalid json schema" do
       assert Schema.parse("a:b") == {:error, "argument error"}
       assert Schema.parse("{}") == {:error, {:not_found, "type"}}
-    end
-  end
-
-  describe "usable?/1" do
-    test "when schema contains lookup table and full name" do
-      table = Config.self().ets_lib().new()
-      assert Schema.usable?(%Schema{full_name: "io.confluent", lookup_table: table})
-    end
-
-    test "when schema contains only lookup table" do
-      table = Config.self().ets_lib().new()
-      refute Schema.usable?(%Schema{lookup_table: table})
-    end
-
-    test "when schema does not contain lookup table" do
-      refute Schema.usable?(%Schema{})
     end
   end
 

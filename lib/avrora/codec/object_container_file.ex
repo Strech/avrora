@@ -53,7 +53,7 @@ defmodule Avrora.Codec.ObjectContainerFile do
 
   defp resolve(schema) do
     cond do
-      Schema.usable?(schema) -> {:ok, schema}
+      is_binary(schema.full_name) && is_reference(schema.lookup_table) -> {:ok, schema}
       is_binary(schema.full_name) -> Resolver.resolve(schema.full_name)
       true -> {:error, :unusable_schema}
     end

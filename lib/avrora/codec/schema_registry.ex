@@ -83,7 +83,7 @@ defmodule Avrora.Codec.SchemaRegistry do
 
   defp resolve(schema) do
     cond do
-      is_integer(schema.id) && Schema.usable?(schema) ->
+      is_integer(schema.id) && is_binary(schema.full_name) && is_reference(schema.lookup_table) ->
         {:ok, schema}
 
       is_integer(schema.id) && is_binary(schema.full_name) ->
