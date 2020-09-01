@@ -4,18 +4,7 @@ defmodule Avrora.Encoder do
   """
 
   require Logger
-  alias Avrora.{Mapper, ObjectContainerFile, Resolver, Schema}
-  alias Avrora.Schema.Name
-
-  @registry_magic_bytes <<0::size(8)>>
-  @object_container_magic_bytes <<"Obj", 1>>
-  @decoder_options %{
-    encoding: :avro_binary,
-    hook: &__MODULE__.__hook__/4,
-    is_wrapped: true,
-    map_type: :proplist,
-    record_type: :map
-  }
+  alias Avrora.{Codec, Schema, Schema.Name}
 
   @doc """
   Extract schema from the binary Avro message.
@@ -33,16 +22,11 @@ defmodule Avrora.Encoder do
   """
   @spec extract_schema(binary()) :: {:ok, Schema.t()} | {:error, term()}
   def extract_schema(payload) when is_binary(payload) do
-    case payload do
-      <<@registry_magic_bytes, <<id::size(32)>>, _body::binary>> ->
-        Resolver.resolve(id)
+    codec =
+      [Codec.SchemaRegistry, Codec.ObjectContainerFile, Codec.Plain]
+      |> Enum.find(& &1.is_decodable(payload))
 
-      <<@object_container_magic_bytes, _::binary>> ->
-        ObjectContainerFile.extract_schema(payload)
-
-      _ ->
-        {:error, :schema_not_found}
-    end
+    codec.extract_schema(payload)
   end
 
   @doc """
@@ -58,16 +42,11 @@ defmodule Avrora.Encoder do
   """
   @spec decode(binary()) :: {:ok, map() | list(map())} | {:error, term()}
   def decode(payload) when is_binary(payload) do
-    case payload do
-      <<@registry_magic_bytes, <<id::size(32)>>, body::binary>> ->
-        with {:ok, schema} <- Resolver.resolve(id), do: do_decode(schema, body)
+    codec =
+      [Codec.SchemaRegistry, Codec.ObjectContainerFile, Codec.Plain]
+      |> Enum.find(& &1.is_decodable(payload))
 
-      <<@object_container_magic_bytes, _::binary>> ->
-        do_decode(payload)
-
-      _ ->
-        {:error, :undecodable}
-    end
+    codec.decode(payload)
   end
 
   @doc """
@@ -90,28 +69,13 @@ defmodule Avrora.Encoder do
         )
       end
 
-      {schema_id, body} =
-        case payload do
-          <<@registry_magic_bytes, <<id::size(32)>>, body::binary>> ->
-            Logger.warn("message contains embeded global id, given schema name will be ignored")
-            {id, body}
+      schema = %Schema{full_name: schema_name.name}
 
-          <<@object_container_magic_bytes, _::binary>> ->
-            Logger.warn("message contains embeded schema, given schema name will be ignored")
-            {:embeded, payload}
+      codec =
+        [Codec.SchemaRegistry, Codec.ObjectContainerFile, Codec.Plain]
+        |> Enum.find(& &1.is_decodable(payload))
 
-          <<body::binary>> ->
-            {schema_name.name, body}
-        end
-
-      case schema_id do
-        :embeded ->
-          do_decode(payload)
-
-        _ ->
-          with {:ok, schema} <- Resolver.resolve_any([schema_id, schema_name.name]),
-               do: do_decode(schema, body)
-      end
+      codec.decode(payload, schema: schema)
     end
   end
 
@@ -141,92 +105,32 @@ defmodule Avrora.Encoder do
     do: encode(payload, schema_name: schema_name, format: :guess)
 
   def encode(payload, schema_name: schema_name, format: format) when is_map(payload) do
-    with {:ok, schema_name} <- Name.parse(schema_name),
-         {:ok, schema} <- Resolver.resolve(schema_name.name),
-         {:ok, body} <- do_encode(schema, payload) do
+    with {:ok, schema_name} <- Name.parse(schema_name) do
       unless is_nil(schema_name.version) do
         Logger.warn(
           "encoding message with schema version is not supported yet, `#{schema_name.name}` used instead"
         )
       end
 
+      schema = %Schema{full_name: schema_name.name}
+
       case format do
         :guess ->
-          if is_nil(schema.id),
-            do: do_embed_schema(schema, body),
-            else: do_embed_id(schema.id, body)
+          with {:error, _} <- Codec.SchemaRegistry.encode(payload, schema: schema),
+               do: Codec.ObjectContainerFile.encode(payload, schema: schema)
 
         :registry ->
-          if is_nil(schema.id),
-            do: {:error, :invalid_schema_id},
-            else: do_embed_id(schema.id, body)
+          Codec.SchemaRegistry.encode(payload, schema: schema)
 
         :ocf ->
-          do_embed_schema(schema, body)
+          Codec.ObjectContainerFile.encode(payload, schema: schema)
 
         :plain ->
-          {:ok, body}
+          Codec.Plain.encode(payload, schema: schema)
 
         _ ->
           {:error, :unknown_format}
       end
     end
-  end
-
-  # NOTE: `erlavro` supports setting a decoder hook, but we don't, at least for now
-  @doc false
-  def __hook__(_type, _sub_name_or_id, data, decode_fun), do: decode_fun.(data)
-
-  defp do_decode(payload) do
-    {_, _, decoded} = :avro_ocf.decode_binary(payload)
-
-    {:ok, Mapper.to_map(decoded)}
-  rescue
-    error -> {:error, error}
-  end
-
-  defp do_decode(schema, payload) do
-    decoded =
-      :avro_binary_decoder.decode(
-        payload,
-        schema.full_name,
-        schema.lookup_table,
-        @decoder_options
-      )
-
-    {:ok, decoded}
-  rescue
-    error -> {:error, error}
-  end
-
-  defp do_encode(schema, payload) do
-    encoded =
-      schema.lookup_table
-      |> :avro_binary_encoder.encode(schema.full_name, payload)
-      |> :erlang.list_to_binary()
-
-    {:ok, encoded}
-  rescue
-    error -> {:error, error}
-  end
-
-  defp do_embed_id(id, payload) do
-    encoded = <<@registry_magic_bytes, <<id::size(32)>>, payload::binary>>
-
-    {:ok, encoded}
-  end
-
-  defp do_embed_schema(schema, payload) do
-    with {:ok, schema} <- Schema.to_erlavro(schema) do
-      encoded =
-        schema
-        |> :avro_ocf.make_header()
-        |> :avro_ocf.make_ocf(List.wrap(payload))
-        |> :erlang.list_to_binary()
-
-      {:ok, encoded}
-    end
-  rescue
-    error -> {:error, error}
   end
 end

@@ -26,8 +26,8 @@ defmodule Avrora.EncoderTest do
         {:error, :unconfigured_registry_url}
       end)
 
-      assert {:error, :unconfigured_registry_url} =
-               Encoder.extract_schema(payment_registry_message())
+      assert Encoder.extract_schema(payment_registry_message()) ==
+               {:error, :unconfigured_registry_url}
     end
 
     test "when payload was encoded with magic byte and registry is configured" do
@@ -84,7 +84,7 @@ defmodule Avrora.EncoderTest do
     end
 
     test "when payload was encoded with plain format" do
-      {:error, :schema_not_found} = Encoder.extract_schema(messenger_plain_message())
+      assert Encoder.extract_schema(messenger_plain_message()) == {:error, :schema_not_found}
     end
   end
 
@@ -136,11 +136,11 @@ defmodule Avrora.EncoderTest do
         {:error, :unconfigured_registry_url}
       end)
 
-      assert {:error, :unconfigured_registry_url} = Encoder.decode(payment_registry_message())
+      assert Encoder.decode(payment_registry_message()) == {:error, :unconfigured_registry_url}
     end
 
     test "when payload was encoded with no magic bytes" do
-      assert {:error, :undecodable} = Encoder.decode(payment_plain_message())
+      assert Encoder.decode(payment_plain_message()) == {:error, :schema_required}
     end
   end
 
@@ -301,15 +301,10 @@ defmodule Avrora.EncoderTest do
         {:ok, payment_schema_with_id}
       end)
 
-      output =
-        capture_log(fn ->
-          {:ok, decoded} =
-            Encoder.decode(payment_registry_message(), schema_name: "io.confluent.Payment")
+      {:ok, decoded} =
+        Encoder.decode(payment_registry_message(), schema_name: "io.confluent.Payment")
 
-          assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
-        end)
-
-      assert output =~ "message contains embeded global id, given schema name will be ignored"
+      assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
     end
 
     test "when decoding with schema name containing version" do
@@ -363,7 +358,7 @@ defmodule Avrora.EncoderTest do
           assert decoded == [%{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}]
         end)
 
-      assert output =~ "given schema name will be ignored"
+      assert output =~ "message already contains embeded schema, given schema will be ignored"
     end
 
     test "when decoding plain message with type reference in it" do
@@ -423,6 +418,11 @@ defmodule Avrora.EncoderTest do
 
         {:ok, value}
       end)
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.Payment"
+
+        {:ok, payment_schema}
+      end)
 
       Avrora.Storage.RegistryMock
       |> expect(:put, fn key, value ->
@@ -474,10 +474,10 @@ defmodule Avrora.EncoderTest do
         {:ok, payment_schema}
       end)
 
-      result =
+      encoded =
         Encoder.encode(payment_payload(), schema_name: "io.confluent.Payment", format: :registry)
 
-      assert {:error, :invalid_schema_id} = result
+      assert encoded == {:error, :invalid_schema_id}
     end
 
     test "when registry is configured and schema is found, but format is given explicitly" do
@@ -573,7 +573,7 @@ defmodule Avrora.EncoderTest do
       end)
 
       {:ok, encoded} = Encoder.encode(payment_payload(), schema_name: "io.confluent.Payment")
-      assert payment_registry_message() == encoded
+      assert encoded == payment_registry_message()
     end
 
     test "when schema name provided with version" do
@@ -615,7 +615,7 @@ defmodule Avrora.EncoderTest do
               format: :plain
             )
 
-          assert payment_plain_message() == encoded
+          assert encoded == payment_plain_message()
         end)
 
       assert output =~ "with schema version is not supported"
