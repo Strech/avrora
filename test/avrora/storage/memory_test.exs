@@ -41,10 +41,10 @@ defmodule Avrora.Storage.MemoryTest do
   describe "expire/3" do
     test "when key already exists", %{memory: pid} do
       {:ok, _} = put(pid, "my-key-to-expire", schema())
-      {:ok, _} = expire(pid, "my-key-to-expire", 200)
+      {:ok, _} = expire(pid, "my-key-to-expire", 100)
 
       assert get(pid, "my-key-to-expire") == {:ok, schema()}
-      Process.sleep(200)
+      Process.sleep(100)
       assert get(pid, "my-key-to-expire") == {:ok, nil}
     end
 
