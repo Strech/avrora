@@ -4,11 +4,11 @@ defmodule Avrora.Config do
 
   ## Options:
 
-      * `schemas_path` path to local schema files, default ./priv/schemas
-      * `registry_url` URL for Schema Registry, default nil
-      * `registry_auth` authentication settings for Schema Registry, default nil
-      * `registry_schemas_autoreg` automatically register schemas in Schema Registry, default true
-      * `names_cache_ttl` duration to cache global schema names millisecods, default :infinity
+      * `schemas_path` path to local schema files, default `./priv/schemas`
+      * `registry_url` URL for Schema Registry, default `nil`
+      * `registry_auth` authentication settings for Schema Registry, default `nil`
+      * `registry_schemas_autoreg` automatically register schemas in Schema Registry, default `true`
+      * `names_cache_ttl` duration to cache global schema names millisecods, default `:infinity`
 
   ## Internal use interface:
 
