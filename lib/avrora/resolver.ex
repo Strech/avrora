@@ -76,14 +76,8 @@ defmodule Avrora.Resolver do
   @spec resolve(String.t()) :: {:ok, Avrora.Schema.t()} | {:error, term()}
   def resolve(name) when is_binary(name) do
     with {:ok, schema_name} <- Name.parse(name),
-         {:ok, nil} <- memory_storage().get(name),
-         {:ok, schema} <- file_storage().get(name) do
-      response =
-        if is_nil(schema_name.version),
-          do: registry_storage().put(schema_name.name, schema.json),
-          else: registry_storage().get(name)
-
-      case response do
+         {:ok, nil} <- memory_storage().get(name) do
+      case resolve_with_registry(schema_name) do
         {:ok, schema} ->
           with {:ok, schema} <- memory_storage().put(schema.id, schema),
                {:ok, schema} <- memory_storage().put(schema_name.name, schema),
@@ -96,12 +90,25 @@ defmodule Avrora.Resolver do
               else: memory_storage().put("#{schema_name.name}:#{schema.version}", schema)
           end
 
-        {:error, :unconfigured_registry_url} ->
+        {:reclaim, schema} ->
           memory_storage().put(schema_name.name, schema)
 
         {:error, reason} ->
           {:error, reason}
       end
+    end
+  end
+
+  defp resolve_with_registry(schema_name) do
+    if Config.self().registry_schemas_autoreg() && is_nil(schema_name.version) do
+      with {:ok, schema} <- file_storage().get(schema_name.origin),
+           {:error, :unconfigured_registry_url} <-
+             registry_storage().put(schema_name.name, schema.json),
+           do: {:reclaim, schema}
+    else
+      with {:error, :unconfigured_registry_url} <- registry_storage().get(schema_name.origin),
+           {:ok, schema} <- file_storage().get(schema_name.origin),
+           do: {:reclaim, schema}
     end
   end
 
