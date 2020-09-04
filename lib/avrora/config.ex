@@ -40,7 +40,7 @@ defmodule Avrora.Config do
   def registry_auth, do: get_env(:registry_auth, nil)
 
   @doc false
-  def registry_schemas_autoreg: get_env(:registry_schemas_autoreg, true)
+  def registry_schemas_autoreg, do: get_env(:registry_schemas_autoreg, true)
 
   @doc false
   def names_cache_ttl, do: get_env(:names_cache_ttl, :infinity)

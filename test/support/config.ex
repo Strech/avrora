@@ -33,14 +33,25 @@ defmodule Support.Config do
     :ok
   end
 
+  @impl true
   def schemas_path, do: Path.expand("./test/fixtures/schemas")
+  @impl true
   def registry_url, do: "http://reg.loc"
+  @impl true
   def registry_auth, do: nil
+  @impl true
+  def registry_schemas_autoreg, do: true
+  @impl true
   def names_cache_ttl, do: :infinity
 
+  @impl true
   def file_storage, do: Avrora.Storage.FileMock
+  @impl true
   def memory_storage, do: Avrora.Storage.MemoryMock
+  @impl true
   def registry_storage, do: Avrora.Storage.RegistryMock
+  @impl true
   def http_client, do: Avrora.HTTPClientMock
+  @impl true
   def ets_lib, do: :avro_schema_store
 end
