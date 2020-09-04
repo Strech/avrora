@@ -427,25 +427,25 @@ defmodule Avrora.ResolverTest do
     end
 
     test "when schema name is given and schemas auto registration is disabled and it was found in registry" do
-      stub(Avrora.ConfigMock, :registry_schemas_autoreg, fn -> true end)
+      stub(Avrora.ConfigMock, :registry_schemas_autoreg, fn -> false end)
 
-      schema_with_id_and_version = schema_with_id_and_version()
+      schema_with_id = schema_with_id()
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment:3"
+        assert key == "io.confluent.Payment"
 
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
-        assert key == 42
-        assert value == schema_with_id_and_version
+        assert key == 1
+        assert value == schema_with_id
 
         {:ok, value}
       end)
       |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
-        assert value == schema_with_id_and_version
+        assert value == schema_with_id
 
         {:ok, value}
       end)
@@ -455,45 +455,39 @@ defmodule Avrora.ResolverTest do
 
         {:ok, :infinity}
       end)
-      |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment:3"
-        assert value == schema_with_id_and_version
-
-        {:ok, value}
-      end)
 
       Avrora.Storage.RegistryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment:3"
+        assert key == "io.confluent.Payment"
 
-        {:ok, schema_with_id_and_version}
+        {:ok, schema_with_id}
       end)
 
-      {:ok, schema} = Resolver.resolve("io.confluent.Payment:3")
+      {:ok, schema} = Resolver.resolve("io.confluent.Payment")
 
-      assert schema.id == 42
-      assert schema.version == 3
+      assert schema.id == 1
       assert schema.full_name == "io.confluent.Payment"
+      assert is_nil(schema.version)
     end
 
     test "when schema name is given and schemas auto registration is disabled and it was not found in registry" do
-      stub(Avrora.ConfigMock, :registry_schemas_autoreg, fn -> true end)
+      stub(Avrora.ConfigMock, :registry_schemas_autoreg, fn -> false end)
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment:3"
+        assert key == "io.confluent.Payment"
 
         {:ok, nil}
       end)
 
       Avrora.Storage.RegistryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment:3"
+        assert key == "io.confluent.Payment"
 
         {:error, :unknown_schema}
       end)
 
-      assert Resolver.resolve("io.confluent.Payment:3") == {:error, :unknown_schema}
+      assert Resolver.resolve("io.confluent.Payment") == {:error, :unknown_schema}
     end
   end
 
