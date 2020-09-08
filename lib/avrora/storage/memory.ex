@@ -139,15 +139,15 @@ defmodule Avrora.Storage.Memory do
   TTL is in milliseconds.
 
   ## Examples
-      iex> _ = Avrora.Storage.Memory.start_link()
-      iex> schema = %Avrora.Schema{id: nil, json: "{}"}
-      iex> Avrora.Storage.Memory.put("my-key", schema)
+      ...> _ = Avrora.Storage.Memory.start_link()
+      ...> schema = %Avrora.Schema{id: nil, json: "{}"}
+      ...> Avrora.Storage.Memory.put("my-key", schema)
       {:ok, %Avrora.Schema{id: nil, json: "{}"}}
-      iex> {:ok, _} = Avrora.Storage.Memory.expire("my-key", 100)
-      iex> Avrora.Storage.Memory.get("my-key")
+      ...> {:ok, _} = Avrora.Storage.Memory.expire("my-key", 100)
+      ...> Avrora.Storage.Memory.get("my-key")
       {:ok, %Avrora.Schema{id: nil, json: "{}"}}
-      iex> Process.sleep(200)
-      iex> Avrora.Storage.Memory.get("my-key")
+      ...> Process.sleep(200)
+      ...> Avrora.Storage.Memory.get("my-key")
       {:ok, nil}
   """
   @impl true

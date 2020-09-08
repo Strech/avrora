@@ -15,15 +15,13 @@
 
 This library supports convenient encoding and decoding of [Avro](https://avro.apache.org/) messages.
 
-It can read the Avro schema from local files or the [Confluent® Schema
-Registry](https://www.confluent.io/confluent-schema-registry), caching
-data in memory for performance.
+It can read the Avro schema from local files or the [Confluent® Schema Registry](https://www.confluent.io/confluent-schema-registry),
+caching data in memory for performance.
 It supports reading and writing data Kafka [wire format](https://docs.confluent.io/current/schema-registry/serializer-formatter.html#wire-format)
 prefix and from [Object Container Files](https://avro.apache.org/docs/1.8.1/spec.html#Object+Container+Files)
 formats. And has [Inter-Schema references](https://github.com/Strech/avrora/wiki/Inter-Schema-references) feature.
 
-Many thanks to the [AvroTurf](https://github.com/dasch/avro_turf) Ruby gem for
-the inspiration.
+Many thanks to the [AvroTurf](https://github.com/dasch/avro_turf) Ruby gem for the inspiration.
 
 ## Add Avrora to your project
 
@@ -32,7 +30,7 @@ Add Avrora to `mix.exs` as a dependency:
 ```elixir
 def deps do
   [
-    {:avrora, "~> 0.11"}
+    {:avrora, "~> 0.13"}
   ]
 end
 ```
@@ -45,15 +43,18 @@ Configure the library in `config/config.exs`:
 config :avrora,
   registry_url: "http://localhost:8081",
   registy_auth: {:basic, ["username", "password"]}, # optional
+  registy_schemas_autoreg: false, # optional: if you want manually register schemas
   schemas_path: Path.expand("./priv/schemas"),
   names_cache_ttl: :timer.minutes(5) # optional: if you want periodic disk reads
 ```
 
-- `registry_url` - URL for the Confluent Schema Registry, default `nil`
-- `registry_auth` – Credentials to authenticate in Confluent Schema Registry, default `nil`
+- `registry_url` - URL for the Schema Registry, default `nil`
+- `registry_auth` – Credentials to authenticate in the Schema Registry, default `nil`
+- `registy_schemas_autoreg` - Flag for automatic schemas registration in the Schema Registry, default `true`
+  (since [v0.13](https://github.com/Strech/avrora/releases/tag/v0.13.0))
 - `schemas_path` - Base path for locally stored schema files, default `./priv/schemas`
 - `names_cache_ttl` - Time in ms to cache schemas by name in memory, default
-  `:infinity` (since [v0.10.0](https://github.com/Strech/avrora/releases/tag/v0.10.0))
+  `:infinity` (since [v0.10](https://github.com/Strech/avrora/releases/tag/v0.10.0))
 
 Set `names_cache_ttl` to `:infinity` will cache forever (no more disk reads will
 happen). This is safe when schemas are resolved in the Schema Registry by
@@ -61,7 +62,10 @@ numeric id or **versioned** name, as it is unique. If you need to reload schema
 from the disk periodically, TTL different from `:infinity` ensures that.
 
 If the schema is resolved by name it will be always overwritten with the latest
-schema received from Schema Registry (this is a new behavior since [v0.10.0](https://github.com/Strech/avrora/releases/tag/v0.10.0)).
+schema received from Schema Registry (this is a new behavior since [v0.10](https://github.com/Strech/avrora/releases/tag/v0.10.0)).
+
+:bulb: Disable automatic schemas registration if you want to avoid storing schemas
+and manually control registration process.
 
 ## Start cache process
 

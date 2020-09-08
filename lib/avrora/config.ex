@@ -4,12 +4,13 @@ defmodule Avrora.Config do
 
   ## Options:
 
-      * `schemas_path` path to local schema files, default ./priv/schemas
-      * `registry_url` URL for Confluent Schema Registry, default nil
-      * `registry_auth` authentication settings for Confluent Schema Registry, default nil
-      * `names_cache_ttl` duration to cache global schema names millisecods, default :infinity
+      * `schemas_path` path to local schema files, default `./priv/schemas`
+      * `registry_url` URL for Schema Registry, default `nil`
+      * `registry_auth` authentication settings for Schema Registry, default `nil`
+      * `registry_schemas_autoreg` automatically register schemas in Schema Registry, default `true`
+      * `names_cache_ttl` duration to cache global schema names millisecods, default `:infinity`
 
-  ## Module configuration:
+  ## Internal use interface:
 
       * `file_storage` module which handles files in `schemas_path`, default `Avrora.Storage.File`
       * `memory_storage` module which handles memory operations, default `Avrora.Storage.Memory`
@@ -21,6 +22,7 @@ defmodule Avrora.Config do
   @callback schemas_path :: String.t()
   @callback registry_url :: String.t() | nil
   @callback registry_auth :: tuple() | nil
+  @callback registry_schemas_autoreg :: boolean()
   @callback names_cache_ttl :: integer() | atom()
   @callback file_storage :: module()
   @callback memory_storage :: module()
@@ -36,6 +38,9 @@ defmodule Avrora.Config do
 
   @doc false
   def registry_auth, do: get_env(:registry_auth, nil)
+
+  @doc false
+  def registry_schemas_autoreg, do: get_env(:registry_schemas_autoreg, true)
 
   @doc false
   def names_cache_ttl, do: get_env(:names_cache_ttl, :infinity)
