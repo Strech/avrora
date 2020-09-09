@@ -13,7 +13,7 @@
 
 # Getting Started
 
-This library supports convenient encoding and decoding of [Avro](https://avro.apache.org/) messages.
+This Elixir library supports convenient encoding and decoding of [Avro](https://avro.apache.org/) messages.
 
 It can read the Avro schema from local files or the [Confluent® Schema Registry](https://www.confluent.io/confluent-schema-registry),
 caching data in memory for performance.
