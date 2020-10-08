@@ -36,9 +36,15 @@ defmodule Avrora.Codec.Plain do
     with {:ok, schema} <- resolve(schema), do: do_encode(payload, schema)
   end
 
-  # NOTE: `erlavro` supports setting a decoder hook, but we don't, at least for now
-  @doc false
-  def __hook__(_type, _sub_name_or_id, data, decode_fun), do: decode_fun.(data)
+  @doc """
+    The hook by default converts :null atom (erlang) to nil, based on it's avro type.
+  """
+  def __hook__(type, _sub_name_or_id, data, decode_fun) do
+    case :avro.get_type_name(type) do
+      "null" -> {nil, data}
+      _ -> decode_fun.(data)
+    end
+  end
 
   defp resolve(schema) do
     cond do
