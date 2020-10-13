@@ -41,6 +41,12 @@ defmodule Avrora.Codec.PlainTest do
       assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
     end
 
+    test "when payload has null values, they are decoded as nil" do
+      {:ok, decoded} = Codec.Plain.decode(null_payment_message(), schema: payment_schema())
+
+      assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => nil}
+    end
+
     test "when payload is a valid binary and schema is resolvable" do
       payment_schema = payment_schema()
 
@@ -106,6 +112,11 @@ defmodule Avrora.Codec.PlainTest do
       assert encoded == payment_message()
     end
 
+    test "when payload with null value is matching the schema and schema is usable" do
+      {:ok, encoded} = Codec.Plain.encode(null_payment_payload(), schema: payment_schema())
+      assert encoded == null_payment_message()
+    end
+
     test "when payload is matching the schema and schema is resolvable" do
       payment_schema = payment_schema()
 
@@ -154,17 +165,26 @@ defmodule Avrora.Codec.PlainTest do
 
   defp payment_payload, do: %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
 
+  defp null_payment_payload,
+    do: %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => nil}
+
   defp payment_schema do
     {:ok, schema} = Schema.parse(payment_json_schema())
     %{schema | id: nil, version: nil}
   end
 
   defp payment_json_schema do
-    ~s({"namespace":"io.confluent","name":"Payment","type":"record","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
+    ~s({"namespace":"io.confluent","name":"Payment","type":"record","fields":[{"name":"id","type":"string"},{"name":"amount","type":["null","double"]}]})
   end
 
   defp payment_message do
     <<72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48,
-      48, 45, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64>>
+      48, 45, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 2, 123, 20, 174, 71, 225, 250, 47,
+      64>>
+  end
+
+  defp null_payment_message do
+    <<72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48,
+      48, 45, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 0>>
   end
 end
