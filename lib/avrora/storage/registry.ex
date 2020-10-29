@@ -32,11 +32,18 @@ defmodule Avrora.Storage.Registry do
          {:ok, response} <- http_client_get("subjects/#{name}/versions/#{version}"),
          {:ok, id} <- Map.fetch(response, "id"),
          {:ok, version} <- Map.fetch(response, "version"),
-         {:ok, schema} <- Map.fetch(response, "schema"),
-         {:ok, schema} <- Schema.parse(schema) do
-      Logger.debug("obtaining schema `#{schema_name.name}` with version `#{version}`")
+         {:ok, schema} <- Map.fetch(response, "schema") do
+      case Map.has_key?(response, "references") do
+        true ->
+          get_with_references(key, response)
 
-      {:ok, %{schema | id: id, version: version}}
+        false ->
+          with {:ok, schema} <- Schema.parse(schema) do
+            Logger.debug("obtaining schema `#{schema_name.name}` with version `#{version}`")
+
+            {:ok, %{schema | id: id, version: version}}
+          end
+      end
     end
   end
 
@@ -50,12 +57,68 @@ defmodule Avrora.Storage.Registry do
       "io.confluent.Payment"
   """
   def get(key) when is_integer(key) do
-    with {:ok, response} <- http_client_get("schemas/ids/#{key}"),
-         {:ok, schema} <- Map.fetch(response, "schema"),
-         {:ok, schema} <- Schema.parse(schema) do
-      Logger.debug("obtaining schema with global id `#{key}`")
+    {:ok, response} = http_client_get("schemas/ids/#{key}")
 
-      {:ok, %{schema | id: key}}
+    case Map.has_key?(response, "references") do
+      true ->
+        get_with_references(key, response)
+
+      false ->
+        with {:ok, schema} <- Map.fetch(response, "schema"),
+             {:ok, schema} <- Schema.parse(schema) do
+          Logger.debug("obtaining schema with global id `#{key}`")
+
+          {:ok, %{schema | id: key}}
+        end
+    end
+  end
+
+  defp get_with_references(key, response) do
+    with {:ok, references} <- Map.fetch(response, "references"),
+         {:ok, schema} <- Map.fetch(response, "schema"),
+         {:ok, decoded_schema} = Jason.decode(schema) do
+      schema_with_references =
+        Enum.reduce(references, decoded_schema, fn r, merged_schema ->
+          replace_schema(r, merged_schema)
+        end)
+
+      {:ok, out_schema} = Schema.parse(schema_with_references)
+
+      {:ok, %{out_schema | id: key}}
+    end
+  end
+
+  defp replace_schema(reference, decoded_schema) do
+    schema_fields = decoded_schema["fields"]
+
+    find_schema =
+      &(&1["type"] == reference["name"] ||
+          &1["type"] == List.last(String.split(reference["name"], ".")))
+
+    schema_to_replace_index = Enum.find_index(schema_fields, &find_schema.(&1))
+
+    type_to_include =
+      schema_fields
+      |> Enum.find(&find_schema.(&1))
+      |> Map.put("type", get_reference_schema_to_include(reference["subject"]))
+
+    new_fields =
+      schema_fields
+      |> List.replace_at(schema_to_replace_index, type_to_include)
+
+    {:ok, decoded_schema} =
+      decoded_schema
+      |> Map.put("fields", new_fields)
+      |> Jason.encode()
+
+    decoded_schema
+  end
+
+  defp get_reference_schema_to_include(subject_name) do
+    with {:ok, reference_schema} <- get(subject_name),
+         {:ok, reference_schema_json} <- Jason.decode(reference_schema.json) do
+      reference_schema_json
+      |> Map.delete("namespace")
     end
   end
 
