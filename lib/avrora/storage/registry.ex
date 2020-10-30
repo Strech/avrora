@@ -35,7 +35,11 @@ defmodule Avrora.Storage.Registry do
          {:ok, schema} <- Map.fetch(response, "schema") do
       case Map.has_key?(response, "references") do
         true ->
-          get_with_references(key, response)
+          with {:ok, schema} <- get_with_references(response) do
+            Logger.debug("obtaining schema (with reference) `#{schema_name.name}` with version `#{version}`")
+
+            {:ok, %{schema | id: id, version: version}}
+          end
 
         false ->
           with {:ok, schema} <- Schema.parse(schema) do
@@ -57,23 +61,28 @@ defmodule Avrora.Storage.Registry do
       "io.confluent.Payment"
   """
   def get(key) when is_integer(key) do
-    {:ok, response} = http_client_get("schemas/ids/#{key}")
+    with {:ok, response} <- http_client_get("schemas/ids/#{key}") do
 
-    case Map.has_key?(response, "references") do
-      true ->
-        get_with_references(key, response)
+      case Map.has_key?(response, "references") do
+        true ->
+          with {:ok, schema} <- get_with_references(response) do
+            Logger.debug("obtaining schema (with reference) with global id `#{key}`")
 
-      false ->
-        with {:ok, schema} <- Map.fetch(response, "schema"),
-             {:ok, schema} <- Schema.parse(schema) do
-          Logger.debug("obtaining schema with global id `#{key}`")
+            {:ok, %{schema | id: key}}
+          end
 
-          {:ok, %{schema | id: key}}
-        end
+        false ->
+          with {:ok, schema} <- Map.fetch(response, "schema"),
+               {:ok, schema} <- Schema.parse(schema) do
+            Logger.debug("obtaining schema with global id `#{key}`")
+
+            {:ok, %{schema | id: key}}
+          end
+      end
     end
   end
 
-  defp get_with_references(key, response) do
+  defp get_with_references(response) do
     with {:ok, references} <- Map.fetch(response, "references"),
          {:ok, schema} <- Map.fetch(response, "schema"),
          {:ok, decoded_schema} = Jason.decode(schema) do
@@ -82,9 +91,7 @@ defmodule Avrora.Storage.Registry do
           replace_schema(r, merged_schema)
         end)
 
-      {:ok, out_schema} = Schema.parse(schema_with_references)
-
-      {:ok, %{out_schema | id: key}}
+      Schema.parse(schema_with_references)
     end
   end
 
@@ -158,8 +165,8 @@ defmodule Avrora.Storage.Registry do
 
   defp http_client_get(path) do
     if configured?(),
-      do: path |> to_url() |> http_client().get(headers()) |> handle(),
-      else: {:error, :unconfigured_registry_url}
+       do: path |> to_url() |> http_client().get(headers()) |> handle(),
+       else: {:error, :unconfigured_registry_url}
   end
 
   defp http_client_post(path, payload) do
