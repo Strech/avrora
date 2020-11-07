@@ -33,7 +33,7 @@ defmodule Avrora.Storage.Registry do
          {:ok, id} <- Map.fetch(response, "id"),
          {:ok, version} <- Map.fetch(response, "version"),
          {:ok, schema} <- Map.fetch(response, "schema"),
-         {:ok, schema} <- Schema.parse(schema) do
+         {:ok, schema} <- Schema.parse(schema, csr_references_lookup_function(response)) do
       Logger.debug("obtaining schema `#{schema_name.name}` with version `#{version}`")
 
       {:ok, %{schema | id: id, version: version}}
@@ -93,10 +93,26 @@ defmodule Avrora.Storage.Registry do
   @spec configured?() :: true | false
   def configured?, do: !is_nil(registry_url())
 
+  defp csr_references_lookup_function(response) do
+    with {:ok, csr_references} <- Map.fetch(response, "references") do
+      references = Enum.reduce(csr_references, %{}, fn(cr, map) ->
+        {:ok, schema_map} = get(cr["subject"])
+        Map.put(map, schema_map.full_name, schema_map.json)
+      end )
+
+      fn(r) ->
+        json_schema = Map.get(references, r)
+        {:ok, json_schema}
+      end
+    else
+      :error -> nil
+    end
+  end
+
   defp http_client_get(path) do
     if configured?(),
-      do: path |> to_url() |> http_client().get(headers()) |> handle(),
-      else: {:error, :unconfigured_registry_url}
+       do: path |> to_url() |> http_client().get(headers()) |> handle(),
+       else: {:error, :unconfigured_registry_url}
   end
 
   defp http_client_post(path, payload) do
