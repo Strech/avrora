@@ -94,17 +94,17 @@ defmodule Avrora.Storage.Registry do
   def configured?, do: !is_nil(registry_url())
 
   defp csr_references_lookup_function(response) do
-    with {:ok, csr_references} <- Map.fetch(response, "references") do
-      references = Enum.reduce(csr_references, %{}, fn(cr, map) ->
-        {:ok, schema_map} = get(cr["subject"])
-        Map.put(map, schema_map.full_name, schema_map.json)
-      end )
+    case Map.fetch(response, "references") do
+      {:ok, csr_references} ->
+        references = Enum.reduce(csr_references, %{}, fn(cr, map) ->
+          {:ok, schema_map} = get(cr["subject"])
+          Map.put(map, schema_map.full_name, schema_map.json)
+        end )
 
-      fn(r) ->
-        json_schema = Map.get(references, r)
-        {:ok, json_schema}
-      end
-    else
+        fn(r) ->
+          json_schema = Map.get(references, r)
+          {:ok, json_schema}
+        end
       :error -> nil
     end
   end
