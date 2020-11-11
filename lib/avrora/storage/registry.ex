@@ -33,7 +33,8 @@ defmodule Avrora.Storage.Registry do
          {:ok, id} <- Map.fetch(response, "id"),
          {:ok, version} <- Map.fetch(response, "version"),
          {:ok, schema} <- Map.fetch(response, "schema"),
-         {:ok, schema} <- Schema.parse(schema, csr_references_lookup_function(response)) do
+         {:ok, references} <- extract_references(response),
+         {:ok, schema} <- Schema.parse(schema, make_references_lookup_fun(references)) do
       Logger.debug("obtaining schema `#{schema_name.name}` with version `#{version}`")
 
       {:ok, %{schema | id: id, version: version}}
@@ -93,26 +94,39 @@ defmodule Avrora.Storage.Registry do
   @spec configured?() :: true | false
   def configured?, do: !is_nil(registry_url())
 
-  defp csr_references_lookup_function(response) do
+  defp extract_references(response) do
     case Map.fetch(response, "references") do
-      {:ok, csr_references} ->
-        references = Enum.reduce(csr_references, %{}, fn(cr, map) ->
-          {:ok, schema_map} = get(cr["subject"])
-          Map.put(map, schema_map.full_name, schema_map.json)
-        end )
+      {:ok, references} ->
+        references_map =
+          Enum.reduce(references, %{}, fn cr, map ->
+            get_reference_schema(map, cr["subject"])
+          end)
 
-        fn(r) ->
-          json_schema = Map.get(references, r)
-          {:ok, json_schema}
-        end
-      :error -> nil
+        {:ok, references_map}
+
+      :error ->
+        {:ok, :schema_without_references}
+    end
+  end
+
+  defp get_reference_schema(map, subject) do
+    case get(subject) do
+      {:ok, schema_map} -> Map.put(map, schema_map.full_name, schema_map.json)
+      {:error, error} -> throw(error)
+    end
+  end
+
+  defp make_references_lookup_fun(references) do
+    case references do
+      :schema_without_references -> &Avrora.Schema.reference_lookup/1
+      _ -> &Map.fetch(references, &1)
     end
   end
 
   defp http_client_get(path) do
     if configured?(),
-       do: path |> to_url() |> http_client().get(headers()) |> handle(),
-       else: {:error, :unconfigured_registry_url}
+      do: path |> to_url() |> http_client().get(headers()) |> handle(),
+      else: {:error, :unconfigured_registry_url}
   end
 
   defp http_client_post(path, payload) do

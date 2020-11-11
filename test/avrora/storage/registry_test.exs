@@ -24,7 +24,9 @@ defmodule Avrora.Storage.RegistryTest do
             "id" => 43,
             "version" => 1,
             "schema" => json_schema_with_reference(),
-            "references" => [%{"name" => "io.confluent.User", "subject" => "io.confluent.User", "version" => 1}]
+            "references" => [
+              %{"name" => "io.confluent.User", "subject" => "io.confluent.User", "version" => 1}
+            ]
           }
         }
       end)
@@ -51,6 +53,41 @@ defmodule Avrora.Storage.RegistryTest do
       assert schema.version == 1
       assert schema.full_name == "io.confluent.Account"
       assert schema.json == json_schema_with_reference_denormalized()
+    end
+
+    test "when request by subject name of schema with reference was unsuccessful because of reference schema not found" do
+      Avrora.HTTPClientMock
+      |> expect(:get, fn url, options ->
+        assert url == "http://reg.loc/subjects/io.confluent.Account/versions/latest"
+        assert options == []
+
+        {
+          :ok,
+          %{
+            "subject" => "io.confluent.Account",
+            "id" => 43,
+            "version" => 1,
+            "schema" => json_schema_with_reference(),
+            "references" => [
+              %{
+                "name" => "io.confluent.Unexisting",
+                "subject" => "io.confluent.Unexisting",
+                "version" => 1
+              }
+            ]
+          }
+        }
+      end)
+
+      Avrora.HTTPClientMock
+      |> expect(:get, fn url, options ->
+        assert url == "http://reg.loc/subjects/io.confluent.Unexisting/versions/latest"
+        assert options == []
+
+        {:error, subject_not_found_parsed_error()}
+      end)
+
+      assert catch_throw(Registry.get("io.confluent.Account") == :unknown_subject)
     end
 
     test "when request by subject name without version was successful" do
@@ -269,12 +306,15 @@ defmodule Avrora.Storage.RegistryTest do
   end
 
   defp json_schema_with_reference_denormalized do
-    nested_schema = ~s({"name":"User","type":"record","fields":[{"name":"id","type":"string"},{"name":"username","type":"string"}]})
-    ~s({"namespace":"io.confluent","name":"Account","type":"record","fields":[{"name":"id","type":"string"},{"name":"user","type":#{nested_schema}}]})
+    nested_schema =
+      ~s({"name":"User","type":"record","fields":[{"name":"id","type":"string"},{"name":"username","type":"string"}]})
+
+    ~s({"namespace":"io.confluent","name":"Account","type":"record","fields":[{"name":"id","type":"string"},{"name":"user","type":#{
+      nested_schema
+    }}]})
   end
 
   defp json_schema_referenced do
     ~s({"namespace":"io.confluent","type":"record","name":"User","fields":[{"name":"id","type":"string"},{"name":"username","type":"string"}]})
   end
-
 end
