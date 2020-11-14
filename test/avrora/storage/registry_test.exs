@@ -33,7 +33,7 @@ defmodule Avrora.Storage.RegistryTest do
 
       Avrora.HTTPClientMock
       |> expect(:get, fn url, options ->
-        assert url == "http://reg.loc/subjects/io.confluent.User/versions/latest"
+        assert url == "http://reg.loc/subjects/io.confluent.User/versions/1"
         assert options == []
 
         {
@@ -71,8 +71,7 @@ defmodule Avrora.Storage.RegistryTest do
             "references" => [
               %{
                 "name" => "io.confluent.Unexisting",
-                "subject" => "io.confluent.Unexisting",
-                "version" => 1
+                "subject" => "io.confluent.Unexisting"
               }
             ]
           }
@@ -87,7 +86,7 @@ defmodule Avrora.Storage.RegistryTest do
         {:error, subject_not_found_parsed_error()}
       end)
 
-      assert catch_throw(Registry.get("io.confluent.Account") == :unknown_subject)
+      assert Registry.get("io.confluent.Account") == {:error, :unknown_reference_subject}
     end
 
     test "when request by subject name without version was successful" do
@@ -194,6 +193,50 @@ defmodule Avrora.Storage.RegistryTest do
       end)
 
       assert Registry.get(1) == {:error, :unknown_version}
+    end
+
+    test "when request by global ID with reference was successful" do
+      Avrora.HTTPClientMock
+      |> expect(:get, fn url, options ->
+        assert url == "http://reg.loc/schemas/ids/43"
+        assert options == []
+
+        {
+          :ok,
+          %{
+            "subject" => "io.confluent.Account",
+            "id" => 43,
+            "version" => 1,
+            "schema" => json_schema_with_reference(),
+            "references" => [
+              %{"name" => "io.confluent.User", "subject" => "io.confluent.User", "version" => 1}
+            ]
+          }
+        }
+      end)
+
+      Avrora.HTTPClientMock
+      |> expect(:get, fn url, options ->
+        assert url == "http://reg.loc/subjects/io.confluent.User/versions/1"
+        assert options == []
+
+        {
+          :ok,
+          %{
+            "subject" => "io.confluent.User",
+            "id" => 44,
+            "version" => 1,
+            "schema" => json_schema_referenced()
+          }
+        }
+      end)
+
+      {:ok, schema} = Registry.get(43)
+
+      assert schema.id == 43
+      assert is_nil(schema.version)
+      assert schema.full_name == "io.confluent.Account"
+      assert schema.json == json_schema_with_reference_denormalized()
     end
 
     test "when registry url is unconfigured" do
