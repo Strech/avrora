@@ -27,4 +27,5 @@ avrora-*.tar
 /priv/plts/*.plt
 /priv/plts/*.plt.hash
 
+.tool-versions
 TODO.org
