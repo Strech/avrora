@@ -33,7 +33,8 @@ defmodule Avrora.Storage.Registry do
          {:ok, id} <- Map.fetch(response, "id"),
          {:ok, version} <- Map.fetch(response, "version"),
          {:ok, schema} <- Map.fetch(response, "schema"),
-         {:ok, schema} <- Schema.parse(schema) do
+         {:ok, references} <- extract_references(response),
+         {:ok, schema} <- Schema.parse(schema, make_reference_lookup_function(references)) do
       Logger.debug("obtaining schema `#{schema_name.name}` with version `#{version}`")
 
       {:ok, %{schema | id: id, version: version}}
@@ -52,7 +53,8 @@ defmodule Avrora.Storage.Registry do
   def get(key) when is_integer(key) do
     with {:ok, response} <- http_client_get("schemas/ids/#{key}"),
          {:ok, schema} <- Map.fetch(response, "schema"),
-         {:ok, schema} <- Schema.parse(schema) do
+         {:ok, references} <- extract_references(response),
+         {:ok, schema} <- Schema.parse(schema, make_reference_lookup_function(references)) do
       Logger.debug("obtaining schema with global id `#{key}`")
 
       {:ok, %{schema | id: key}}
@@ -92,6 +94,33 @@ defmodule Avrora.Storage.Registry do
   @doc false
   @spec configured?() :: true | false
   def configured?, do: !is_nil(registry_url())
+
+  defp extract_references(response) do
+    references =
+      response
+      |> Map.get("references", [])
+      |> Enum.reduce(%{}, fn reference, memo ->
+        key = "#{Map.get(reference, "subject")}:#{Map.get(reference, "version", "latest")}"
+
+        case get(key) do
+          {:ok, schema} -> Map.put(memo, schema.full_name, schema.json)
+          {:error, error} -> throw(error)
+        end
+      end)
+
+    {:ok, references}
+  catch
+    :unknown_subject -> {:error, :unknown_reference_subject}
+    error -> {:error, error}
+  end
+
+  def make_reference_lookup_function(map) when map_size(map) == 0 do
+    &Avrora.Schema.reference_lookup/1
+  end
+
+  def make_reference_lookup_function(references) do
+    &Map.fetch(references, &1)
+  end
 
   defp http_client_get(path) do
     if configured?(),

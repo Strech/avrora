@@ -11,6 +11,84 @@ defmodule Avrora.Storage.RegistryTest do
   setup :support_config
 
   describe "get/1" do
+    test "when request by subject name of schema with reference without version was successful" do
+      Avrora.HTTPClientMock
+      |> expect(:get, fn url, options ->
+        assert url == "http://reg.loc/subjects/io.confluent.Account/versions/latest"
+        assert options == []
+
+        {
+          :ok,
+          %{
+            "subject" => "io.confluent.Account",
+            "id" => 43,
+            "version" => 1,
+            "schema" => json_schema_with_reference(),
+            "references" => [
+              %{"name" => "io.confluent.User", "subject" => "io.confluent.User", "version" => 1}
+            ]
+          }
+        }
+      end)
+
+      Avrora.HTTPClientMock
+      |> expect(:get, fn url, options ->
+        assert url == "http://reg.loc/subjects/io.confluent.User/versions/1"
+        assert options == []
+
+        {
+          :ok,
+          %{
+            "subject" => "io.confluent.User",
+            "id" => 44,
+            "version" => 1,
+            "schema" => json_schema_referenced()
+          }
+        }
+      end)
+
+      {:ok, schema} = Registry.get("io.confluent.Account")
+
+      assert schema.id == 43
+      assert schema.version == 1
+      assert schema.full_name == "io.confluent.Account"
+      assert schema.json == json_schema_with_reference_denormalized()
+    end
+
+    test "when request by subject name of schema with reference was unsuccessful because of reference schema not found" do
+      Avrora.HTTPClientMock
+      |> expect(:get, fn url, options ->
+        assert url == "http://reg.loc/subjects/io.confluent.Account/versions/latest"
+        assert options == []
+
+        {
+          :ok,
+          %{
+            "subject" => "io.confluent.Account",
+            "id" => 43,
+            "version" => 1,
+            "schema" => json_schema_with_reference(),
+            "references" => [
+              %{
+                "name" => "io.confluent.Unexisting",
+                "subject" => "io.confluent.Unexisting"
+              }
+            ]
+          }
+        }
+      end)
+
+      Avrora.HTTPClientMock
+      |> expect(:get, fn url, options ->
+        assert url == "http://reg.loc/subjects/io.confluent.Unexisting/versions/latest"
+        assert options == []
+
+        {:error, subject_not_found_parsed_error()}
+      end)
+
+      assert Registry.get("io.confluent.Account") == {:error, :unknown_reference_subject}
+    end
+
     test "when request by subject name without version was successful" do
       Avrora.HTTPClientMock
       |> expect(:get, fn url, options ->
@@ -117,6 +195,50 @@ defmodule Avrora.Storage.RegistryTest do
       assert Registry.get(1) == {:error, :unknown_version}
     end
 
+    test "when request by global ID with reference was successful" do
+      Avrora.HTTPClientMock
+      |> expect(:get, fn url, options ->
+        assert url == "http://reg.loc/schemas/ids/43"
+        assert options == []
+
+        {
+          :ok,
+          %{
+            "subject" => "io.confluent.Account",
+            "id" => 43,
+            "version" => 1,
+            "schema" => json_schema_with_reference(),
+            "references" => [
+              %{"name" => "io.confluent.User", "subject" => "io.confluent.User", "version" => 1}
+            ]
+          }
+        }
+      end)
+
+      Avrora.HTTPClientMock
+      |> expect(:get, fn url, options ->
+        assert url == "http://reg.loc/subjects/io.confluent.User/versions/1"
+        assert options == []
+
+        {
+          :ok,
+          %{
+            "subject" => "io.confluent.User",
+            "id" => 44,
+            "version" => 1,
+            "schema" => json_schema_referenced()
+          }
+        }
+      end)
+
+      {:ok, schema} = Registry.get(43)
+
+      assert schema.id == 43
+      assert is_nil(schema.version)
+      assert schema.full_name == "io.confluent.Account"
+      assert schema.json == json_schema_with_reference_denormalized()
+    end
+
     test "when registry url is unconfigured" do
       stub(Avrora.ConfigMock, :registry_url, fn -> nil end)
 
@@ -220,5 +342,22 @@ defmodule Avrora.Storage.RegistryTest do
 
   defp json_schema do
     ~s({"namespace":"io.confluent","type":"record","name":"Payment","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
+  end
+
+  defp json_schema_with_reference do
+    ~s({"namespace":"io.confluent","type":"record","name":"Account","fields":[{"name":"id","type":"string"},{"name":"user","type":"User"}]})
+  end
+
+  defp json_schema_with_reference_denormalized do
+    nested_schema =
+      ~s({"name":"User","type":"record","fields":[{"name":"id","type":"string"},{"name":"username","type":"string"}]})
+
+    ~s({"namespace":"io.confluent","name":"Account","type":"record","fields":[{"name":"id","type":"string"},{"name":"user","type":#{
+      nested_schema
+    }}]})
+  end
+
+  defp json_schema_referenced do
+    ~s({"namespace":"io.confluent","type":"record","name":"User","fields":[{"name":"id","type":"string"},{"name":"username","type":"string"}]})
   end
 end
