@@ -1,0 +1,67 @@
+---
+# See more:
+# https://hashrocket.com/blog/posts/build-the-ultimate-elixir-ci-with-github-actions
+name: CI
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+env:
+  MIX_ENV: test
+jobs:
+  test:
+    runs-on: ubuntu-16.04
+    name: OTP ${{ matrix.otp }} / Elixir ${{ matrix.elixir }}
+    strategy:
+      matrix:
+        otp: ["20.3", "21.3", "22.3", "23.1"]
+        elixir: ["1.8", "1.9", "1.10", "1.11"]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-elixir@v1
+        with:
+          otp-version: ${{ matrix.otp }}
+          elixir-version: ${{ matrix.elixir }}
+
+      - name: Retrieve Mix Cache
+        uses: actions/cache@v2
+        id: mix-cache
+        with:
+          path: deps
+          key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-mix-${{ hashFiles(format("{0}{1}", github.workspace, "/mix.lock")) }}
+
+      - name: Install Mix Dependencies
+        if: steps.mix-cache.outputs.cache-hit != "true"
+        run: |
+          mix local.rebar --force
+          mix local.hex --force
+          mix deps.get
+
+      - name: Check Formatting
+        run: mix format --check-formatted
+
+      - name: Analyze Code
+        if: ${{ matrix.elixir == "1.9" && matrix.otp == "22.3" }}
+        run: mix credo
+
+      - name: Run Tests
+        run: mix test
+
+      - name: Retrieve PLT Cache
+        if: ${{ matrix.elixir == "1.9" && matrix.otp == "22.3" }}
+        uses: actions/cache@v1
+        id: plt-cache
+        with:
+          path: priv/plts
+          key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-plts-${{ hashFiles(format("{0}{1}", github.workspace, "/mix.lock")) }}
+
+      - name: Create PLTs
+        if: ${{ matrix.elixir == "1.9" && matrix.otp == "22.3" && steps.plt-cache.outputs.cache-hit != "true" }}
+        run: |
+          mkdir -p priv/plts
+          mix dialyzer --plt
+
+      - name: Run Dialyzer
+        if: ${{ matrix.elixir == "1.9" && matrix.otp == "22.3" }}
+        run: mix dialyzer --no-check --no-compile --halt-exit-status
