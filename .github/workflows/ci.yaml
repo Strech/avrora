@@ -29,10 +29,10 @@ jobs:
         id: mix-cache
         with:
           path: deps
-          key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-mix-${{ hashFiles(format("{0}{1}", github.workspace, "/mix.lock")) }}
+          key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-mix-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
 
       - name: Install Mix Dependencies
-        if: steps.mix-cache.outputs.cache-hit != "true"
+        if: steps.mix-cache.outputs.cache-hit != 'true'
         run: |
           mix local.rebar --force
           mix local.hex --force
@@ -42,26 +42,26 @@ jobs:
         run: mix format --check-formatted
 
       - name: Analyze Code
-        if: ${{ matrix.elixir == "1.9" && matrix.otp == "22.3" }}
+        if: ${{ matrix.elixir == '1.9' && matrix.otp == '22.3' }}
         run: mix credo
 
       - name: Run Tests
         run: mix test
 
       - name: Retrieve PLT Cache
-        if: ${{ matrix.elixir == "1.9" && matrix.otp == "22.3" }}
+        if: ${{ matrix.elixir == '1.9' && matrix.otp == '22.3' }}
         uses: actions/cache@v1
         id: plt-cache
         with:
           path: priv/plts
-          key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-plts-${{ hashFiles(format("{0}{1}", github.workspace, "/mix.lock")) }}
+          key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-plts-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
 
       - name: Create PLTs
-        if: ${{ matrix.elixir == "1.9" && matrix.otp == "22.3" && steps.plt-cache.outputs.cache-hit != "true" }}
+        if: ${{ matrix.elixir == '1.9' && matrix.otp == '22.3' && steps.plt-cache.outputs.cache-hit != 'true' }}
         run: |
           mkdir -p priv/plts
           mix dialyzer --plt
 
       - name: Run Dialyzer
-        if: ${{ matrix.elixir == "1.9" && matrix.otp == "22.3" }}
+        if: ${{ matrix.elixir == '1.9' && matrix.otp == '22.3' }}
         run: mix dialyzer --no-check --no-compile --halt-exit-status
