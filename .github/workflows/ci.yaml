@@ -15,8 +15,17 @@ jobs:
     name: OTP ${{ matrix.otp }} / Elixir ${{ matrix.elixir }}
     strategy:
       matrix:
-        otp: ["20.3", "21.3", "22.3", "23.1"]
-        elixir: ["1.8", "1.9", "1.10", "1.11"]
+        otp: ["23.1"]
+        elixir: ["1.11"]
+      include:
+        - opt: "20.3"
+          elixir: "1.6"
+        - otp: "21.3"
+          elixir: "1.8"
+        - otp: "22.3"
+          elixir: "1.9"
+          credo: "true"
+          dialyzer: "true"
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-elixir@v1
@@ -42,14 +51,14 @@ jobs:
         run: mix format --check-formatted
 
       - name: Analyze Code
-        if: ${{ matrix.elixir == '1.9' && matrix.otp == '22.3' }}
+        if: matrix.credo == 'true'
         run: mix credo
 
       - name: Run Tests
         run: mix test
 
       - name: Retrieve PLT Cache
-        if: ${{ matrix.elixir == '1.9' && matrix.otp == '22.3' }}
+        if: matrix.dialyzer == 'true'
         uses: actions/cache@v1
         id: plt-cache
         with:
@@ -57,11 +66,11 @@ jobs:
           key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-plts-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
 
       - name: Create PLTs
-        if: ${{ matrix.elixir == '1.9' && matrix.otp == '22.3' && steps.plt-cache.outputs.cache-hit != 'true' }}
+        if: ${{ matrix.dialyzer == 'true' && steps.plt-cache.outputs.cache-hit != 'true' }}
         run: |
           mkdir -p priv/plts
           mix dialyzer --plt
 
       - name: Run Dialyzer
-        if: ${{ matrix.elixir == '1.9' && matrix.otp == '22.3' }}
+        if: matrix.dialyzer == 'true'
         run: mix dialyzer --no-check --no-compile --halt-exit-status
