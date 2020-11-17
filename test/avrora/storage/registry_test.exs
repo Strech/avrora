@@ -1,11 +1,16 @@
 defmodule Avrora.Storage.RegistryTest do
-  use ExUnit.Case, async: true
+  # NOTE: Remove when Elixir 1.6 support ends
+  use ExUnit.Case
+  # use ExUnit.Case, async: true
   doctest Avrora.Storage.Registry
 
   import Mox
   import Support.Config
   import ExUnit.CaptureLog
   alias Avrora.Storage.Registry
+
+  # NOTE: Remove when Elixir 1.6 support ends
+  setup :set_mox_from_context
 
   setup :verify_on_exit!
   setup :support_config

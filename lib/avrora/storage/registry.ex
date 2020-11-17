@@ -99,12 +99,13 @@ defmodule Avrora.Storage.Registry do
     references =
       response
       |> Map.get("references", [])
-      |> Enum.reduce(%{}, fn reference, memo ->
-        key = "#{Map.get(reference, "subject")}:#{Map.get(reference, "version", "latest")}"
-
-        case get(key) do
-          {:ok, schema} -> Map.put(memo, schema.full_name, schema.json)
-          {:error, error} -> throw(error)
+      |> Enum.map(&"#{Map.get(&1, "subject")}:#{Map.get(&1, "version", "latest")}")
+      |> Task.async_stream(__MODULE__, :get, [])
+      |> Enum.reduce(%{}, fn result, memo ->
+        case result do
+          {:ok, {:ok, schema}} -> Map.put(memo, schema.full_name, schema.json)
+          {:ok, {:error, error}} -> throw(error)
+          {:exit, reason} -> throw(reason)
         end
       end)
 
@@ -114,13 +115,11 @@ defmodule Avrora.Storage.Registry do
     error -> {:error, error}
   end
 
-  def make_reference_lookup_function(map) when map_size(map) == 0 do
-    &Avrora.Schema.reference_lookup/1
-  end
+  def make_reference_lookup_function(map) when map_size(map) == 0,
+    do: &Avrora.Schema.reference_lookup/1
 
-  def make_reference_lookup_function(references) do
-    &Map.fetch(references, &1)
-  end
+  def make_reference_lookup_function(references),
+    do: &Map.fetch(references, &1)
 
   defp http_client_get(path) do
     if configured?(),
