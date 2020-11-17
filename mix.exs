@@ -89,10 +89,10 @@ defmodule Avrora.MixProject do
     [
       {:jason, "~> 1.0"},
       {:erlavro, "~> 2.9.0"},
-      {:mox, "~> 0.5", only: :test},
-      {:ex_doc, "~> 0.22", only: :dev, runtime: false},
-      {:dialyxir, "~> 1.0.0", only: :dev, runtime: false},
       {:credo, "~> 1.4", only: [:dev, :test], runtime: false},
+      {:ex_doc, "~> 0.22", only: :dev, runtime: false},
+      {:dialyxir, "~> 1.0.0", only: [:dev, :test], runtime: false},
+      {:mox, "~> 0.5", only: :test},
       {:excoveralls, "~> 0.13", only: :test}
     ]
   end
