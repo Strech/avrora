@@ -196,7 +196,8 @@ defmodule Avrora.Codec.SchemaRegistryTest do
       output =
         capture_log(fn ->
           {:ok, decoded} =
-            Codec.SchemaRegistry.decode(payment_message(),
+            Codec.SchemaRegistry.decode(
+              payment_message(),
               schema: %Schema{id: 42, full_name: "io.confluent.Payment"}
             )
 
@@ -263,7 +264,8 @@ defmodule Avrora.Codec.SchemaRegistryTest do
       output =
         capture_log(fn ->
           {:ok, decoded} =
-            Codec.SchemaRegistry.decode(payment_message(),
+            Codec.SchemaRegistry.decode(
+              payment_message(),
               schema: %Schema{full_name: "io.confluent.Payment"}
             )
 
