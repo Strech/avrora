@@ -7,7 +7,7 @@
 
 [![Hex pm](https://img.shields.io/hexpm/v/avrora.svg?style=for-the-badge)](https://hex.pm/packages/avrora)
 [![Hex Docs](https://img.shields.io/badge/api-docs-blue.svg?style=for-the-badge)](https://hexdocs.pm/avrora)
-[![Build Status](https://img.shields.io/travis/Strech/avrora/master?style=for-the-badge)](https://travis-ci.org/Strech/avrora)
+[![Build Status](https://img.shields.io/github/workflow/status/Strech/Avrora/CI?style=for-the-badge)](https://github.com/Strech/avrora/actions?query=workflow%3ACI)
 
 </span>
 
@@ -219,7 +219,7 @@ Extracts a schema from the encoded message, useful when you would like to have
 some metadata about the schema used to encode the message. All the retrieved schemas
 will be cached accordingly to the settings.
 
-```elixir
+````elixir
 {:ok, pid} = Avrora.start_link()
 message =
   <<79, 98, 106, 1, 3, 204, 2, 20, 97, 118, 114, 111, 46, 99, 111, 100, 101, 99,
@@ -241,19 +241,20 @@ message =
  %Avrora.Schema{
    full_name: "io.confluent.Payment",
    id: nil,
-   json: "{\"namespace\":\"io.confluent\",\"name\":\"Payment\",\"type\":\"record\",\"fields\":[{\"name\":\"id\",\"type\":\"string\"},{\"name\":\"amount\",\"type\":\"double\"}]}",
-   lookup_table: #Reference<0.146116641.3853647878.152744>,
-   version: nil
- }}
-```
+   json: "{\"<p align="center">
+    <img id="avroraLogo" width=200 src="/assets/logo.png"/>
+    <h1 align="center">Avrora</h1>
+</p>
 
-</details>
+<span class="nodoc">
 
-## Mix tasks
+[![Hex pm](https://img.shields.io/hexpm/v/avrora.svg?style=for-the-badge)](https://hex.pm/packages/avrora)
+[![Hex Docs](https://img.shields.io/badge/api-docs-blue.svg?style=for-the-badge)](https://hexdocs.pm/avrora)
+[![Build Status](https://img.shields.io/travis/Strech/avrora/master?style=for-the-badge)](https://travis-ci.org/Strech/avrora)
 
-A separate mix task to register a specific schema or all found schemas in
-schemas folder (see [configuration](#configuration) section) is available
-since [v0.12.0](https://github.com/Strech/avrora/releases/tag/v0.12.0).
+</span>
+
+.
 
 For instance, if you configure Avrora schemas folder to be at `./priv/schemas`
 and you want to register a schema `io/confluent/Payment.avsc` then you can use
@@ -262,7 +263,7 @@ this command
 ```console
 $ mix avrora.reg.schema --name io.confluent.Payment
 schema `io.confluent.Payment` will be registered
-```
+````
 
 **NOTE:** It will search for schema `./priv/schemas/io/confluent/Payment.avsc`
 
