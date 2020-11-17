@@ -27,7 +27,7 @@ jobs:
             elixir: "1.9"
             credo: "true"
             dialyzer: "true"
-          - otp: "21.1"
+          - otp: "23.1"
             elixir: "1.11"
     steps:
       - uses: actions/checkout@v2
