@@ -610,7 +610,8 @@ defmodule Avrora.EncoderTest do
       output =
         capture_log(fn ->
           {:ok, encoded} =
-            Encoder.encode(payment_payload(),
+            Encoder.encode(
+              payment_payload(),
               schema_name: "io.confluent.Payment:42",
               format: :plain
             )

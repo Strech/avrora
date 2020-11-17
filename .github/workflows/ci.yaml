@@ -20,6 +20,7 @@ jobs:
         include:
           - otp: "20.3"
             elixir: "1.6"
+            format: "true"
           - otp: "21.3"
             elixir: "1.8"
           - otp: "22.3"
@@ -48,6 +49,7 @@ jobs:
           mix deps.get
 
       - name: Check Formatting
+        if: matrix.format == 'true'
         run: mix format --check-formatted
 
       - name: Analyze Code

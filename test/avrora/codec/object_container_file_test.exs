@@ -145,7 +145,8 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
       end)
 
       {:ok, encoded} =
-        Codec.ObjectContainerFile.encode(payment_payload(),
+        Codec.ObjectContainerFile.encode(
+          payment_payload(),
           schema: %Schema{full_name: "io.confluent.Payment"}
         )
 
