@@ -9,6 +9,17 @@ defmodule Avrora.Codec.ObjectContainerFile do
   @behaviour Avrora.Codec
   @magic_bytes <<"Obj", 1>>
   @meta_schema_key "avro.schema"
+  @decoder_options %{
+    encoding: :avro_binary,
+    hook: &Avrora.Codec.Plain.__noop_hook__/4,
+    is_wrapped: true,
+    map_type: :proplist,
+    record_type: :map
+  }
+  @decoder_options_with_conversion %{
+    @decoder_options
+    | hook: &Avrora.Codec.Plain.__conversion_hook__/4
+  }
 
   require Logger
   alias Avrora.{Codec, Config, Mapper, Resolver, Schema}
@@ -60,7 +71,10 @@ defmodule Avrora.Codec.ObjectContainerFile do
   end
 
   defp do_decode(payload) do
-    {:ok, :avro_ocf.decode_binary(payload)}
+    decoder_options =
+      if convert_null_values(), do: @decoder_options_with_conversion, else: @decoder_options
+
+    {:ok, :avro_ocf.decode_binary(payload, decoder_options)}
   rescue
     MatchError -> {:error, :schema_mismatch}
     error -> {:error, error}
@@ -86,4 +100,5 @@ defmodule Avrora.Codec.ObjectContainerFile do
   end
 
   defp memory_storage, do: Config.self().memory_storage()
+  defp convert_null_values, do: Config.self().convert_null_values()
 end

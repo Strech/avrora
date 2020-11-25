@@ -81,13 +81,13 @@ defmodule Avrora.Codec.PlainTest do
     test "when payload is a valid binary and null values must be as is" do
       stub(Avrora.ConfigMock, :convert_null_values, fn -> false end)
 
-      {:ok, decoded} = Codec.Plain.decode(nullable_message(), schema: nullable_schema())
+      {:ok, decoded} = Codec.Plain.decode(null_value_message(), schema: null_value_schema())
 
       assert decoded == %{"key" => "user-1", "value" => :null}
     end
 
     test "when payload is a valid binary and null values must be converted" do
-      {:ok, decoded} = Codec.Plain.decode(nullable_message(), schema: nullable_schema())
+      {:ok, decoded} = Codec.Plain.decode(null_value_message(), schema: null_value_schema())
 
       assert decoded == %{"key" => "user-1", "value" => nil}
     end
@@ -173,8 +173,8 @@ defmodule Avrora.Codec.PlainTest do
     %{schema | id: nil, version: nil}
   end
 
-  defp nullable_schema do
-    {:ok, schema} = Schema.parse(nullable_json_schema())
+  defp null_value_schema do
+    {:ok, schema} = Schema.parse(null_value_json_schema())
     %{schema | id: nil, version: nil}
   end
 
@@ -182,8 +182,8 @@ defmodule Avrora.Codec.PlainTest do
     ~s({"namespace":"io.confluent","name":"Payment","type":"record","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
   end
 
-  defp nullable_json_schema do
-    ~s({"namespace":"io.confluent","name":"Nullable","type":"record","fields":[{"name":"key","type":"string"},{"name":"value","type":["null","int"]}]})
+  defp null_value_json_schema do
+    ~s({"namespace":"io.confluent","name":"Null_Value","type":"record","fields":[{"name":"key","type":"string"},{"name":"value","type":["null","int"]}]})
   end
 
   defp payment_message do
@@ -191,5 +191,5 @@ defmodule Avrora.Codec.PlainTest do
       48, 45, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64>>
   end
 
-  defp nullable_message, do: <<12, 117, 115, 101, 114, 45, 49, 0>>
+  defp null_value_message, do: <<12, 117, 115, 101, 114, 45, 49, 0>>
 end
