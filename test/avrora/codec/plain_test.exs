@@ -78,6 +78,20 @@ defmodule Avrora.Codec.PlainTest do
       assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
     end
 
+    test "when payload is a valid binary and null values must be as is" do
+      stub(Avrora.ConfigMock, :convert_null_values, fn -> false end)
+
+      {:ok, decoded} = Codec.Plain.decode(nullable_message(), schema: nullable_schema())
+
+      assert decoded == %{"key" => "user-1", "value" => :null}
+    end
+
+    test "when payload is a valid binary and null values must be converted" do
+      {:ok, decoded} = Codec.Plain.decode(nullable_message(), schema: nullable_schema())
+
+      assert decoded == %{"key" => "user-1", "value" => nil}
+    end
+
     test "when payload is a valid binary and schema is unusable" do
       assert Codec.Plain.decode(payment_message(), schema: %Schema{}) ==
                {:error, :unusable_schema}
@@ -159,12 +173,23 @@ defmodule Avrora.Codec.PlainTest do
     %{schema | id: nil, version: nil}
   end
 
+  defp nullable_schema do
+    {:ok, schema} = Schema.parse(nullable_json_schema())
+    %{schema | id: nil, version: nil}
+  end
+
   defp payment_json_schema do
     ~s({"namespace":"io.confluent","name":"Payment","type":"record","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
+  end
+
+  defp nullable_json_schema do
+    ~s({"namespace":"io.confluent","name":"Nullable","type":"record","fields":[{"name":"key","type":"string"},{"name":"value","type":["null","int"]}]})
   end
 
   defp payment_message do
     <<72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48,
       48, 45, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64>>
   end
+
+  defp nullable_message, do: <<12, 117, 115, 101, 114, 45, 49, 0>>
 end

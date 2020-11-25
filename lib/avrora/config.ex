@@ -8,7 +8,7 @@ defmodule Avrora.Config do
       * `registry_url` URL for Schema Registry, default `nil`
       * `registry_auth` authentication settings for Schema Registry, default `nil`
       * `registry_schemas_autoreg` automatically register schemas in Schema Registry, default `true`
-      * `convert_null_values` convert `"null"` values in the decoded message into `nil`, default `true`
+      * `convert_null_values` convert `:null` values in the decoded message into `nil`, default `true`
       * `names_cache_ttl` duration to cache global schema names millisecods, default `:infinity`
 
   ## Internal use interface:
