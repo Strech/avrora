@@ -7,17 +7,8 @@ defmodule Avrora.Codec.Plain do
   """
 
   @behaviour Avrora.Codec
-  @decoder_options %{
-    encoding: :avro_binary,
-    hook: &__MODULE__.__noop_hook__/4,
-    is_wrapped: true,
-    map_type: :proplist,
-    record_type: :map
-  }
-  @decoder_options_with_conversion %{@decoder_options | hook: &__MODULE__.__conversion_hook__/4}
-  @null_type_name "null"
 
-  alias Avrora.{Config, Resolver}
+  alias Avrora.{AvroDecoderOptions, Resolver}
 
   @impl true
   def is_decodable(payload) when is_binary(payload), do: true
@@ -38,19 +29,6 @@ defmodule Avrora.Codec.Plain do
     with {:ok, schema} <- resolve(schema), do: do_encode(payload, schema)
   end
 
-  @doc false
-  def __noop_hook__(_type, _sub_name_or_id, data, decode_fun) do
-    decode_fun.(data)
-  end
-
-  @doc false
-  def __conversion_hook__(type, _sub_name_or_id, data, decode_fun) do
-    case :avro.get_type_name(type) do
-      @null_type_name -> {nil, data}
-      _ -> decode_fun.(data)
-    end
-  end
-
   defp resolve(schema) do
     cond do
       is_binary(schema.full_name) && is_reference(schema.lookup_table) -> {:ok, schema}
@@ -60,15 +38,12 @@ defmodule Avrora.Codec.Plain do
   end
 
   defp do_decode(payload, schema) do
-    decoder_options =
-      if convert_null_values(), do: @decoder_options_with_conversion, else: @decoder_options
-
     decoded =
       :avro_binary_decoder.decode(
         payload,
         schema.full_name,
         schema.lookup_table,
-        decoder_options
+        AvroDecoderOptions.options()
       )
 
     {:ok, decoded}
@@ -87,6 +62,4 @@ defmodule Avrora.Codec.Plain do
   rescue
     error -> {:error, error}
   end
-
-  defp convert_null_values, do: Config.self().convert_null_values()
 end
