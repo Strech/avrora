@@ -8,6 +8,7 @@ defmodule Avrora.Config do
       * `registry_url` URL for Schema Registry, default `nil`
       * `registry_auth` authentication settings for Schema Registry, default `nil`
       * `registry_schemas_autoreg` automatically register schemas in Schema Registry, default `true`
+      * `convert_null_values` convert `"null"` values in the decoded message into `nil`, default `true`
       * `names_cache_ttl` duration to cache global schema names millisecods, default `:infinity`
 
   ## Internal use interface:
@@ -23,6 +24,7 @@ defmodule Avrora.Config do
   @callback registry_url :: String.t() | nil
   @callback registry_auth :: tuple() | nil
   @callback registry_schemas_autoreg :: boolean()
+  @callback convert_null_values :: boolean()
   @callback names_cache_ttl :: integer() | atom()
   @callback file_storage :: module()
   @callback memory_storage :: module()
@@ -41,6 +43,9 @@ defmodule Avrora.Config do
 
   @doc false
   def registry_schemas_autoreg, do: get_env(:registry_schemas_autoreg, true)
+
+  @doc false
+  def convert_null_values, do: get_env(:convert_null_values, true)
 
   @doc false
   def names_cache_ttl, do: get_env(:names_cache_ttl, :infinity)

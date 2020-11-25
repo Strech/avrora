@@ -58,6 +58,7 @@ config :avrora,
   registry_url: "http://localhost:8081",
   registry_auth: {:basic, ["username", "password"]}, # optional
   registry_schemas_autoreg: false, # optional: if you want manually register schemas
+  convert_null_values: false, # optional: if you want to keep decoded "null" values as is
   schemas_path: Path.expand("./priv/schemas"),
   names_cache_ttl: :timer.minutes(5) # optional: if you want periodic disk reads
 ```
@@ -65,6 +66,7 @@ config :avrora,
 - `registry_url` - URL for the Schema Registry, default `nil`
 - `registry_auth` – Credentials to authenticate in the Schema Registry, default `nil`
 - `registry_schemas_autoreg` - Flag for automatic schemas registration in the Schema Registry, default `true` <sup>since [v0.13]</sup>
+- `convert_null_values` - Flag for automatic conversion of decoded `null` values into `nil`, default `true` <sup>since [v0.14]</sup>
 - `schemas_path` - Base path for locally stored schema files, default `./priv/schemas`
 - `names_cache_ttl` - Time in ms to cache schemas by name in memory, default `:infinity` <sup>since [v0.10]</sup>
 
