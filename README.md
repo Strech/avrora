@@ -57,18 +57,18 @@ Configure the library in `config/config.exs`:
 config :avrora,
   registry_url: "http://localhost:8081",
   registry_auth: {:basic, ["username", "password"]}, # optional
+  schemas_path: Path.expand("./priv/schemas"),
   registry_schemas_autoreg: false, # optional: if you want manually register schemas
   convert_null_values: false, # optional: if you want to keep decoded `:null` values as is
-  schemas_path: Path.expand("./priv/schemas"),
   names_cache_ttl: :timer.minutes(5) # optional: if you want periodic disk reads
 ```
 
 - `registry_url` - URL for the Schema Registry, default `nil`
 - `registry_auth` – Credentials to authenticate in the Schema Registry, default `nil`
-- `registry_schemas_autoreg` - Flag for automatic schemas registration in the Schema Registry, default `true` <sup>since [v0.13]</sup>
-- `convert_null_values` - Flag for automatic conversion of decoded `:null` values into `nil`, default `true` <sup>since [v0.14]</sup>
 - `schemas_path` - Base path for locally stored schema files, default `./priv/schemas`
-- `names_cache_ttl` - Time in ms to cache schemas by name in memory, default `:infinity` <sup>since [v0.10]</sup>
+- `registry_schemas_autoreg`<sup>[v0.13]</sup> - Flag for automatic schemas registration in the Schema Registry, default `true`
+- `convert_null_values`<sup>[v0.14]</sup> - Flag for automatic conversion of decoded `:null` values into `nil`, default `true`
+- `names_cache_ttl`<sup>[v0.10]</sup> - Time in ms to cache schemas by name in memory, default `:infinity`
 
 Set `names_cache_ttl` to `:infinity` will cache forever (no more disk reads will
 happen). This is safe when schemas are resolved in the Schema Registry by
@@ -76,11 +76,11 @@ numeric id or **versioned** name, as it is unique. If you need to reload schema
 from the disk periodically, TTL different from `:infinity` ensures that.
 
 If the schema is resolved by name it will be always overwritten with the latest
-schema received from Schema Registry.<sup>since [v0.10]</sup>
+schema received from Schema Registry.<sup>[v0.10]</sup>
 
 :bulb: Disable schemas auto-registration if you want to avoid storing schemas
 and manually control registration process. Also it is recommended to turn off auto-registration
-when schemas containing [Confluent Schema References][8]. <sup>since [v0.14]</sup>
+when schemas containing [Confluent Schema References][8].<sup>[v0.14]</sup>
 
 ## Start cache process
 
