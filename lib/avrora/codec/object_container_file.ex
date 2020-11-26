@@ -11,7 +11,7 @@ defmodule Avrora.Codec.ObjectContainerFile do
   @meta_schema_key "avro.schema"
 
   require Logger
-  alias Avrora.{Codec, Config, Mapper, Resolver, Schema}
+  alias Avrora.{AvroDecoderOptions, Codec, Config, Mapper, Resolver, Schema}
 
   @impl true
   def is_decodable(payload) when is_binary(payload) do
@@ -60,7 +60,7 @@ defmodule Avrora.Codec.ObjectContainerFile do
   end
 
   defp do_decode(payload) do
-    {:ok, :avro_ocf.decode_binary(payload)}
+    {:ok, :avro_ocf.decode_binary(payload, AvroDecoderOptions.options())}
   rescue
     MatchError -> {:error, :schema_mismatch}
     error -> {:error, error}

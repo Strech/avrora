@@ -7,15 +7,8 @@ defmodule Avrora.Codec.Plain do
   """
 
   @behaviour Avrora.Codec
-  @decoder_options %{
-    encoding: :avro_binary,
-    hook: &__MODULE__.__hook__/4,
-    is_wrapped: true,
-    map_type: :proplist,
-    record_type: :map
-  }
 
-  alias Avrora.Resolver
+  alias Avrora.{AvroDecoderOptions, Resolver}
 
   @impl true
   def is_decodable(payload) when is_binary(payload), do: true
@@ -36,10 +29,6 @@ defmodule Avrora.Codec.Plain do
     with {:ok, schema} <- resolve(schema), do: do_encode(payload, schema)
   end
 
-  # NOTE: `erlavro` supports setting a decoder hook, but we don't, at least for now
-  @doc false
-  def __hook__(_type, _sub_name_or_id, data, decode_fun), do: decode_fun.(data)
-
   defp resolve(schema) do
     cond do
       is_binary(schema.full_name) && is_reference(schema.lookup_table) -> {:ok, schema}
@@ -54,7 +43,7 @@ defmodule Avrora.Codec.Plain do
         payload,
         schema.full_name,
         schema.lookup_table,
-        @decoder_options
+        AvroDecoderOptions.options()
       )
 
     {:ok, decoded}

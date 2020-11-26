@@ -42,6 +42,8 @@ defmodule Support.Config do
   @impl true
   def registry_schemas_autoreg, do: true
   @impl true
+  def convert_null_values, do: true
+  @impl true
   def names_cache_ttl, do: :infinity
 
   @impl true

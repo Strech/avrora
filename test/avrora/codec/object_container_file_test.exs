@@ -77,6 +77,22 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
       assert decoded == [%{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}]
     end
 
+    test "when payload is a valid binary and null values must be as is" do
+      stub(Avrora.ConfigMock, :convert_null_values, fn -> false end)
+
+      {:ok, decoded} =
+        Codec.ObjectContainerFile.decode(null_value_message(), schema: null_value_schema())
+
+      assert decoded == [%{"key" => "user-1", "value" => :null}]
+    end
+
+    test "when payload is a valid binary and null values must be converted" do
+      {:ok, decoded} =
+        Codec.ObjectContainerFile.decode(null_value_message(), schema: null_value_schema())
+
+      assert decoded == [%{"key" => "user-1", "value" => nil}]
+    end
+
     test "when payload is not a valid binary and schema is not given" do
       assert Codec.ObjectContainerFile.decode(<<79, 98, 106, 1, 0, 1, 2>>) ==
                {:error, :schema_mismatch}
@@ -176,10 +192,19 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
     %{schema | id: nil, version: nil}
   end
 
+  defp null_value_schema do
+    {:ok, schema} = Schema.parse(null_value_json_schema())
+    %{schema | id: nil, version: nil}
+  end
+
   defp payment_payload, do: %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
 
   defp payment_json_schema do
     ~s({"namespace":"io.confluent","name":"Payment","type":"record","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
+  end
+
+  defp null_value_json_schema do
+    ~s({"namespace":"io.confluent","name":"Null_Value","type":"record","fields":[{"name":"key","type":"string"},{"name":"value","type":["null","int"]}]})
   end
 
   defp payment_message do
@@ -196,5 +221,20 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
       48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 48, 48, 48, 48, 48,
       48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64, 236, 47, 96, 164, 206, 59, 152, 115, 80,
       243, 64, 50, 180, 153, 105, 34>>
+  end
+
+  defp null_value_message do
+    <<79, 98, 106, 1, 3, 218, 2, 20, 97, 118, 114, 111, 46, 99, 111, 100, 101, 99, 8, 110, 117,
+      108, 108, 22, 97, 118, 114, 111, 46, 115, 99, 104, 101, 109, 97, 158, 2, 123, 34, 110, 97,
+      109, 101, 115, 112, 97, 99, 101, 34, 58, 34, 105, 111, 46, 99, 111, 110, 102, 108, 117, 101,
+      110, 116, 34, 44, 34, 110, 97, 109, 101, 34, 58, 34, 78, 117, 108, 108, 97, 98, 108, 101,
+      34, 44, 34, 116, 121, 112, 101, 34, 58, 34, 114, 101, 99, 111, 114, 100, 34, 44, 34, 102,
+      105, 101, 108, 100, 115, 34, 58, 91, 123, 34, 110, 97, 109, 101, 34, 58, 34, 107, 101, 121,
+      34, 44, 34, 116, 121, 112, 101, 34, 58, 34, 115, 116, 114, 105, 110, 103, 34, 125, 44, 123,
+      34, 110, 97, 109, 101, 34, 58, 34, 118, 97, 108, 117, 101, 34, 44, 34, 116, 121, 112, 101,
+      34, 58, 91, 34, 110, 117, 108, 108, 34, 44, 34, 105, 110, 116, 34, 93, 125, 93, 125, 0, 197,
+      226, 180, 72, 98, 23, 43, 123, 71, 212, 243, 179, 75, 225, 52, 230, 2, 16, 12, 117, 115,
+      101, 114, 45, 49, 0, 197, 226, 180, 72, 98, 23, 43, 123, 71, 212, 243, 179, 75, 225, 52,
+      230>>
   end
 end

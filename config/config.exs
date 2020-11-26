@@ -5,6 +5,7 @@ config :avrora,
   registry_url: nil,
   registry_auth: nil,
   registry_schemas_autoreg: true,
+  convert_null_values: true,
   names_cache_ttl: :infinity
 
 config :logger, :console, format: "$time $metadata[$level] $levelpad$message\n"
