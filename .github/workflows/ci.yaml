@@ -10,7 +10,7 @@ on:
 jobs:
   dialyzer:
     runs-on: ubuntu-16.04
-    name: Dialyzer
+    name: Check typespecs
     env:
       OTP: "22.3"
       ELIXIR: "1.9"
@@ -47,7 +47,7 @@ jobs:
 
   credo:
     runs-on: ubuntu-16.04
-    name: Credo
+    name: Check code style
     env:
       OTP: "22.3"
       ELIXIR: "1.9"
@@ -75,7 +75,7 @@ jobs:
 
   formatter:
     runs-on: ubuntu-16.04
-    name: Formatter
+    name: Check code formatted
     env:
       OTP: "20.3"
       ELIXIR: "1.6"
