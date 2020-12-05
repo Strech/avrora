@@ -12,7 +12,7 @@ env:
 jobs:
   dialyzer:
     runs-on: ubuntu-16.04
-    name: OTP 22.3 / Elixir 1.9 + Dialyzer
+    name: Dialyzer
     env:
       OPT: "22.3"
       ELIXIR: "1.9"
@@ -49,7 +49,7 @@ jobs:
 
   formatter:
     runs-on: ubuntu-16.04
-    name: OTP ${{ env.OTP }} / Elixir ${{ env.ELIXIR }} ~ Dialyzer
+    name: Formatter
     env:
       OPT: "20.3"
       ELIXIR: "1.6"
@@ -85,7 +85,6 @@ jobs:
         include:
           - otp: "20.3"
             elixir: "1.6"
-            format: "true"
           - otp: "21.3"
             elixir: "1.8"
           - otp: "22.3"
