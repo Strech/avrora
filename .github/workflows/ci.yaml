@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-16.04
     name: Dialyzer
     env:
-      OPT: "22.3"
+      OTP: "22.3"
       ELIXIR: "1.9"
     steps:
       - uses: actions/checkout@v2
@@ -51,7 +51,7 @@ jobs:
     runs-on: ubuntu-16.04
     name: Formatter
     env:
-      OPT: "20.3"
+      OTP: "20.3"
       ELIXIR: "1.6"
     steps:
       - uses: actions/checkout@v2
