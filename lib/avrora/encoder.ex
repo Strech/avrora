@@ -60,7 +60,7 @@ defmodule Avrora.Encoder do
       ...> Avrora.Encoder.decode(payload, schema_name: "io.confluent.Payment")
       {:ok, %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}}
   """
-  @spec decode(binary(), keyword(String.t())) :: {:ok, map() | list(map())} | {:error, term()}
+  @spec decode(binary(), schema_name: String.t()) :: {:ok, map() | list(map())} | {:error, term()}
   def decode(payload, schema_name: schema_name) when is_binary(payload) do
     with {:ok, schema_name} <- Name.parse(schema_name) do
       unless is_nil(schema_name.version) do
@@ -100,7 +100,8 @@ defmodule Avrora.Encoder do
             48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 48, 48, 48, 48, 48,
             48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64>>}
   """
-  @spec encode(map(), keyword(String.t())) :: {:ok, binary()} | {:error, term()}
+  @spec encode(map(), schema_name: String.t(), format: :guess | :registry | :ocf | :plain) ::
+          {:ok, binary()} | {:error, term()}
   def encode(payload, schema_name: schema_name) when is_map(payload),
     do: encode(payload, schema_name: schema_name, format: :guess)
 
