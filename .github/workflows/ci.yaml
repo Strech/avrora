@@ -8,9 +8,9 @@ on:
   pull_request:
     branches: ["master"]
 jobs:
-  dialyzer:
+  internal_dialyzer:
     runs-on: ubuntu-16.04
-    name: Check typespecs
+    name: Internal Typespecs
     env:
       OTP: "22.3"
       ELIXIR: "1.9"
@@ -47,7 +47,7 @@ jobs:
 
   credo:
     runs-on: ubuntu-16.04
-    name: Check code style
+    name: Code Style
     env:
       OTP: "22.3"
       ELIXIR: "1.9"
@@ -75,7 +75,7 @@ jobs:
 
   formatter:
     runs-on: ubuntu-16.04
-    name: Check code formatted
+    name: Code Formatting
     env:
       OTP: "20.3"
       ELIXIR: "1.6"
@@ -100,6 +100,45 @@ jobs:
           mix local.hex --force
           mix deps.get
       - run: mix format --check-formatted
+
+  external_dialyzer:
+    runs-on: ubuntu-16.04
+    name: External Typespecs
+    defaults:
+      working-directory: test/integration
+    env:
+      OTP: "22.3"
+      ELIXIR: "1.9"
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-elixir@v1
+        with:
+          otp-version: ${{ env.OTP }}
+          elixir-version: ${{ env.ELIXIR }}
+      - uses: actions/cache@v2
+        id: mix-cache
+        with:
+          path: deps
+          key: ${{ runner.os }}-${{ env.OTP }}-${{ env.ELIXIR }}-mix-ext-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
+      - uses: actions/cache@v2
+        id: build-cache
+        with:
+          path: _build
+          key: ${{ runner.os }}-${{ env.OTP }}-${{ env.ELIXIR }}-build-ext-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
+      - uses: actions/cache@v1
+        id: plt-cache
+        with:
+          path: priv/plts
+          key: ${{ runner.os }}-${{ env.OTP }}-${{ env.ELIXIR }}-plts-ext-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
+      - run: |
+          mix local.rebar --force
+          mix local.hex --force
+          mix deps.get
+      - if: steps.plt-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p priv/plts
+          mix dialyzer --plt
+      - run: mix dialyzer --force-check
 
   test:
     runs-on: ubuntu-16.04
