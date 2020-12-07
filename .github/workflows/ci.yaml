@@ -7,9 +7,140 @@ on:
     branches: ["master"]
   pull_request:
     branches: ["master"]
-env:
-  MIX_ENV: test
 jobs:
+  internal_dialyzer:
+    runs-on: ubuntu-16.04
+    name: Internal Typespecs
+    env:
+      OTP: "22.3"
+      ELIXIR: "1.9"
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-elixir@v1
+        with:
+          otp-version: ${{ env.OTP }}
+          elixir-version: ${{ env.ELIXIR }}
+      - uses: actions/cache@v2
+        id: mix-cache
+        with:
+          path: deps
+          key: ${{ runner.os }}-${{ env.OTP }}-${{ env.ELIXIR }}-mix-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
+      - uses: actions/cache@v2
+        id: build-cache
+        with:
+          path: _build
+          key: ${{ runner.os }}-${{ env.OTP }}-${{ env.ELIXIR }}-build-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
+      - uses: actions/cache@v1
+        id: plt-cache
+        with:
+          path: priv/plts
+          key: ${{ runner.os }}-${{ env.OTP }}-${{ env.ELIXIR }}-plts-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
+      - run: |
+          mix local.rebar --force
+          mix local.hex --force
+          mix deps.get
+      - if: steps.plt-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p priv/plts
+          mix dialyzer --plt
+      - run: mix dialyzer --force-check
+
+  credo:
+    runs-on: ubuntu-16.04
+    name: Code Style
+    env:
+      OTP: "22.3"
+      ELIXIR: "1.9"
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-elixir@v1
+        with:
+          otp-version: ${{ env.OTP }}
+          elixir-version: ${{ env.ELIXIR }}
+      - uses: actions/cache@v2
+        id: mix-cache
+        with:
+          path: deps
+          key: ${{ runner.os }}-${{ env.OTP }}-${{ env.ELIXIR }}-mix-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
+      - uses: actions/cache@v2
+        id: build-cache
+        with:
+          path: _build
+          key: ${{ runner.os }}-${{ env.OTP }}-${{ env.ELIXIR }}-build-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
+      - run: |
+          mix local.rebar --force
+          mix local.hex --force
+          mix deps.get
+      - run: mix credo
+
+  formatter:
+    runs-on: ubuntu-16.04
+    name: Code Formatting
+    env:
+      OTP: "20.3"
+      ELIXIR: "1.6"
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-elixir@v1
+        with:
+          otp-version: ${{ env.OTP }}
+          elixir-version: ${{ env.ELIXIR }}
+      - uses: actions/cache@v2
+        id: mix-cache
+        with:
+          path: deps
+          key: ${{ runner.os }}-${{ env.OTP }}-${{ env.ELIXIR }}-mix-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
+      - uses: actions/cache@v2
+        id: build-cache
+        with:
+          path: _build
+          key: ${{ runner.os }}-${{ env.OTP }}-${{ env.ELIXIR }}-build-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
+      - run: |
+          mix local.rebar --force
+          mix local.hex --force
+          mix deps.get
+      - run: mix format --check-formatted
+
+  external_dialyzer:
+    runs-on: ubuntu-16.04
+    name: External Typespecs
+    env:
+      OTP: "22.3"
+      ELIXIR: "1.9"
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-elixir@v1
+        with:
+          otp-version: ${{ env.OTP }}
+          elixir-version: ${{ env.ELIXIR }}
+      - uses: actions/cache@v2
+        id: mix-cache
+        with:
+          path: test/integration/deps
+          key: ${{ runner.os }}-${{ env.OTP }}-${{ env.ELIXIR }}-mix-ext-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
+      - uses: actions/cache@v2
+        id: build-cache
+        with:
+          path: test/integration/_build
+          key: ${{ runner.os }}-${{ env.OTP }}-${{ env.ELIXIR }}-build-ext-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
+      - uses: actions/cache@v1
+        id: plt-cache
+        with:
+          path: test/integration/priv/plts
+          key: ${{ runner.os }}-${{ env.OTP }}-${{ env.ELIXIR }}-plts-ext-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
+      - working-directory: test/integration
+        run: |
+          mix local.rebar --force
+          mix local.hex --force
+          mix deps.get
+      - if: steps.plt-cache.outputs.cache-hit != 'true'
+        working-directory: test/integration
+        run: |
+          mkdir -p priv/plts
+          mix dialyzer --plt
+      - working-directory: test/integration
+        run: mix dialyzer --force-check
+
   test:
     runs-on: ubuntu-16.04
     name: OTP ${{ matrix.otp }} / Elixir ${{ matrix.elixir }}
@@ -20,13 +151,10 @@ jobs:
         include:
           - otp: "20.3"
             elixir: "1.6"
-            format: "true"
           - otp: "21.3"
             elixir: "1.8"
           - otp: "22.3"
             elixir: "1.9"
-            credo: "true"
-            dialyzer: "true"
           - otp: "23.1"
             elixir: "1.11"
     steps:
@@ -35,53 +163,18 @@ jobs:
         with:
           otp-version: ${{ matrix.otp }}
           elixir-version: ${{ matrix.elixir }}
-
-      - name: Retrieve Mix Cache
-        uses: actions/cache@v2
+      - uses: actions/cache@v2
         id: mix-cache
         with:
           path: deps
           key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-mix-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
-
-      - name: Retrieve Build Cache
-        uses: actions/cache@v2
+      - uses: actions/cache@v2
         id: build-cache
         with:
           path: _build
           key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-build-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
-
-      - name: Install Mix Dependencies
-        # if: steps.mix-cache.outputs.cache-hit != 'true'
-        run: |
+      - run: |
           mix local.rebar --force
           mix local.hex --force
           mix deps.get
-
-      - name: Check Formatting
-        if: matrix.format == 'true'
-        run: mix format --check-formatted
-
-      - name: Analyze Code
-        if: matrix.credo == 'true'
-        run: mix credo
-
-      - name: Run Tests
-        run: mix test
-
-      - name: Retrieve PLT Cache
-        if: matrix.dialyzer == 'true'
-        uses: actions/cache@v1
-        id: plt-cache
-        with:
-          path: priv/plts
-          key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-plts-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
-
-      - name: Create PLTs
-        if: ${{ matrix.dialyzer == 'true' && steps.plt-cache.outputs.cache-hit != 'true' }}
-        run: |
-          mkdir -p priv/plts
-          mix dialyzer --plt
-
-      - name: Run Dialyzer
-        if: matrix.dialyzer == 'true'
-        run: mix dialyzer --no-check --no-compile --halt-exit-status
+      - run: mix test
