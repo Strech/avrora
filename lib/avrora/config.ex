@@ -24,10 +24,13 @@ defmodule Avrora.Config do
   """
 
   defmodule DecoderOptions do
+    @moduledoc false
+
     @type t :: %__MODULE__{
             map_type: :proplist | :map,
             record_type: :proplist | :map
           }
+
     defstruct map_type: :proplist, record_type: :map
   end
 
