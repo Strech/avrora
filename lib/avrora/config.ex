@@ -10,9 +10,8 @@ defmodule Avrora.Config do
       * `registry_schemas_autoreg` automatically register schemas in Schema Registry, default `true`
       * `convert_null_values` convert `:null` values in the decoded message into `nil`, default `true`
       * `names_cache_ttl` duration to cache global schema names millisecods, default `:infinity`
-      * `decoder_options` - Decoder options
-        * `record_type` - output type of decoding record, default `:map`
-        * `map_type` - output type of decoding map, default `:proplist`
+      * `convert_map_to_proplist` bring back old behaviour and confiugre decoding map-type to proplist,
+        will be deprecated soon, default `false`
 
   ## Internal use interface:
 
@@ -23,23 +22,12 @@ defmodule Avrora.Config do
       * `ets_lib` module which creates ETS tables with call `Module.new/0`
   """
 
-  defmodule DecoderOptions do
-    @moduledoc false
-
-    @type t :: %__MODULE__{
-            map_type: :proplist | :map,
-            record_type: :proplist | :map
-          }
-
-    defstruct map_type: :proplist, record_type: :map
-  end
-
   @callback schemas_path :: String.t()
   @callback registry_url :: String.t() | nil
   @callback registry_auth :: tuple() | nil
   @callback registry_schemas_autoreg :: boolean()
   @callback convert_null_values :: boolean()
-  @callback decoder_options :: DecoderOptions.t()
+  @callback convert_map_to_proplist :: boolean()
   @callback names_cache_ttl :: integer() | atom()
   @callback file_storage :: module()
   @callback memory_storage :: module()
@@ -63,8 +51,7 @@ defmodule Avrora.Config do
   def convert_null_values, do: get_env(:convert_null_values, true)
 
   @doc false
-  def decoder_options,
-    do: struct(DecoderOptions, get_env(:decoder_options, []))
+  def convert_map_to_proplist, do: get_env(:convert_map_to_proplist, false)
 
   @doc false
   def names_cache_ttl, do: get_env(:names_cache_ttl, :infinity)

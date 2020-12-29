@@ -94,9 +94,7 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
     end
 
     test "when payload is a valid binary and map type must be decoded as proplist" do
-      stub(Avrora.ConfigMock, :decoder_options, fn ->
-        %Avrora.Config.DecoderOptions{map_type: :proplist}
-      end)
+      stub(Avrora.ConfigMock, :convert_map_to_proplist, fn -> true end)
 
       {:ok, decoded} = Codec.ObjectContainerFile.decode(map_message())
 
@@ -104,29 +102,9 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
     end
 
     test "when payload is a valid binary and map type must be decoded as map" do
-      stub(Avrora.ConfigMock, :decoder_options, fn ->
-        %Avrora.Config.DecoderOptions{map_type: :map}
-      end)
-
       {:ok, decoded} = Codec.ObjectContainerFile.decode(map_message())
 
       assert decoded == [%{"tested_field" => %{"key" => "value"}}]
-    end
-
-    test "when payload is a valid binary and record type must be decoded as proplist" do
-      stub(Avrora.ConfigMock, :decoder_options, fn ->
-        %Avrora.Config.DecoderOptions{record_type: :proplist}
-      end)
-
-      {:ok, decoded} = Codec.ObjectContainerFile.decode(map_message())
-
-      assert decoded == [[{"tested_field", [{"key", "value"}]}]]
-    end
-
-    test "when payload is a valid binary and record type must be decoded as map" do
-      {:ok, decoded} = Codec.ObjectContainerFile.decode(map_message())
-
-      assert decoded == [%{"tested_field" => [{"key", "value"}]}]
     end
 
     test "when payload is not a valid binary and schema is not given" do

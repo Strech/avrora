@@ -46,7 +46,7 @@ defmodule Support.Config do
   @impl true
   def names_cache_ttl, do: :infinity
   @impl true
-  def decoder_options, do: %Avrora.Config.DecoderOptions{}
+  def convert_map_to_proplist, do: false
   @impl true
   def file_storage, do: Avrora.Storage.FileMock
   @impl true

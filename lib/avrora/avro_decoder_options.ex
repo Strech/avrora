@@ -6,17 +6,21 @@ defmodule Avrora.AvroDecoderOptions do
 
   alias Avrora.Config
 
-  @internal_options %{
+  @options %{
     encoding: :avro_binary,
     hook: &__MODULE__.__hook__/4,
-    is_wrapped: true
+    is_wrapped: true,
+    record_type: :map
   }
   @null_type_name "null"
 
   @doc """
   A unified erlavro decoder options compatible for both binary and OCF decoders.
   """
-  def options, do: @internal_options |> Map.merge(decoder_options())
+  def options do
+    @options
+    |> Map.put(:map_type, if(convert_map_to_proplist(), do: :proplist, else: :map))
+  end
 
   # NOTE: This is internal module function and should never be used directly
   @doc false
@@ -31,5 +35,5 @@ defmodule Avrora.AvroDecoderOptions do
   end
 
   defp convert_null_values, do: Config.self().convert_null_values()
-  defp decoder_options, do: Config.self().decoder_options()
+  defp convert_map_to_proplist, do: Config.self().convert_map_to_proplist()
 end
