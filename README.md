@@ -61,8 +61,8 @@ config :avrora,
   schemas_path: Path.expand("./priv/schemas"),
   registry_schemas_autoreg: false, # optional: if you want manually register schemas
   convert_null_values: false, # optional: if you want to keep decoded `:null` values as is
-  names_cache_ttl: :timer.minutes(5) # optional: if you want periodic disk reads
   convert_map_to_proplist: false # optional: if you want to restore old behaviour for decoding map-type
+  names_cache_ttl: :timer.minutes(5) # optional: if you want periodic disk reads
 ```
 
 - `registry_url` - URL for the Schema Registry, default `nil`
@@ -70,8 +70,8 @@ config :avrora,
 - `schemas_path` - Base path for locally stored schema files, default `./priv/schemas`
 - `registry_schemas_autoreg`<sup>[v0.13]</sup> - Flag for automatic schemas registration in the Schema Registry, default `true`
 - `convert_null_values`<sup>[v0.14]</sup> - Flag for automatic conversion of decoded `:null` values into `nil`, default `true`
-- `names_cache_ttl`<sup>[v0.10]</sup> - Time in ms to cache schemas by name in memory, default `:infinity`
 - `convert_map_to_proplist`<sup>[v0.15]</sup> restore old behaviour and confiugre decoding map-type to proplist, default `false`
+- `names_cache_ttl`<sup>[v0.10]</sup> - Time in ms to cache schemas by name in memory, default `:infinity`
 
 Set `names_cache_ttl` to `:infinity` will cache forever (no more disk reads will
 happen). This is safe when schemas are resolved in the Schema Registry by
