@@ -9,7 +9,7 @@ defmodule Avrora.Config do
       * `registry_auth` authentication settings for Schema Registry, default `nil`
       * `registry_schemas_autoreg` automatically register schemas in Schema Registry, default `true`
       * `convert_null_values` convert `:null` values in the decoded message into `nil`, default `true`
-      * `convert_map_to_proplist` bring back old behaviour and confiugre decoding map-type to proplist, default `false`
+      * `convert_map_to_proplist` bring back old behavior and configure decoding AVRO map-type as proplist, default `false`
       * `names_cache_ttl` duration to cache global schema names millisecods, default `:infinity`
 
   ## Internal use interface:
