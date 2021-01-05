@@ -45,7 +45,8 @@ defmodule Support.Config do
   def convert_null_values, do: true
   @impl true
   def names_cache_ttl, do: :infinity
-
+  @impl true
+  def convert_map_to_proplist, do: false
   @impl true
   def file_storage, do: Avrora.Storage.FileMock
   @impl true

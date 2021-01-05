@@ -15,6 +15,7 @@
 [v0.12]: https://github.com/Strech/avrora/releases/tag/v0.12.0
 [v0.13]: https://github.com/Strech/avrora/releases/tag/v0.13.0
 [v0.14]: https://github.com/Strech/avrora/releases/tag/v0.14.0
+[v0.15]: https://github.com/Strech/avrora/releases/tag/v0.15.0
 [1]: https://avro.apache.org/
 [2]: https://www.confluent.io/confluent-schema-registry
 [3]: https://docs.confluent.io/current/schema-registry/serializer-formatter.html#wire-format
@@ -60,6 +61,7 @@ config :avrora,
   schemas_path: Path.expand("./priv/schemas"),
   registry_schemas_autoreg: false, # optional: if you want manually register schemas
   convert_null_values: false, # optional: if you want to keep decoded `:null` values as is
+  convert_map_to_proplist: false # optional: if you want to restore old behaviour for decoding map-type
   names_cache_ttl: :timer.minutes(5) # optional: if you want periodic disk reads
 ```
 
@@ -68,6 +70,7 @@ config :avrora,
 - `schemas_path` - Base path for locally stored schema files, default `./priv/schemas`
 - `registry_schemas_autoreg`<sup>[v0.13]</sup> - Flag for automatic schemas registration in the Schema Registry, default `true`
 - `convert_null_values`<sup>[v0.14]</sup> - Flag for automatic conversion of decoded `:null` values into `nil`, default `true`
+- `convert_map_to_proplist`<sup>[v0.15]</sup> restore old behaviour and confiugre decoding map-type to proplist, default `false`
 - `names_cache_ttl`<sup>[v0.10]</sup> - Time in ms to cache schemas by name in memory, default `:infinity`
 
 Set `names_cache_ttl` to `:infinity` will cache forever (no more disk reads will

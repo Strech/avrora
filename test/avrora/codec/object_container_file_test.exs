@@ -93,6 +93,20 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
       assert decoded == [%{"key" => "user-1", "value" => nil}]
     end
 
+    test "when payload is a valid binary and map type must be decoded as proplist" do
+      stub(Avrora.ConfigMock, :convert_map_to_proplist, fn -> true end)
+
+      {:ok, decoded} = Codec.ObjectContainerFile.decode(map_message())
+
+      assert decoded == [%{"map_field" => [{"key", "value"}]}]
+    end
+
+    test "when payload is a valid binary and map type must be decoded as map" do
+      {:ok, decoded} = Codec.ObjectContainerFile.decode(map_message())
+
+      assert decoded == [%{"map_field" => %{"key" => "value"}}]
+    end
+
     test "when payload is not a valid binary and schema is not given" do
       assert Codec.ObjectContainerFile.decode(<<79, 98, 106, 1, 0, 1, 2>>) ==
                {:error, :schema_mismatch}
@@ -236,5 +250,19 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
       226, 180, 72, 98, 23, 43, 123, 71, 212, 243, 179, 75, 225, 52, 230, 2, 16, 12, 117, 115,
       101, 114, 45, 49, 0, 197, 226, 180, 72, 98, 23, 43, 123, 71, 212, 243, 179, 75, 225, 52,
       230>>
+  end
+
+  defp map_message do
+    <<79, 98, 106, 1, 3, 202, 2, 20, 97, 118, 114, 111, 46, 99, 111, 100, 101, 99, 8, 110, 117,
+      108, 108, 22, 97, 118, 114, 111, 46, 115, 99, 104, 101, 109, 97, 142, 2, 123, 34, 110, 97,
+      109, 101, 115, 112, 97, 99, 101, 34, 58, 34, 105, 111, 46, 99, 111, 110, 102, 108, 117, 101,
+      110, 116, 34, 44, 34, 110, 97, 109, 101, 34, 58, 34, 77, 97, 112, 95, 86, 97, 108, 117, 101,
+      34, 44, 34, 116, 121, 112, 101, 34, 58, 34, 114, 101, 99, 111, 114, 100, 34, 44, 34, 102,
+      105, 101, 108, 100, 115, 34, 58, 91, 123, 34, 110, 97, 109, 101, 34, 58, 34, 109, 97, 112,
+      95, 102, 105, 101, 108, 100, 34, 44, 34, 116, 121, 112, 101, 34, 58, 123, 34, 116, 121, 112,
+      101, 34, 58, 34, 109, 97, 112, 34, 44, 34, 118, 97, 108, 117, 101, 115, 34, 58, 34, 115,
+      116, 114, 105, 110, 103, 34, 125, 125, 93, 125, 0, 1, 217, 64, 15, 239, 187, 236, 96, 89,
+      220, 100, 63, 66, 243, 223, 210, 2, 26, 1, 20, 6, 107, 101, 121, 10, 118, 97, 108, 117, 101,
+      0, 1, 217, 64, 15, 239, 187, 236, 96, 89, 220, 100, 63, 66, 243, 223, 210>>
   end
 end

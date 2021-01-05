@@ -92,6 +92,20 @@ defmodule Avrora.Codec.PlainTest do
       assert decoded == %{"key" => "user-1", "value" => nil}
     end
 
+    test "when payload is a valid binary and map type must be decoded as proplist" do
+      stub(Avrora.ConfigMock, :convert_map_to_proplist, fn -> true end)
+
+      {:ok, decoded} = Codec.Plain.decode(map_message(), schema: map_schema())
+
+      assert decoded == %{"map_field" => [{"key", "value"}]}
+    end
+
+    test "when payload is a valid binary and map type must be decoded as map" do
+      {:ok, decoded} = Codec.Plain.decode(map_message(), schema: map_schema())
+
+      assert decoded == %{"map_field" => %{"key" => "value"}}
+    end
+
     test "when payload is a valid binary and schema is unusable" do
       assert Codec.Plain.decode(payment_message(), schema: %Schema{}) ==
                {:error, :unusable_schema}
@@ -178,6 +192,11 @@ defmodule Avrora.Codec.PlainTest do
     %{schema | id: nil, version: nil}
   end
 
+  defp map_schema do
+    {:ok, schema} = Schema.parse(map_json_schema())
+    %{schema | id: nil, version: nil}
+  end
+
   defp payment_json_schema do
     ~s({"namespace":"io.confluent","name":"Payment","type":"record","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
   end
@@ -186,10 +205,16 @@ defmodule Avrora.Codec.PlainTest do
     ~s({"namespace":"io.confluent","name":"Null_Value","type":"record","fields":[{"name":"key","type":"string"},{"name":"value","type":["null","int"]}]})
   end
 
+  defp map_json_schema do
+    ~s({"namespace":"io.confluent","name":"Map_Value","type":"record","fields":[{"name":"map_field", "type": {"type": "map", "values": "string"}}]})
+  end
+
   defp payment_message do
     <<72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48,
       48, 45, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64>>
   end
 
   defp null_value_message, do: <<12, 117, 115, 101, 114, 45, 49, 0>>
+
+  defp map_message, do: <<1, 20, 6, 107, 101, 121, 10, 118, 97, 108, 117, 101, 0>>
 end

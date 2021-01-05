@@ -10,7 +10,7 @@ defmodule Avrora.AvroDecoderOptions do
     encoding: :avro_binary,
     hook: &__MODULE__.__hook__/4,
     is_wrapped: true,
-    map_type: :proplist,
+    map_type: :map,
     record_type: :map
   }
   @null_type_name "null"
@@ -18,7 +18,9 @@ defmodule Avrora.AvroDecoderOptions do
   @doc """
   A unified erlavro decoder options compatible for both binary and OCF decoders.
   """
-  def options, do: @options
+  def options do
+    if convert_map_to_proplist(), do: %{@options | map_type: :proplist}, else: @options
+  end
 
   # NOTE: This is internal module function and should never be used directly
   @doc false
@@ -33,4 +35,5 @@ defmodule Avrora.AvroDecoderOptions do
   end
 
   defp convert_null_values, do: Config.self().convert_null_values()
+  defp convert_map_to_proplist, do: Config.self().convert_map_to_proplist()
 end
