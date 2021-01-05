@@ -4,7 +4,7 @@ defmodule Avrora.MixProject do
   def project do
     [
       app: :avrora,
-      version: "0.14.1",
+      version: "0.15.0",
       elixir: "~> 1.6",
       description: description(),
       package: package(),
@@ -69,6 +69,11 @@ defmodule Avrora.MixProject do
       before_closing_body_tag: fn _format ->
         """
         <script type="text/javascript">
+          var gfm = document.getElementsByClassName("gfm");
+          for (var index = 0; index < gfm.length; index++) {
+            gfm[index].innerHTML = gfm[index].textContent;
+          };
+
           var image = document.getElementById("avroraLogo");
           image.src = image.getAttribute("src").replace("/assets", "assets");
 

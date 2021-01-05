@@ -1,4 +1,4 @@
-<p align="center">
+<p align="center" class="gfm">
     <img id="avroraLogo" width=200 src="/assets/logo.png"/>
     <h1 align="center">Avrora</h1>
 </p>
