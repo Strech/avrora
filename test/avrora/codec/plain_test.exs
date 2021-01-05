@@ -97,13 +97,13 @@ defmodule Avrora.Codec.PlainTest do
 
       {:ok, decoded} = Codec.Plain.decode(map_message(), schema: map_schema())
 
-      assert decoded == %{"tested_field" => [{"key", "value"}]}
+      assert decoded == %{"map_field" => [{"key", "value"}]}
     end
 
     test "when payload is a valid binary and map type must be decoded as map" do
       {:ok, decoded} = Codec.Plain.decode(map_message(), schema: map_schema())
 
-      assert decoded == %{"tested_field" => %{"key" => "value"}}
+      assert decoded == %{"map_field" => %{"key" => "value"}}
     end
 
     test "when payload is a valid binary and schema is unusable" do
@@ -206,7 +206,7 @@ defmodule Avrora.Codec.PlainTest do
   end
 
   defp map_json_schema do
-    ~s({"namespace":"io.confluent","name":"Map_Value","type":"record","fields":[{"name":"tested_field", "type": {"type": "map", "values": "string"}}]})
+    ~s({"namespace":"io.confluent","name":"Map_Value","type":"record","fields":[{"name":"map_field", "type": {"type": "map", "values": "string"}}]})
   end
 
   defp payment_message do

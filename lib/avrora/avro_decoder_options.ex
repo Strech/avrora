@@ -19,14 +19,7 @@ defmodule Avrora.AvroDecoderOptions do
   A unified erlavro decoder options compatible for both binary and OCF decoders.
   """
   def options do
-    if convert_map_to_proplist() do
-      %{
-        @options
-        | map_type: :proplist
-      }
-    else
-      @options
-    end
+    if convert_map_to_proplist(), do: %{@options | map_type: :proplist}, else: @options
   end
 
   # NOTE: This is internal module function and should never be used directly
