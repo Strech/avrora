@@ -105,6 +105,14 @@ Or start the cache process manually:
 {:ok, pid} = Avrora.start_link()
 ```
 
+## Sponsorship
+
+If you like the project and want to support me on my sleepless nights, you can
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/W7W8367XJ)
+
+[![Support via PayPal](https://cdn.rawgit.com/twolfson/paypal-github-button/1.0.0/dist/button.svg)](https://www.paypal.com/paypalme/onistrech/eur5.0)
+
 ## Usage
 
 The primary way to use the library is via the `Avrora.encode/2` and
