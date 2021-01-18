@@ -237,8 +237,7 @@ defmodule Avrora.Utils.RegistrarTest do
         {:error, :enoent}
       end)
 
-      assert Registrator.register_schema_by_name("io.confluent.Payment") ==
-               {:error, :enoent}
+      assert Registrator.register_schema_by_name("io.confluent.Payment") == {:error, :enoent}
     end
 
     test "when schema was found in memory" do
