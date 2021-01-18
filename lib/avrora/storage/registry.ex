@@ -88,7 +88,6 @@ defmodule Avrora.Storage.Registry do
     end
   end
 
-  @doc false
   def put(_key, _value), do: {:error, :unsupported}
 
   @doc false

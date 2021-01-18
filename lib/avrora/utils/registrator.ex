@@ -1,16 +1,47 @@
 defmodule Avrora.Utils.Registrator do
   @moduledoc """
-  Memory store-aware schema registration with extended functionality.
+  Memory store-aware schema registration with extended functionality
+  designed to be used in the intensive loops.
 
-  TODO
-  NOTE: Suitable to be used in the client code.
+  It gives you control over the name under which schema will be registered
+  (i.e subject in Schema Registry) and allows you to enforce registration
+  even if the schema exists.
+
+  ## Examples
+
+      defmodule Sample do
+        alias Avrora.Utils.Registrator
+
+        def loop do
+          Enum.reduce_while(1..100, 0, fn x, acc ->
+            if x < 100, do: {:cont, register("io.confluent.Payment")}, else: {:halt, acc}
+          end)
+        end
+
+        defp register(schema_name), do: Registrator.register_schema_by_name(schema_name)
+      end
   """
 
   require Logger
   alias Avrora.{Config, Schema}
 
   @doc """
-  TODO
+  Register schema from local schema file in the Schema Registry.
+
+  Schema name conventions inherited from `Avrora.Storage.File.get/1`.
+  For extended documentation about registration process see `register_schema/2`.
+
+  ## Options
+
+  * `:as` - the name which will be used to register schema (i.e subject).
+  * `:force` - the flag enforcing registration when schema was found
+    in the Memory store (`false` by default).
+
+  ## Examples
+
+      ...> {:ok, schema} = Avrora.Utils.Registrator.register_schema_by_name("io.confluent.Payment", as: "NewName", force: true)
+      ...> schema.full_name
+      "io.confluent.Payment"
   """
   @spec register_schema_by_name(String.t(), as: String.t(), force: boolean) ::
           {:ok, Schema.t()} | {:error, term()}
@@ -43,7 +74,7 @@ defmodule Avrora.Utils.Registrator do
       ...> {:ok, schema} = Avrora.Resolver.resolve("io.confluent.Payment")
       ...> {:ok, schema} = Avrora.Utils.Registrator.register_schema(schema, as: "NewName", force: true)
       ...> schema.full_name
-      io.confluent.Payment
+      "io.confluent.Payment"
   """
   @spec register_schema(Schema.t(), as: String.t(), force: boolean) ::
           {:ok, Schema.t()} | {:error, term()}
