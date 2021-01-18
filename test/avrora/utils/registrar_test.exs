@@ -1,12 +1,12 @@
-defmodule Avrora.Utils.RegistratorTest do
+defmodule Avrora.Utils.RegistrarTest do
   use ExUnit.Case, async: true
-  doctest Avrora.Utils.Registrator
+  doctest Avrora.Utils.Registrar
 
   import Mox
   import Support.Config
   import ExUnit.CaptureLog
   alias Avrora.Schema
-  alias Avrora.Utils.Registrator
+  alias Avrora.Utils.Registrar
 
   setup :verify_on_exit!
   setup :support_config
@@ -40,7 +40,7 @@ defmodule Avrora.Utils.RegistratorTest do
         {:ok, schema_with_id()}
       end)
 
-      {:ok, schema} = Registrator.register_schema(schema_without_id_and_version())
+      {:ok, schema} = Registrar.register_schema(schema_without_id_and_version())
 
       assert schema.id == 1
       assert is_nil(schema.version)
@@ -84,7 +84,7 @@ defmodule Avrora.Utils.RegistratorTest do
       end)
 
       {:ok, schema} =
-        Registrator.register_schema(schema_without_id_and_version(), as: "MyCustomName")
+        Registrar.register_schema(schema_without_id_and_version(), as: "MyCustomName")
 
       assert schema.id == 1
       assert is_nil(schema.version)
@@ -122,7 +122,7 @@ defmodule Avrora.Utils.RegistratorTest do
         {:ok, schema_with_id}
       end)
 
-      {:ok, schema} = Registrator.register_schema(schema_without_id_and_version(), force: true)
+      {:ok, schema} = Registrar.register_schema(schema_without_id_and_version(), force: true)
 
       assert schema.id == 1
       assert is_nil(schema.version)
@@ -300,7 +300,7 @@ defmodule Avrora.Utils.RegistratorTest do
       end)
 
       {:ok, schema} =
-        Registrator.register_schema_by_name("io.confluent.Payment", as: "MyCustomName")
+        Registrar.register_schema_by_name("io.confluent.Payment", as: "MyCustomName")
 
       assert schema.id == 1
       assert is_nil(schema.version)
@@ -345,7 +345,7 @@ defmodule Avrora.Utils.RegistratorTest do
         {:ok, schema_without_id_and_version()}
       end)
 
-      {:ok, schema} = Registrator.register_schema_by_name("io.confluent.Payment", force: true)
+      {:ok, schema} = Registrar.register_schema_by_name("io.confluent.Payment", force: true)
 
       assert schema.id == 1
       assert is_nil(schema.version)

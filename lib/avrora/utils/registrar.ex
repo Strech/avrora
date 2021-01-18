@@ -1,4 +1,4 @@
-defmodule Avrora.Utils.Registrator do
+defmodule Avrora.Utils.Registrar do
   @moduledoc """
   Memory store-aware schema registration with extended functionality
   designed to be used in the intensive loops.
@@ -10,7 +10,7 @@ defmodule Avrora.Utils.Registrator do
   ## Examples
 
       defmodule Sample do
-        alias Avrora.Utils.Registrator
+        alias Avrora.Utils.Registrar
 
         def loop do
           Enum.reduce_while(1..100, 0, fn x, acc ->
@@ -18,7 +18,7 @@ defmodule Avrora.Utils.Registrator do
           end)
         end
 
-        defp register(schema_name), do: Registrator.register_schema_by_name(schema_name)
+        defp register(schema_name), do: Registrar.register_schema_by_name(schema_name)
       end
   """
 
@@ -39,7 +39,7 @@ defmodule Avrora.Utils.Registrator do
 
   ## Examples
 
-      ...> {:ok, schema} = Avrora.Utils.Registrator.register_schema_by_name("io.confluent.Payment", as: "NewName", force: true)
+      ...> {:ok, schema} = Avrora.Utils.Registrar.register_schema_by_name("io.confluent.Payment", as: "NewName", force: true)
       ...> schema.full_name
       "io.confluent.Payment"
   """
@@ -72,7 +72,7 @@ defmodule Avrora.Utils.Registrator do
   ## Examples
 
       ...> {:ok, schema} = Avrora.Resolver.resolve("io.confluent.Payment")
-      ...> {:ok, schema} = Avrora.Utils.Registrator.register_schema(schema, as: "NewName", force: true)
+      ...> {:ok, schema} = Avrora.Utils.Registrar.register_schema(schema, as: "NewName", force: true)
       ...> schema.full_name
       "io.confluent.Payment"
   """
