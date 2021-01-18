@@ -29,7 +29,7 @@ defmodule Avrora.Utils.RegistrarTest do
       end)
 
       assert {:error, :unconfigured_registry_url} ==
-               Registrator.register_schema(schema_without_id_and_version())
+               Registrar.register_schema(schema_without_id_and_version())
     end
 
     test "when schema was found in memory" do
@@ -167,7 +167,7 @@ defmodule Avrora.Utils.RegistrarTest do
 
       output =
         capture_log(fn ->
-          {:ok, schema} = Registrator.register_schema(schema_with_version())
+          {:ok, schema} = Registrar.register_schema(schema_with_version())
 
           assert schema.id == 1
           assert is_nil(schema.version)
@@ -213,7 +213,7 @@ defmodule Avrora.Utils.RegistrarTest do
         {:ok, schema_with_id}
       end)
 
-      {:ok, schema} = Registrator.register_schema(schema_with_id)
+      {:ok, schema} = Registrar.register_schema(schema_with_id)
 
       assert schema.id == 1
       assert is_nil(schema.version)
@@ -237,7 +237,7 @@ defmodule Avrora.Utils.RegistrarTest do
         {:error, :enoent}
       end)
 
-      assert Registrator.register_schema_by_name("io.confluent.Payment") == {:error, :enoent}
+      assert Registrar.register_schema_by_name("io.confluent.Payment") == {:error, :enoent}
     end
 
     test "when schema was found in memory" do
@@ -248,7 +248,7 @@ defmodule Avrora.Utils.RegistrarTest do
         {:ok, schema_with_id()}
       end)
 
-      {:ok, schema} = Registrator.register_schema_by_name("io.confluent.Payment")
+      {:ok, schema} = Registrar.register_schema_by_name("io.confluent.Payment")
 
       assert schema.id == 1
       assert is_nil(schema.version)
