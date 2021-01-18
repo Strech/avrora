@@ -2,17 +2,28 @@ defmodule Avrora.Utils.Registrator do
   @moduledoc """
   Memory store-aware schema registration with extended functionality.
 
+  TODO
   NOTE: Suitable to be used in the client code.
   """
 
   require Logger
   alias Avrora.{Config, Schema}
 
-  # @spec register_schema_by_name(String.t(), as: String.t(), force: boolean) ::
-  #         {:ok, Schema.t()} | {:error, term()}
-  # def register_schema_by_name(name, opts \\ []) do
-  #   {:error, "NOT IMPLEMENTED"}
-  # end
+  @doc """
+  TODO
+  """
+  @spec register_schema_by_name(String.t(), as: String.t(), force: boolean) ::
+          {:ok, Schema.t()} | {:error, term()}
+  def register_schema_by_name(name, opts \\ []) do
+    if Keyword.get(opts, :force, false) do
+      with {:ok, schema} <- file_storage().get(name), do: register_schema(schema, opts)
+    else
+      with {:ok, nil} <- memory_storage().get(name),
+           {:ok, schema} <- file_storage().get(name) do
+        register_schema(schema, Keyword.put(opts, :force, true))
+      end
+    end
+  end
 
   @doc """
   Register schema in the Schema Registry.
@@ -65,6 +76,7 @@ defmodule Avrora.Utils.Registrator do
     end
   end
 
+  defp file_storage, do: Config.self().file_storage()
   defp memory_storage, do: Config.self().memory_storage()
   defp registry_storage, do: Config.self().registry_storage()
   defp names_ttl, do: Config.self().names_cache_ttl()
