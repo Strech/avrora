@@ -19,15 +19,15 @@ defmodule Avrora.Storage.File do
   Files are stored with each namespace component as a folder name.
   For example `io.confluent.Payment` should be stored as follows:
 
-  .
-  ├── lib/
-  ├── priv/
-  │   ├── ...
-  │   └── schemas/
-  │       └── io/
-  │           └── confluent/
-  │               └── Payment.avsc
-  └── ...
+      .
+      ├── lib/
+      ├── priv/
+      │   ├── ...
+      │   └── schemas/
+      │       └── io/
+      │           └── confluent/
+      │               └── Payment.avsc
+      └── ...
 
   ## Examples
 
@@ -40,10 +40,7 @@ defmodule Avrora.Storage.File do
          do: Schema.parse(body, &read_schema_file_by_name/1)
   end
 
-  @doc false
   def get(key) when is_integer(key), do: {:error, :unsupported}
-
-  @doc false
   def put(_key, _value), do: {:error, :unsupported}
 
   defp read_schema_file_by_name(name) do

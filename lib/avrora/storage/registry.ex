@@ -66,9 +66,9 @@ defmodule Avrora.Storage.Registry do
 
   ## Examples
 
-      iex> schema = ~s({"fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}],"name":"Payment","namespace":"io.confluent","type":"record"})
-      iex> {:ok, schema} = Avrora.Storage.Registry.put("io.confluent.examples.Payment", schema)
-      iex> schema.full_name
+      ...> schema = ~s({"fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}],"name":"Payment","namespace":"io.confluent","type":"record"})
+      ...> {:ok, schema} = Avrora.Storage.Registry.put("io.confluent.examples.Payment", schema)
+      ...> schema.full_name
       "io.confluent.Payment"
   """
   def put(key, value) when is_binary(key) and is_binary(value) do
@@ -88,7 +88,6 @@ defmodule Avrora.Storage.Registry do
     end
   end
 
-  @doc false
   def put(_key, _value), do: {:error, :unsupported}
 
   @doc false
