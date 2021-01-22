@@ -27,7 +27,7 @@ defmodule Mix.Tasks.Avrora.Reg.Schema do
   ## Usage
 
       mix avrora.reg.schema --name io.confluent.Payment
-      mix avrora.reg.schema --name io.confluent.Payment --as MySchemaName
+      mix avrora.reg.schema --name io.confluent.Payment --as MyCustomName
       mix avrora.reg.schema --all
   """
 

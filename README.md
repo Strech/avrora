@@ -16,6 +16,7 @@
 [v0.13]: https://github.com/Strech/avrora/releases/tag/v0.13.0
 [v0.14]: https://github.com/Strech/avrora/releases/tag/v0.14.0
 [v0.15]: https://github.com/Strech/avrora/releases/tag/v0.15.0
+[v0.16]: https://github.com/Strech/avrora/releases/tag/v0.16.0
 [1]: https://avro.apache.org/
 [2]: https://www.confluent.io/confluent-schema-registry
 [3]: https://docs.confluent.io/current/schema-registry/serializer-formatter.html#wire-format
@@ -36,7 +37,7 @@ It supports reading and writing data Kafka [wire format][3] prefix and from [Obj
 formats. Along with [Confluent® Schema References][5] it has [Inter-Schema references][6] feature for
 older Schema Registry versions.
 
-Many thanks to the [AvroTurf][7] Ruby gem for the inspiration.
+Many thanks to the [AvroTurf][7] Ruby gem for the initial inspiration :blue_heart:
 
 ## Add Avrora to your project
 
@@ -45,7 +46,7 @@ Add Avrora to `mix.exs` as a dependency:
 ```elixir
 def deps do
   [
-    {:avrora, "~> 0.14"}
+    {:avrora, "~> 0.16"}
   ]
 end
 ```
@@ -275,7 +276,7 @@ message =
 
 A separate mix task to register a specific schema or all found schemas in
 schemas folder (see [configuration](#configuration) section) is available
-since [v0.12.0](https://github.com/Strech/avrora/releases/tag/v0.12.0).
+since [v0.12].
 
 For instance, if you configure Avrora schemas folder to be at `./priv/schemas`
 and you want to register a schema `io/confluent/Payment.avsc` then you can use
@@ -283,16 +284,23 @@ this command
 
 ```console
 $ mix avrora.reg.schema --name io.confluent.Payment
-schema `io.confluent.Payment` will be registered
+schema `io.confluent.Payment' will be registered
 ```
 
 **NOTE:** It will search for schema `./priv/schemas/io/confluent/Payment.avsc`
+
+In addition, any schema can be registered under different subject via `--as` option<sup>[v0.16]</sup>
+
+```console
+$ mix avrora.reg.schema --name io.confluent.Payment --as MyCustomName
+schema `io.confluent.Payment' will be registered as `MyCustomName'
+```
 
 If you would like to register all schemas found under `./priv/schemas` then you
 can simply execute this command
 
 ```console
 $ mix avrora.reg.schema --all
-schema `io.confluent.Payment` will be registered
+schema `io.confluent.Payment' will be registered
 schema `io.confluent.Wrong' will be skipped due to an error `argument error'
 ```
