@@ -5,7 +5,7 @@ defmodule Mix.Tasks.Avrora.Reg.Schema do
   Register either one schema or all schemas in the `Avrora.Config.schemas_path`
   directory.
 
-      mix avrora.reg.schema [--all] [--name NAME]
+      mix avrora.reg.schema [--all] [--name NAME] [--as NEW_NAME]
 
   The search of the schemas will be performed under path configured in `schemas_path`
   configuration option. One of either option must be given.
@@ -13,7 +13,10 @@ defmodule Mix.Tasks.Avrora.Reg.Schema do
   ## Options
 
     * `--name` - the full name of the schema to register (exclusive with `--all`)
+    * `--as` - the name which will be used to register schema (i.e subject)
     * `--all` - register all found schemas
+
+  The `--as` option is possible to use only together with `--name`.
 
   The `--name` option expects that given schema name will comply to
   `Avrora.Storage.File` module rules.
@@ -24,11 +27,11 @@ defmodule Mix.Tasks.Avrora.Reg.Schema do
   ## Usage
 
       mix avrora.reg.schema --name io.confluent.Payment
+      mix avrora.reg.schema --name io.confluent.Payment --as MySchemaName
       mix avrora.reg.schema --all
   """
 
-  alias Avrora.Config
-  alias Avrora.Schema.Name
+  alias Avrora.{Config, Utils}
 
   @shortdoc "Register schema(s) in the Confluent Schema Registry"
 
@@ -53,6 +56,9 @@ defmodule Mix.Tasks.Avrora.Reg.Schema do
       ["--name", name] ->
         name |> String.trim() |> register()
 
+      ["--name", name, "--as", new_name] ->
+        name |> String.trim() |> register(as: String.trim(new_name))
+
       _ ->
         message = """
         don't know how to handle `#{Enum.join(argv, " ")}'
@@ -64,18 +70,24 @@ defmodule Mix.Tasks.Avrora.Reg.Schema do
     end
   end
 
-  defp register(name) do
-    with {:ok, schema_name} <- Name.parse(name),
-         {:ok, schema} <- file_storage().get(name) do
-      Mix.shell().info("schema `#{schema_name.name}` will be registered")
-      registry_storage().put(schema_name.name, schema.json)
-    else
+  defp register(name, opts \\ []) do
+    opts = Keyword.merge(opts, force: true)
+
+    case Utils.Registrar.register_schema_by_name(name, opts) do
+      {:ok, _} ->
+        message =
+          if Keyword.has_key?(opts, :as) do
+            "schema `#{name}' will be registered as `#{opts[:as]}'"
+          else
+            "schema `#{name}' will be registered"
+          end
+
+        Mix.shell().info(message)
+
       {:error, error} ->
         Mix.shell().error("schema `#{name}' will be skipped due to an error `#{error}'")
     end
   end
 
   defp schemas_path, do: Config.self().schemas_path()
-  defp file_storage, do: Config.self().file_storage()
-  defp registry_storage, do: Config.self().registry_storage()
 end

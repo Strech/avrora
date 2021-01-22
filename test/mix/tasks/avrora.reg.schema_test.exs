@@ -22,6 +22,28 @@ defmodule Mix.Tasks.Avrora.Reg.SchemaTest do
     test "when --name NAME argument was given" do
       stub(Avrora.ConfigMock, :schemas_path, fn -> Path.expand("./test/fixtures/mix/schemas") end)
 
+      payment_schema_with_id = payment_schema_with_id()
+
+      Avrora.Storage.MemoryMock
+      |> expect(:put, fn key, value ->
+        assert key == 1
+        assert value == payment_schema_with_id
+
+        {:ok, value}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.Payment"
+        assert value == payment_schema_with_id
+
+        {:ok, value}
+      end)
+      |> expect(:expire, fn key, ttl ->
+        assert key == "io.confluent.Payment"
+        assert ttl == :infinity
+
+        {:ok, :infinity}
+      end)
+
       Avrora.Storage.FileMock
       |> expect(:get, fn key ->
         assert key == "io.confluent.Payment"
@@ -34,17 +56,85 @@ defmodule Mix.Tasks.Avrora.Reg.SchemaTest do
         assert key == "io.confluent.Payment"
         assert value == payment_json_schema()
 
-        {:ok, payment_schema_with_id()}
+        {:ok, payment_schema_with_id}
       end)
 
       Task.run(["--name", "io.confluent.Payment"])
 
       assert_received {:mix_shell, :info, [output]}
-      assert output =~ "schema `io.confluent.Payment` will be registered"
+      assert output =~ "schema `io.confluent.Payment' will be registered"
+    end
+
+    test "when --name NAME argument was given together with --as NEW_NAME" do
+      stub(Avrora.ConfigMock, :schemas_path, fn -> Path.expand("./test/fixtures/mix/schemas") end)
+
+      payment_schema_with_id = payment_schema_with_id()
+
+      Avrora.Storage.MemoryMock
+      |> expect(:put, fn key, value ->
+        assert key == 1
+        assert value == payment_schema_with_id
+
+        {:ok, value}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.Payment"
+        assert value == payment_schema_with_id
+
+        {:ok, value}
+      end)
+      |> expect(:expire, fn key, ttl ->
+        assert key == "io.confluent.Payment"
+        assert ttl == :infinity
+
+        {:ok, :infinity}
+      end)
+
+      Avrora.Storage.FileMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.Payment"
+
+        {:ok, payment_schema_without_id_and_version()}
+      end)
+
+      Avrora.Storage.RegistryMock
+      |> expect(:put, fn key, value ->
+        assert key == "MyCustomName"
+        assert value == payment_json_schema()
+
+        {:ok, payment_schema_with_id}
+      end)
+
+      Task.run(["--name", "io.confluent.Payment", "--as", "MyCustomName"])
+
+      assert_received {:mix_shell, :info, [output]}
+      assert output =~ "schema `io.confluent.Payment' will be registered as `MyCustomName'"
     end
 
     test "when --name NAME argument was given with extra spacing" do
       stub(Avrora.ConfigMock, :schemas_path, fn -> Path.expand("./test/fixtures/mix/schemas") end)
+
+      payment_schema_with_id = payment_schema_with_id()
+
+      Avrora.Storage.MemoryMock
+      |> expect(:put, fn key, value ->
+        assert key == 1
+        assert value == payment_schema_with_id
+
+        {:ok, value}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.Payment"
+        assert value == payment_schema_with_id
+
+        {:ok, value}
+      end)
+      |> expect(:expire, fn key, ttl ->
+        assert key == "io.confluent.Payment"
+        assert ttl == :infinity
+
+        {:ok, :infinity}
+      end)
 
       Avrora.Storage.FileMock
       |> expect(:get, fn key ->
@@ -58,13 +148,13 @@ defmodule Mix.Tasks.Avrora.Reg.SchemaTest do
         assert key == "io.confluent.Payment"
         assert value == payment_json_schema()
 
-        {:ok, payment_schema_with_id()}
+        {:ok, payment_schema_with_id}
       end)
 
       Task.run(["--name", "  io.confluent.Payment  "])
 
       assert_received {:mix_shell, :info, [output]}
-      assert output =~ "schema `io.confluent.Payment` will be registered"
+      assert output =~ "schema `io.confluent.Payment' will be registered"
     end
 
     test "when --name NAME argument was given, but schema was not found" do
@@ -85,6 +175,47 @@ defmodule Mix.Tasks.Avrora.Reg.SchemaTest do
 
     test "when --all argument was given" do
       stub(Avrora.ConfigMock, :schemas_path, fn -> Path.expand("./test/fixtures/mix/schemas") end)
+
+      payment_schema_with_id = payment_schema_with_id()
+      event_schema_with_id = event_schema_with_id()
+
+      Avrora.Storage.MemoryMock
+      |> expect(:put, fn key, value ->
+        assert key == 2
+        assert value == event_schema_with_id
+
+        {:ok, value}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == "com.mailgun.Event"
+        assert value == event_schema_with_id
+
+        {:ok, value}
+      end)
+      |> expect(:expire, fn key, ttl ->
+        assert key == "com.mailgun.Event"
+        assert ttl == :infinity
+
+        {:ok, :infinity}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == 1
+        assert value == payment_schema_with_id
+
+        {:ok, value}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.Payment"
+        assert value == payment_schema_with_id
+
+        {:ok, value}
+      end)
+      |> expect(:expire, fn key, ttl ->
+        assert key == "io.confluent.Payment"
+        assert ttl == :infinity
+
+        {:ok, :infinity}
+      end)
 
       Avrora.Storage.FileMock
       |> expect(:get, fn key ->
@@ -108,22 +239,22 @@ defmodule Mix.Tasks.Avrora.Reg.SchemaTest do
         assert key == "com.mailgun.Event"
         assert value == event_json_schema()
 
-        {:ok, event_schema_with_id()}
+        {:ok, event_schema_with_id}
       end)
       |> expect(:put, fn key, value ->
         assert key == "io.confluent.Payment"
         assert value == payment_json_schema()
 
-        {:ok, payment_schema_with_id()}
+        {:ok, payment_schema_with_id}
       end)
 
       Task.run(["--all"])
 
       assert_received {:mix_shell, :info, [output]}
-      assert output =~ "schema `com.mailgun.Event` will be registered"
+      assert output =~ "schema `com.mailgun.Event' will be registered"
 
       assert_received {:mix_shell, :info, [output]}
-      assert output =~ "schema `io.confluent.Payment` will be registered"
+      assert output =~ "schema `io.confluent.Payment' will be registered"
 
       assert_received {:mix_shell, :error, [output]}
       assert output =~ "schema `io.confluent.Wrong' will be skipped"
@@ -145,7 +276,7 @@ defmodule Mix.Tasks.Avrora.Reg.SchemaTest do
   end
 
   defp event_schema_with_id do
-    {:ok, schema} = Schema.parse(payment_json_schema())
+    {:ok, schema} = Schema.parse(event_json_schema())
     %{schema | id: 2, version: nil}
   end
 
