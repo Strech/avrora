@@ -111,9 +111,8 @@ Or start the cache process manually:
 
 If you like the project and want to support me on my sleepless nights, you can
 
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/W7W8367XJ)
-
 [![Support via PayPal](https://cdn.rawgit.com/twolfson/paypal-github-button/1.0.0/dist/button.svg)](https://www.paypal.com/paypalme/onistrech/eur5.0)
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/W7W8367XJ)
 
 ## Usage
 
@@ -316,8 +315,6 @@ this command
 $ mix avrora.reg.schema --name io.confluent.Payment
 schema `io.confluent.Payment' will be registered
 ```
-
-**NOTE:** It will search for schema `./priv/schemas/io/confluent/Payment.avsc`
 
 In addition, any schema can be registered under different subject via `--as` option<sup>[v0.16]</sup>
 
