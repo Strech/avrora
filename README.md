@@ -25,6 +25,7 @@
 [6]: https://github.com/Strech/avrora/wiki/Inter-Schema-references
 [7]: https://github.com/dasch/avro_turf
 [8]: https://www.confluent.io/blog/multiple-event-types-in-the-same-kafka-topic/#avro-unions-with-schema-references
+[9]: https://github.com/Strech/avrora/wiki/Schema-name-resolution
 
 # Getting Started
 
@@ -272,11 +273,40 @@ message =
 
 </details>
 
-## Mix tasks
+## Schemas registration
+
+There are a few ways you can register AVRO schemas if you have disabled auto-registration.
+
+If you want to make it a part of your code, but with better control, you can use
+`Avrora.Utils.Registrar` module and if you want to embed it in the deployment use
+a mix task `avrora.reg.schema`.
+
+### Avrora.Utils.Registrar<sup>[v0.16]</sup>
+
+This module is cache-aware and thus it can be used inside intensive loops if needed.
+It provides two ways to register schema:
+
+- by name, then it will be resolved to a file with [library conventions][9]
+- by schema, then a given schema will be used without any disk reads
+
+But keep in mind that either way has a memory check to ensure that schema was not
+registered before and to bypass this check you have to use `force: true` flag
+
+```elixir
+{:ok, schema} = Avrora.Utils.Registrar.register_schema_by_name("io.confluent.Payment", force: true)
+```
+
+In addition, any schema can be registered under different subject via `as: "NewName"` option
+
+```elixir
+{:ok, schema} = Avrora.Storage.File.get("io.confluent.Payment")
+{:ok, schema_with_id} = Avrora.Utils.Registrar.register_schema(schema, as: "NewName")
+```
+
+### mix avrora.reg.schema<sup>[v0.12]</sup>
 
 A separate mix task to register a specific schema or all found schemas in
-schemas folder (see [configuration](#configuration) section) is available
-since [v0.12].
+schemas folder (see [configuration](#configuration) section).
 
 For instance, if you configure Avrora schemas folder to be at `./priv/schemas`
 and you want to register a schema `io/confluent/Payment.avsc` then you can use
