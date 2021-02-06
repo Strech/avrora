@@ -4,7 +4,9 @@ defmodule Avrora.Encoder do
   """
 
   require Logger
-  alias Avrora.{Codec, Schema, Schema.Name}
+  alias Avrora.Codec
+  alias Avrora.Schema
+  alias Avrora.Schema.Name
 
   @doc """
   Extract schema from the binary Avro message.
