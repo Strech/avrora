@@ -128,7 +128,7 @@ jobs:
         with:
           path: integration/priv/plts
           key: ${{ runner.os }}-${{ env.OTP }}-${{ env.ELIXIR }}-plts-ext-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
-      - working-directory: test/integration
+      - working-directory: integration
         run: |
           mix local.rebar --force
           mix local.hex --force
