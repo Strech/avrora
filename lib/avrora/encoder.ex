@@ -1,6 +1,6 @@
 defmodule Avrora.Encoder do
   @moduledoc """
-  Encode and decode binary Avro messages.
+  Wraps internal codec interface to add syntax sugar which will be exposed to client.
   """
 
   require Logger

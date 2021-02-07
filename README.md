@@ -91,7 +91,7 @@ when schemas containing [Confluent Schema References][8].<sup>[v0.14]</sup>
 
 Avrora uses an in-memory cache to speed up schema lookup.
 
-Add it to your supervision tree:
+Add `Avrora` module to your supervision tree:
 
 ```elixir
 children = [
@@ -101,7 +101,7 @@ children = [
 Supervisor.start_link(children, strategy: :one_for_one)
 ```
 
-Or start the cache process manually:
+or start the process manually:
 
 ```elixir
 {:ok, pid} = Avrora.start_link()
