@@ -23,8 +23,8 @@ defmodule Avrora.ClientTest do
     end
 
     test "when reading schema file from another client schemas store" do
-      assert {:error, :enoent} == Alpha.encode(%{"id" => "Hello"}, schema_name: "Pong")
-      assert {:error, :enoent} == Beta.encode(%{"id" => "Hello"}, schema_name: "Ping")
+      assert {:error, :enoent} == Alpha.encode(%{"id" => "Hello"}, schema_name: "io.Pong")
+      assert {:error, :enoent} == Beta.encode(%{"id" => "Hello"}, schema_name: "io.Ping")
     end
 
     test "when loading schema from another client memory store" do
