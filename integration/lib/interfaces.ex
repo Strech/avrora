@@ -1,4 +1,4 @@
-defmodule Integration do
+defmodule Interfaces do
   @moduledoc """
   This is an End-to-End integration test. All the public interface use cases
   will be listed here to catch the discrepancy in typespecs.
@@ -42,31 +42,6 @@ defmodule Integration do
     @doc false
     def encode_with_two_options do
       Avrora.encode(%{"k" => "v"}, schema_name: "avrora.Record", format: :plain)
-    end
-  end
-
-  defmodule Clients do
-    @moduledoc """
-    This is an End-to-End integration test. It will be used to validate
-    multi-client capabilities.
-
-    So if you run `mix test` and get test errors or something like this
-
-      ```
-      could not compile dependency :avrora, "mix compile" failed
-      ```
-
-    it means that something is wrong with `Avrora.Client` module.
-    """
-
-    defmodule Alpha do
-      @moduledoc false
-      use Avrora.Client, schemas_path: Path.expand("../priv/schms", __DIR__)
-    end
-
-    defmodule Beta do
-      @moduledoc false
-      use Avrora.Client, schemas_path: Path.expand("./priv/avro")
     end
   end
 end

@@ -1,9 +1,9 @@
-defmodule IntegrationTest do
+defmodule ClientsTest do
   use ExUnit.Case, async: true
 
-  alias Integration.Clients.{Alpha, Beta}
-  alias Integration.Clients.Alpha.Storage.Memory, as: AlphaMemory
-  alias Integration.Clients.Beta.Storage.Memory, as: BetaMemory
+  alias Clients.{Alpha, Beta}
+  alias Clients.Alpha.Storage.Memory, as: AlphaMemory
+  alias Clients.Beta.Storage.Memory, as: BetaMemory
 
   setup_all do
     start_supervised(Alpha)
