@@ -13,7 +13,7 @@ defmodule Avrora.Client do
   It will expose `Avrora.Encoder` module functions and make `MyClient` module
   identical to `Avrora` module, but isolated from it.
 
-  To start using `MyModule` follow the [Start cache process](README.md#start-cache-process),
+  To start using `MyClient` follow the [Start cache process](README.md#start-cache-process),
   add it to your supervision tree
 
        children = [
