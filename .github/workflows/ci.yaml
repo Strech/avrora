@@ -103,7 +103,7 @@ jobs:
 
   external_dialyzer:
     runs-on: ubuntu-16.04
-    name: External Typespecs & Interface
+    name: External Typespecs
     env:
       OTP: "22.3"
       ELIXIR: "1.9"
@@ -116,17 +116,17 @@ jobs:
       - uses: actions/cache@v2
         id: mix-cache
         with:
-          path: integration/deps
+          path: test/integration/deps
           key: ${{ runner.os }}-${{ env.OTP }}-${{ env.ELIXIR }}-mix-ext-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
       - uses: actions/cache@v2
         id: build-cache
         with:
-          path: integration/_build
+          path: test/integration/_build
           key: ${{ runner.os }}-${{ env.OTP }}-${{ env.ELIXIR }}-build-ext-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
       - uses: actions/cache@v1
         id: plt-cache
         with:
-          path: integration/priv/plts
+          path: test/integration/priv/plts
           key: ${{ runner.os }}-${{ env.OTP }}-${{ env.ELIXIR }}-plts-ext-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
       - working-directory: integration
         run: |
@@ -134,14 +134,12 @@ jobs:
           mix local.hex --force
           mix deps.get
       - if: steps.plt-cache.outputs.cache-hit != 'true'
-        working-directory: integration
+        working-directory: test/integration
         run: |
           mkdir -p priv/plts
           mix dialyzer --plt
-      - working-directory: integration
+      - working-directory: test/integration
         run: mix dialyzer --force-check
-      - working-directory: integration
-        run: mix test
 
   test:
     runs-on: ubuntu-16.04

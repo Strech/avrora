@@ -1,7 +1,6 @@
-defmodule Clients do
+defmodule Fixtures do
   @moduledoc """
-  This is an End-to-End integration test. It will be used to validate
-  multi-client capabilities.
+  This is an End-to-End integration use-case. It will validate multi-client capabilities.
 
   So if you run `mix test` and get test errors or something like this
 
@@ -14,11 +13,11 @@ defmodule Clients do
 
   defmodule Alpha do
     @moduledoc false
-    use Avrora.Client, schemas_path: Path.expand("../priv/schms", __DIR__)
+    use Avrora.Client, schemas_path: Path.expand("./test/fixtures/schms")
   end
 
   defmodule Beta do
     @moduledoc false
-    use Avrora.Client, schemas_path: Path.expand("./priv/avro")
+    use Avrora.Client, schemas_path: Path.expand("./test/fixtures/avro")
   end
 end

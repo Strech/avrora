@@ -1,19 +1,20 @@
-defmodule ClientsTest do
+defmodule Avrora.ClientTest do
   use ExUnit.Case, async: true
+  doctest Avrora.Client
 
-  alias Clients.{Alpha, Beta}
-  alias Clients.Alpha.Storage.Memory, as: AlphaMemory
-  alias Clients.Beta.Storage.Memory, as: BetaMemory
+  alias Fixtures.{Alpha, Beta}
+  alias Fixtures.Alpha.Storage.Memory, as: AlphaMemory
+  alias Fixtures.Beta.Storage.Memory, as: BetaMemory
 
-  setup_all do
+  setup do
     start_supervised(Alpha)
     start_supervised(Beta)
 
     :ok
   end
 
-  describe "Alpha & Beta" do
-    test "clients have encoding/decoding interface" do
+  describe "__using__/1" do
+    test "when encode and decode payload" do
       {:ok, alpha} = Alpha.encode(%{"id" => "Hello"}, schema_name: "io.Ping", format: :plain)
       {:ok, beta} = Beta.encode(%{"id" => "Hello"}, schema_name: "io.Pong", format: :plain)
 
@@ -21,14 +22,14 @@ defmodule ClientsTest do
       assert {:ok, %{"id" => "Hello"}} == Beta.decode(beta, schema_name: "io.Pong")
     end
 
-    test "client configurations are differs" do
+    test "when reading schema file from another client schemas store" do
       assert {:error, :enoent} == Alpha.encode(%{"id" => "Hello"}, schema_name: "Pong")
       assert {:error, :enoent} == Beta.encode(%{"id" => "Hello"}, schema_name: "Ping")
     end
 
-    test "client memory storages are not shared" do
-      {:ok, alpha} = Alpha.encode(%{"id" => "Hello"}, schema_name: "io.Ping", format: :plain)
-      {:ok, beta} = Beta.encode(%{"id" => "Hello"}, schema_name: "io.Pong", format: :plain)
+    test "when loading schema from another client memory store" do
+      {:ok, _} = Alpha.encode(%{"id" => "Hello"}, schema_name: "io.Ping", format: :plain)
+      {:ok, _} = Beta.encode(%{"id" => "Hello"}, schema_name: "io.Pong", format: :plain)
 
       assert {:ok, nil} == AlphaMemory.get("io.Pong")
       assert {:ok, nil} == BetaMemory.get("io.Ping")
