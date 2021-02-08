@@ -56,31 +56,41 @@ defmodule Avrora.Client do
   )
 
   import Keyword, only: [get: 3]
-  import Code, only: [eval_string: 1]
 
-  defp personalize(filename, module: module) do
-    with definition <- read_module(filename),
-         definition <- Regex.replace(~r/defmodule Avrora/, definition, "defmodule #{module}") do
-      ~r/alias Avrora\.(.*)/
-      |> Regex.scan(definition)
-      |> Enum.reject(fn [_, m] -> !Enum.member?(@aliases, m) end)
-      |> Enum.reduce(definition, fn [als, mdl], dfn ->
-        Regex.replace(~r/#{als}(?=[[:cntrl:]])/, dfn, "alias #{module}.#{mdl}")
-      end)
-    end
+  defp personalize(definition, module: module) do
+    definition = Regex.replace(~r/defmodule Avrora\./, definition, "defmodule ")
+
+    ~r/alias Avrora\.(.*)/
+    |> Regex.scan(definition)
+    |> Enum.reject(fn [_, m] -> !Enum.member?(@aliases, m) end)
+    |> Enum.reduce(definition, fn [als, mdl], dfn ->
+      Regex.replace(~r/#{als}(?=[[:cntrl:]])/, dfn, "alias #{module}.#{mdl}")
+    end)
   end
 
-  defp read_module(filename), do: File.read!(Path.expand("./#{filename}.ex", __DIR__))
+  defp generate!(definition, file: file) do
+    case Code.string_to_quoted(definition, file: file) do
+      {:ok, quoted} ->
+        quoted
+
+      {:error, {line, error, token}} ->
+        raise "error #{error} on line #{line} caused by #{inspect(token)}"
+    end
+  end
 
   defmacro __using__(opts) do
     module = __CALLER__.module |> Module.split() |> Enum.join(".")
 
-    @modules
-    |> Enum.each(fn filename ->
-      filename
-      |> personalize(module: module)
-      |> eval_string()
-    end)
+    modules =
+      @modules
+      |> Enum.map(fn name ->
+        file = Path.expand("./#{name}.ex", __DIR__)
+
+        file
+        |> File.read!()
+        |> personalize(module: module)
+        |> generate!(file: file)
+      end)
 
     config =
       quote do
@@ -104,6 +114,7 @@ defmodule Avrora.Client do
       end
 
     quote location: :keep do
+      unquote(modules)
       unquote(config)
 
       use Supervisor
