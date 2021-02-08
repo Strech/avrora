@@ -66,7 +66,7 @@ matter of copy-paste.
 Create your private Avrora client module
 
 ```elixir
-defmodule MyAvrora do
+defmodule MyClient do
   use Avrora.Client,
     registry_url: "http://localhost:8081",
     registry_auth: {:basic, ["username", "password"]}
@@ -126,7 +126,7 @@ add it to your supervision tree
 
 ```elixir
 children = [
-  MyAvrora
+  MyClient
 ]
 
 Supervisor.start_link(children, strategy: :one_for_one)
@@ -135,7 +135,7 @@ Supervisor.start_link(children, strategy: :one_for_one)
 or start the process manually
 
 ```elixir
-{:ok, pid} = MyAvrora.start_link()
+{:ok, pid} = MyClient.start_link()
 ```
 
 ### Shared client
