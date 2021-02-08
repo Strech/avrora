@@ -92,7 +92,7 @@ defmodule Avrora.Storage.Registry do
   def put(_key, _value), do: {:error, :unsupported}
 
   @doc false
-  @spec configured?() :: true | false
+  @spec configured?() :: boolean()
   def configured?, do: !is_nil(registry_url())
 
   defp extract_references(response) do
