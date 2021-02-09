@@ -10,7 +10,9 @@ defmodule Avrora.Codec.SchemaRegistry do
   @magic_bytes <<0::size(8)>>
 
   require Logger
-  alias Avrora.{Codec, Resolver, Schema}
+  alias Avrora.Codec
+  alias Avrora.Resolver
+  alias Avrora.Schema
 
   @impl true
   def is_decodable(payload) when is_binary(payload) do

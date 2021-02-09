@@ -11,7 +11,11 @@ defmodule Avrora.Codec.ObjectContainerFile do
   @meta_schema_key "avro.schema"
 
   require Logger
-  alias Avrora.{AvroDecoderOptions, Codec, Config, Resolver, Schema}
+  alias Avrora.AvroDecoderOptions
+  alias Avrora.Codec
+  alias Avrora.Config
+  alias Avrora.Resolver
+  alias Avrora.Schema
 
   @impl true
   def is_decodable(payload) when is_binary(payload) do

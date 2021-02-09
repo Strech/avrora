@@ -1,9 +1,9 @@
-defmodule Integration do
+defmodule Interfaces do
   @moduledoc """
   This is an End-to-End integration test. All the public interface use cases
   will be listed here to catch the discrepancy in typespecs.
 
-  So if you run `mix dialyzer ` and receive something like this
+  So if you run `mix dialyzer` and receive something like this
 
       ```
       lib/integration.ex:41:no_return

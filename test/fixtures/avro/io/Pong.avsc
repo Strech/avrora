@@ -1,0 +1,6 @@
+{
+  "type": "record",
+  "name": "Pong",
+  "namespace": "io",
+  "fields": [{ "name": "id", "type": "string" }]
+}

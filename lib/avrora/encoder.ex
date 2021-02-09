@@ -1,10 +1,12 @@
 defmodule Avrora.Encoder do
   @moduledoc """
-  Encode and decode binary Avro messages.
+  Wraps internal codec interface to add syntax sugar which will be exposed to client.
   """
 
   require Logger
-  alias Avrora.{Codec, Schema, Schema.Name}
+  alias Avrora.Codec
+  alias Avrora.Schema
+  alias Avrora.Schema.Name
 
   @doc """
   Extract schema from the binary Avro message.

@@ -1,0 +1,6 @@
+{
+  "type": "record",
+  "name": "Ping",
+  "namespace": "io",
+  "fields": [{ "name": "id", "type": "string" }]
+}

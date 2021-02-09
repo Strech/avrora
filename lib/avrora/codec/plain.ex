@@ -8,7 +8,8 @@ defmodule Avrora.Codec.Plain do
 
   @behaviour Avrora.Codec
 
-  alias Avrora.{AvroDecoderOptions, Resolver}
+  alias Avrora.AvroDecoderOptions
+  alias Avrora.Resolver
 
   @impl true
   def is_decodable(payload) when is_binary(payload), do: true

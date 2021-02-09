@@ -17,6 +17,7 @@
 [v0.14]: https://github.com/Strech/avrora/releases/tag/v0.14.0
 [v0.15]: https://github.com/Strech/avrora/releases/tag/v0.15.0
 [v0.16]: https://github.com/Strech/avrora/releases/tag/v0.16.0
+[v0.17]: https://github.com/Strech/avrora/releases/tag/v0.17.0
 [1]: https://avro.apache.org/
 [2]: https://www.confluent.io/confluent-schema-registry
 [3]: https://docs.confluent.io/current/schema-registry/serializer-formatter.html#wire-format
@@ -42,19 +43,46 @@ Many thanks to the [AvroTurf][7] Ruby gem for the initial inspiration :blue_hear
 
 ## Add Avrora to your project
 
-Add Avrora to `mix.exs` as a dependency:
+Add Avrora to `mix.exs` as a dependency
 
 ```elixir
 def deps do
   [
-    {:avrora, "~> 0.16"}
+    {:avrora, "~> 0.17"}
   ]
 end
 ```
 
 ## Configuration
 
-Configure the library in `config/config.exs`:
+:beginner: It is recommended to configure private Avrora client<sup>[v0.17]</sup> to avoid
+risk of conflicts with other dependencies which might use shared `Avrora` client.
+
+Don't worry if you already using the shared client because migration to the private is a
+matter of copy-paste.
+
+### Private client
+
+Create your private Avrora client module
+
+```elixir
+defmodule MyClient do
+  use Avrora.Client,
+    registry_url: "http://localhost:8081",
+    registry_auth: {:basic, ["username", "password"]}
+    schemas_path: Path.expand("./priv/schemas"),
+    registry_schemas_autoreg: false,
+    convert_null_values: false,
+    convert_map_to_proplist: false
+    names_cache_ttl: :timer.minutes(5)
+end
+```
+
+please check the section below :point_down: for detailed explanation of each configuration option.
+
+### Shared client
+
+Configure the `Avrora` shared client in `config/config.exs`
 
 ```elixir
 config :avrora,
@@ -91,7 +119,28 @@ when schemas containing [Confluent Schema References][8].<sup>[v0.14]</sup>
 
 Avrora uses an in-memory cache to speed up schema lookup.
 
-Add it to your supervision tree:
+### Private client
+
+After you've created your [private Avrora client](#private-client),
+add it to your supervision tree
+
+```elixir
+children = [
+  MyClient
+]
+
+Supervisor.start_link(children, strategy: :one_for_one)
+```
+
+or start the process manually
+
+```elixir
+{:ok, pid} = MyClient.start_link()
+```
+
+### Shared client
+
+Add shared `Avrora` module to your supervision tree
 
 ```elixir
 children = [
@@ -101,7 +150,7 @@ children = [
 Supervisor.start_link(children, strategy: :one_for_one)
 ```
 
-Or start the cache process manually:
+or start the process manually
 
 ```elixir
 {:ok, pid} = Avrora.start_link()
@@ -116,6 +165,10 @@ If you like the project and want to support me on my sleepless nights, you can
 
 ## Usage
 
+:beginner: All the examples below (including [Schemas registration](#schemas-registration))
+will use `Avrora` shared client, but if you are using private client,
+just replace `Avrora` with your client module name.
+
 The primary way to use the library is via the `Avrora.encode/2` and
 `Avrora.decode/2` functions. These functions load the Avro schema for you.
 
@@ -123,7 +176,7 @@ If `registry_url` is defined, it enables Schema Registry storage. If the schema
 file found locally but not in the registry, either fuction will register the schema.
 
 These examples assume you have a `Payment` schema stored in the file
-`priv/schemas/io/confluent/Payment.avsc`:
+`priv/schemas/io/confluent/Payment.avsc`
 
 ```json
 {
@@ -143,7 +196,7 @@ These examples assume you have a `Payment` schema stored in the file
 }
 ```
 
-When running interactively, first make sure the cache is started:
+When running interactively, first make sure the cache is started
 
 ```elixir
 {:ok, pid} = Avrora.start_link()
@@ -193,7 +246,7 @@ message = %{"id" => "tx-1", "amount" => 15.99}
 
 ### decode/2
 
-Decode `Payment` message using the specified schema:
+Decode `Payment` message using the specified schema
 
 ```elixir
 {:ok, pid} = Avrora.start_link()

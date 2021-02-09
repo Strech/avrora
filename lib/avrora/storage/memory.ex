@@ -6,7 +6,8 @@ defmodule Avrora.Storage.Memory do
   """
 
   use GenServer
-  alias Avrora.{Schema, Storage}
+  alias Avrora.Schema
+  alias Avrora.Storage
 
   @behaviour Storage
   @behaviour Storage.Transient

@@ -23,7 +23,8 @@ defmodule Avrora.Utils.Registrar do
   """
 
   require Logger
-  alias Avrora.{Config, Schema}
+  alias Avrora.Config
+  alias Avrora.Schema
 
   @doc """
   Register schema from local schema file in the Schema Registry.
