@@ -63,7 +63,8 @@ defmodule Avrora.Encoder do
       {:ok, %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}}
   """
   @spec decode(binary(), schema_name: String.t()) :: {:ok, map() | list(map())} | {:error, term()}
-  def decode(payload, schema_name: schema_name) when is_binary(payload) do
+  def decode(payload, schema_name: schema_name)
+      when is_binary(payload) do
     with {:ok, schema_name} <- Name.parse(schema_name) do
       unless is_nil(schema_name.version) do
         Logger.warn(
@@ -76,6 +77,66 @@ defmodule Avrora.Encoder do
       codec =
         [Codec.SchemaRegistry, Codec.ObjectContainerFile, Codec.Plain]
         |> Enum.find(& &1.is_decodable(payload))
+
+      codec.decode(payload, schema: schema)
+    end
+  end
+
+  @doc """
+  Decode binary Avro message, loading schema from local file or Schema Registry.
+
+  The `:format` argument defines the decoder:
+
+  * `:guess` - Use `:registry` if possible, otherwise use `:ocf` (default)
+  * `:plain` - Just return Avro binary data, with no header or embedded schema
+  * `:ocf` - Use [Object Container File]https://avro.apache.org/docs/1.8.1/spec.html#Object+Container+Files)
+    format, embedding the full schema with the data
+  * `:registry` - Write data with Confluent Schema Registry
+    [Wire Format](https://docs.confluent.io/current/schema-registry/serializer-formatter.html#wire-format),
+    which prefixes the data with the schema id
+
+  ## Examples
+
+      ...> payload = <<72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45,
+      48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 48, 48, 48, 48, 48,
+      48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64>>
+      ...> Avrora.Encoder.decode(payload, schema_name: "io.confluent.Payment")
+      {:ok, %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}}
+  """
+  @spec decode(binary(), schema_name: String.t(), format: :guess | :registry | :ocf | :plain) ::
+          {:ok, map() | list(map())} | {:error, term()}
+  def decode(payload, schema_name: schema_name, format: format)
+      when is_binary(payload) do
+    [format: format, schema_name: schema_name] =
+      Keyword.merge([format: :guess, schema_name: nil], format: format, schema_name: schema_name)
+
+    with {:ok, schema_name} <- Name.parse(schema_name) do
+      unless is_nil(schema_name.version) do
+        Logger.warn(
+          "decoding message with schema version is not supported, `#{schema_name.name}` used instead"
+        )
+      end
+
+      schema = %Schema{full_name: schema_name.name}
+
+      codec =
+        case format do
+          :guess ->
+            [Codec.SchemaRegistry, Codec.ObjectContainerFile, Codec.Plain]
+            |> Enum.find(& &1.is_decodable(payload))
+
+          :registry ->
+            Codec.SchemaRegistry
+
+          :ocf ->
+            Codec.ObjectContainerFile
+
+          :plain ->
+            Codec.Plain
+
+          _ ->
+            {:error, :unknown_format}
+        end
 
       codec.decode(payload, schema: schema)
     end
