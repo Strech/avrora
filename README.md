@@ -41,6 +41,13 @@ older Schema Registry versions.
 
 Many thanks to the [AvroTurf][7] Ruby gem for the initial inspiration :blue_heart:
 
+---
+
+If you like the project and want to support me on my sleepless nights, you can
+
+[![Support via PayPal](https://cdn.rawgit.com/twolfson/paypal-github-button/1.0.0/dist/button.svg)](https://www.paypal.com/paypalme/onistrech/eur5.0)
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/W7W8367XJ)
+
 ## Add Avrora to your project
 
 Add Avrora to `mix.exs` as a dependency
@@ -155,13 +162,6 @@ or start the process manually
 ```elixir
 {:ok, pid} = Avrora.start_link()
 ```
-
-## Sponsorship
-
-If you like the project and want to support me on my sleepless nights, you can
-
-[![Support via PayPal](https://cdn.rawgit.com/twolfson/paypal-github-button/1.0.0/dist/button.svg)](https://www.paypal.com/paypalme/onistrech/eur5.0)
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/W7W8367XJ)
 
 ## Usage
 
