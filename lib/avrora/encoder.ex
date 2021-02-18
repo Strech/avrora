@@ -52,17 +52,34 @@ defmodule Avrora.Encoder do
   end
 
   @doc """
+  Decode binary Avro message with :plain format and given schema.
+
+  This is pulled out as a special function to work around :plain encoded binaries that,
+  due to their encoded data, start with the magic byte.
+
+  ## Examples
+
+      ...> payload = <<0, 232, 220, 144, 233, 11, 200, 1>>
+      ...> Avrora.Encoder.decode_plain(payload,"io.confluent.numeric_transfer")
+      {:ok, %{ "link_is_enabled" => false, "updated_at" => 1_586_632_500, "updated_by_id" => 1_00 }
+  """
+  @spec decode_plain(binary(), schema_name: String.t()) ::
+          {:ok, map() | list(map())} | {:error, term()}
+  def decode_plain(payload, schema_name: schema_name) when is_binary(payload) do
+    with {:ok, schema_name} <- Name.parse(schema_name) do
+      unless is_nil(schema_name.version) do
+        Logger.warn(
+          "decoding message with schema version is not supported, `#{schema_name.name}` used instead"
+        )
+      end
+
+      schema = %Schema{full_name: schema_name.name}
+      Codec.Plain.decode(payload, schema: schema)
+    end
+  end
+
+  @doc """
   Decode binary Avro message, loading schema from local file or Schema Registry.
-
-  The `:format` argument defines the decoder:
-
-  * `:guess` - Use `:registry` if possible, otherwise use `:ocf` (default)
-  * `:plain` - Just return Avro binary data, with no header or embedded schema
-  * `:ocf` - Use [Object Container File]https://avro.apache.org/docs/1.8.1/spec.html#Object+Container+Files)
-    format, embedding the full schema with the data
-  * `:registry` - Write data with Confluent Schema Registry
-    [Wire Format](https://docs.confluent.io/current/schema-registry/serializer-formatter.html#wire-format),
-    which prefixes the data with the schema id
 
   ## Examples
 
@@ -72,13 +89,8 @@ defmodule Avrora.Encoder do
       ...> Avrora.Encoder.decode(payload, schema_name: "io.confluent.Payment")
       {:ok, %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}}
   """
-  @spec decode(binary(), schema_name: String.t(), format: :guess | :registry | :ocf | :plain) ::
-          {:ok, map() | list(map())} | {:error, term()}
-  def decode(payload, schema_name: schema_name) when is_binary(payload),
-    do: decode(payload, schema_name: schema_name, format: :guess)
-
-  def decode(payload, schema_name: schema_name, format: format)
-      when is_binary(payload) do
+  @spec decode(binary(), schema_name: String.t()) :: {:ok, map() | list(map())} | {:error, term()}
+  def decode(payload, schema_name: schema_name) when is_binary(payload) do
     with {:ok, schema_name} <- Name.parse(schema_name) do
       unless is_nil(schema_name.version) do
         Logger.warn(
@@ -89,23 +101,8 @@ defmodule Avrora.Encoder do
       schema = %Schema{full_name: schema_name.name}
 
       codec =
-        case format do
-          :guess ->
-            [Codec.SchemaRegistry, Codec.ObjectContainerFile, Codec.Plain]
-            |> Enum.find(& &1.is_decodable(payload))
-
-          :registry ->
-            Codec.SchemaRegistry
-
-          :ocf ->
-            Codec.ObjectContainerFile
-
-          :plain ->
-            Codec.Plain
-
-          _ ->
-            {:error, :unknown_format}
-        end
+        [Codec.SchemaRegistry, Codec.ObjectContainerFile, Codec.Plain]
+        |> Enum.find(& &1.is_decodable(payload))
 
       codec.decode(payload, schema: schema)
     end
@@ -116,7 +113,8 @@ defmodule Avrora.Encoder do
 
   The `:format` argument controls output format:
 
-  * `:plain` - Just return Avro binary data, with no header or embedded schema
+  * `:plain` - Just return Avro binary data, with no header or embedded schema.
+    Alternatively the encode_plain/2 function is equivalent
   * `:ocf` - Use [Object Container File]https://avro.apache.org/docs/1.8.1/spec.html#Object+Container+Files)
     format, embedding the full schema with the data
   * `:registry` - Write data with Confluent Schema Registry
@@ -164,6 +162,32 @@ defmodule Avrora.Encoder do
         _ ->
           {:error, :unknown_format}
       end
+    end
+  end
+
+  @doc """
+  Encode binary Avro message with :plain format and given schema.
+
+  Retuns a plain Avro encoded message binary. This exists to mirror decode_plain/2,
+  which is necessary when decoding plain messages with a given schema due to the possibility of
+  a plain message starting with the magic byte, leading decode/2 to fail.
+
+  ## Examples
+
+      ...> payload = %{ "link_is_enabled" => false, "updated_at" => 1_586_632_500, "updated_by_id" => 1_00 }
+      ...> Avrora.Encoder.encode_plain(payload,"io.confluent.numeric_transfer")
+      {:ok, <<0, 232, 220, 144, 233, 11, 200, 1>>}
+  """
+  def encode_plain(payload, schema_name: schema_name) when is_map(payload) do
+    with {:ok, schema_name} <- Name.parse(schema_name) do
+      unless is_nil(schema_name.version) do
+        Logger.warn(
+          "encoding message with schema version is not supported yet, `#{schema_name.name}` used instead"
+        )
+      end
+
+      schema = %Schema{full_name: schema_name.name}
+      Codec.Plain.encode(payload, schema: schema)
     end
   end
 end

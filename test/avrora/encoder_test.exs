@@ -402,50 +402,51 @@ defmodule Avrora.EncoderTest do
     end
   end
 
-  test "when decoding plain message that starts with what looks like a magic byte" do
-    schema_name = "io.confluent.numeric_transfer"
-    numeric_transfer_schema = numeric_transfer_schema()
+  describe "decode_plain/2" do
+    test "when decoding plain message that starts with what looks like a magic byte" do
+      schema_name = "io.confluent.numeric_transfer"
+      numeric_transfer_schema = numeric_transfer_schema()
 
-    Avrora.Storage.MemoryMock
-    |> expect(:get, fn key ->
-      assert key == "io.confluent.numeric_transfer"
+      Avrora.Storage.MemoryMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.numeric_transfer"
 
-      {:ok, nil}
-    end)
-    |> expect(:put, fn key, value ->
-      assert key == "io.confluent.numeric_transfer"
-      assert value == numeric_transfer_schema
+        {:ok, nil}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.numeric_transfer"
+        assert value == numeric_transfer_schema
 
-      {:ok, value}
-    end)
+        {:ok, value}
+      end)
 
-    Avrora.Storage.RegistryMock
-    |> expect(:put, fn key, value ->
-      assert key == "io.confluent.numeric_transfer"
-      assert value == numeric_transfer_json_schema()
+      Avrora.Storage.RegistryMock
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.numeric_transfer"
+        assert value == numeric_transfer_json_schema()
 
-      {:error, :unconfigured_registry_url}
-    end)
+        {:error, :unconfigured_registry_url}
+      end)
 
-    Avrora.Storage.FileMock
-    |> expect(:get, fn key ->
-      assert key == "io.confluent.numeric_transfer"
+      Avrora.Storage.FileMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.numeric_transfer"
 
-      {:ok, numeric_transfer_schema}
-    end)
+        {:ok, numeric_transfer_schema}
+      end)
 
-    assert {:ok, decoded} =
-             Avrora.decode(
-               numeric_transfer_plain_message_0(),
-               schema_name: schema_name,
-               format: :plain
-             )
+      assert {:ok, decoded} =
+               Avrora.decode_plain(
+                 numeric_transfer_plain_message_0(),
+                 schema_name: schema_name
+               )
 
-    assert decoded == %{
-             "link_is_enabled" => false,
-             "updated_at" => 1_586_632_500,
-             "updated_by_id" => 1_00
-           }
+      assert decoded == %{
+               "link_is_enabled" => false,
+               "updated_at" => 1_586_632_500,
+               "updated_by_id" => 1_00
+             }
+    end
   end
 
   describe "encode/2" do

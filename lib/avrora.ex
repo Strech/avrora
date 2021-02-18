@@ -6,6 +6,8 @@ defmodule Avrora do
   defdelegate decode(payload), to: Avrora.Encoder
   defdelegate encode(payload, opts), to: Avrora.Encoder
   defdelegate decode(payload, opts), to: Avrora.Encoder
+  defdelegate decode_plain(payload, opts), to: Avrora.Encoder
+  defdelegate encode_plain(payload, opts), to: Avrora.Encoder
   defdelegate extract_schema(payload), to: Avrora.Encoder
 
   def start_link(opts \\ []), do: Supervisor.start_link(__MODULE__, opts, name: __MODULE__)
