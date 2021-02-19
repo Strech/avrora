@@ -73,8 +73,7 @@ defmodule Avrora.Encoder do
         )
       end
 
-      schema = %Schema{full_name: schema_name.name}
-      Codec.Plain.decode(payload, schema: schema)
+      Codec.Plain.decode(payload, schema: %Schema{full_name: schema_name.name})
     end
   end
 
@@ -186,8 +185,7 @@ defmodule Avrora.Encoder do
         )
       end
 
-      schema = %Schema{full_name: schema_name.name}
-      Codec.Plain.encode(payload, schema: schema)
+      Codec.Plain.encode(payload, schema: %Schema{full_name: schema_name.name})
     end
   end
 end

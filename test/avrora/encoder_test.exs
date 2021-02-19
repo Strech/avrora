@@ -435,17 +435,10 @@ defmodule Avrora.EncoderTest do
         {:ok, numeric_transfer_schema}
       end)
 
-      assert {:ok, decoded} =
-               Avrora.decode_plain(
-                 numeric_transfer_plain_message_0(),
-                 schema_name: schema_name
-               )
+      {:ok, decoded} =
+        Avrora.decode_plain(numeric_transfer_plain_message_fake_magic_byte(), schema_name: schema_name)
 
-      assert decoded == %{
-               "link_is_enabled" => false,
-               "updated_at" => 1_586_632_500,
-               "updated_by_id" => 1_00
-             }
+      assert decoded == %{"link_is_enabled" => false, "updated_at" => 1_586_632_500, "updated_by_id" => 1_00}
     end
   end
 
