@@ -32,33 +32,23 @@ defmodule Avrora.Resolver do
   end
 
   @doc """
-  Resolve schema by integer ID, then update memory storage.
+  Resolve schema by integer ID or by a string name with optional version,
+  then update memory storage.
 
-  Stores schema in memory cache with key id.
+  In case of an integer ID it stores schema in memory with ID key.
 
   ## Examples
 
-      iex> {:ok, schema} = Avrora.Resolver.resolve(1)
-      iex> schema.full_name
+      ...> {:ok, schema} = Avrora.Resolver.resolve(1)
+      ...> schema.full_name
       "io.confluent.Payment"
-  """
-  @spec resolve(integer()) :: {:ok, Avrora.Schema.t()} | {:error, term()}
-  def resolve(id) when is_integer(id) do
-    with {:ok, nil} <- memory_storage().get(id),
-         {:ok, avro} <- registry_storage().get(id) do
-      memory_storage().put(id, avro)
-    end
-  end
 
-  @doc """
-  Resolve schema by string name with optional version.
+  In case of a string name it stores schema in memory with key `name` and `name:version`,
+  also adds schema to the Schema Registry (if it's configured).
 
-  Version can be provided by adding `:` and version number, e.g. `io.confluent.Payment:5`.
-
-  If the Schema Registry is configured (`:registry_url`), it will first try
-  there, then local schemas folder (`:schemas_path`).
-
-  Stores schema in memory with key `name` and `name:version` and adds schema to registry if configured.
+  A version for the name can be provided by adding `:` with the version number,
+  e.g. `io.confluent.Payment:5`. If the Schema Registry is configured (`:registry_url`),
+  it will first try fetch there, then local schemas folder (`:schemas_path`).
 
   ## Examples
 
@@ -72,8 +62,16 @@ defmodule Avrora.Resolver do
       "io.confluent.Payment"
       ...> schema.full_name
       "io.confluent.Payment"
+
   """
-  @spec resolve(String.t()) :: {:ok, Avrora.Schema.t()} | {:error, term()}
+  @spec resolve(integer() | String.t()) :: {:ok, Avrora.Schema.t()} | {:error, term()}
+  def resolve(id) when is_integer(id) do
+    with {:ok, nil} <- memory_storage().get(id),
+         {:ok, avro} <- registry_storage().get(id) do
+      memory_storage().put(id, avro)
+    end
+  end
+
   def resolve(name) when is_binary(name) do
     with {:ok, schema_name} <- Name.parse(name),
          {:ok, nil} <- memory_storage().get(name) do
