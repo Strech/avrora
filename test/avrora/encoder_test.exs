@@ -404,17 +404,17 @@ defmodule Avrora.EncoderTest do
 
   describe "decode_plain/2" do
     test "when decoding plain message that starts with what looks like a magic byte" do
-      schema_name = "io.confluent.numeric_transfer"
+      schema_name = "io.confluent.NumericTransfer"
       numeric_transfer_schema = numeric_transfer_schema()
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.numeric_transfer"
+        assert key == "io.confluent.NumericTransfer"
 
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.numeric_transfer"
+        assert key == "io.confluent.NumericTransfer"
         assert value == numeric_transfer_schema
 
         {:ok, value}
@@ -422,7 +422,7 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.RegistryMock
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.numeric_transfer"
+        assert key == "io.confluent.NumericTransfer"
         assert value == numeric_transfer_json_schema()
 
         {:error, :unconfigured_registry_url}
@@ -430,15 +430,22 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.FileMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.numeric_transfer"
+        assert key == "io.confluent.NumericTransfer"
 
         {:ok, numeric_transfer_schema}
       end)
 
       {:ok, decoded} =
-        Avrora.decode_plain(numeric_transfer_plain_message_fake_magic_byte(), schema_name: schema_name)
+        Avrora.decode_plain(
+          numeric_transfer_plain_message_with_fake_magic_byte(),
+          schema_name: schema_name
+        )
 
-      assert decoded == %{"link_is_enabled" => false, "updated_at" => 1_586_632_500, "updated_by_id" => 1_00}
+      assert decoded == %{
+               "link_is_enabled" => false,
+               "updated_at" => 1_586_632_500,
+               "updated_by_id" => 1_00
+             }
     end
   end
 
@@ -746,7 +753,7 @@ defmodule Avrora.EncoderTest do
       119, 32, 97, 114, 101, 32, 121, 111, 117, 63, 0>>
   end
 
-  defp numeric_transfer_plain_message_0 do
+  defp numeric_transfer_plain_message_with_fake_magic_byte do
     <<0, 232, 220, 144, 233, 11, 200, 1>>
   end
 
@@ -783,6 +790,6 @@ defmodule Avrora.EncoderTest do
   end
 
   defp numeric_transfer_json_schema do
-    ~s({"namespace":"io.confluent","name":"numeric_transfer","type":"record","fields":[{"name":"link_is_enabled","type":"boolean"},{"name":"updated_at","type":"int"},{"name":"updated_by_id","type":"int"}]})
+    ~s({"namespace":"io.confluent","name":"NumericTransfer","type":"record","fields":[{"name":"link_is_enabled","type":"boolean"},{"name":"updated_at","type":"int"},{"name":"updated_by_id","type":"int"}]})
   end
 end

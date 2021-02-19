@@ -54,13 +54,10 @@ defmodule Avrora.Encoder do
   @doc """
   Decode binary Avro message with :plain format and given schema.
 
-  This is pulled out as a special function to work around :plain encoded binaries that,
-  due to their encoded data, start with the magic byte.
-
   ## Examples
 
       ...> payload = <<0, 232, 220, 144, 233, 11, 200, 1>>
-      ...> Avrora.Encoder.decode_plain(payload,"io.confluent.numeric_transfer")
+      ...> Avrora.Encoder.decode_plain(payload,"io.confluent.NumericTransfer")
       {:ok, %{ "link_is_enabled" => false, "updated_at" => 1_586_632_500, "updated_by_id" => 1_00 }
   """
   @spec decode_plain(binary(), schema_name: String.t()) ::
@@ -112,8 +109,7 @@ defmodule Avrora.Encoder do
 
   The `:format` argument controls output format:
 
-  * `:plain` - Just return Avro binary data, with no header or embedded schema.
-    Alternatively the encode_plain/2 function is equivalent
+  * `:plain` - Just return Avro binary data, with no header or embedded schema
   * `:ocf` - Use [Object Container File]https://avro.apache.org/docs/1.8.1/spec.html#Object+Container+Files)
     format, embedding the full schema with the data
   * `:registry` - Write data with Confluent Schema Registry
@@ -167,14 +163,10 @@ defmodule Avrora.Encoder do
   @doc """
   Encode binary Avro message with :plain format and given schema.
 
-  Retuns a plain Avro encoded message binary. This exists to mirror decode_plain/2,
-  which is necessary when decoding plain messages with a given schema due to the possibility of
-  a plain message starting with the magic byte, leading decode/2 to fail.
-
   ## Examples
 
       ...> payload = %{ "link_is_enabled" => false, "updated_at" => 1_586_632_500, "updated_by_id" => 1_00 }
-      ...> Avrora.Encoder.encode_plain(payload,"io.confluent.numeric_transfer")
+      ...> Avrora.Encoder.encode_plain(payload,"io.confluent.NumericTransfer")
       {:ok, <<0, 232, 220, 144, 233, 11, 200, 1>>}
   """
   def encode_plain(payload, schema_name: schema_name) when is_map(payload) do
