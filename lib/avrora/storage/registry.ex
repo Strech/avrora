@@ -17,14 +17,18 @@ defmodule Avrora.Storage.Registry do
   @content_type "application/vnd.schemaregistry.v1+json"
 
   @doc """
-  Get schema by subject name.
+  Get schema by integer ID or by the subject name.
 
-  Uses version if defined or latest.
+  If subject name was used by default the latest version will be used
+  unless it explicitly given (e.g `io.confluent.Payment:1`).
 
   ## Examples
 
-      iex> {:ok, schema} = Avrora.Storage.Registry.get("io.confluent.Payment")
-      iex> schema.full_name
+      ...> {:ok, schema} = Avrora.Storage.Registry.get(1)
+      ...> schema.full_name
+      "io.confluent.Payment"
+      ...> {:ok, schema} = Avrora.Storage.Registry.get("io.confluent.Payment")
+      ...> schema.full_name
       "io.confluent.Payment"
   """
   def get(key) when is_binary(key) do
@@ -42,15 +46,6 @@ defmodule Avrora.Storage.Registry do
     end
   end
 
-  @doc """
-  Get schema by integer ID.
-
-  ## Examples
-
-      ...> {:ok, schema} = Avrora.Storage.Registry.get(1)
-      ...> schema.full_name
-      "io.confluent.Payment"
-  """
   def get(key) when is_integer(key) do
     with {:ok, response} <- http_client_get("schemas/ids/#{key}"),
          {:ok, schema} <- Map.fetch(response, "schema"),
