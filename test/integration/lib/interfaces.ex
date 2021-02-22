@@ -35,6 +35,11 @@ defmodule Interfaces do
     end
 
     @doc false
+    def decode_plain_with_one_option do
+      Avrora.decode(<<2, 118>>, schema_name: "avrora.Record")
+    end
+
+    @doc false
     def encode_with_one_option do
       Avrora.encode(%{"k" => "v"}, schema_name: "avrora.Record")
     end
@@ -42,6 +47,11 @@ defmodule Interfaces do
     @doc false
     def encode_with_two_options do
       Avrora.encode(%{"k" => "v"}, schema_name: "avrora.Record", format: :plain)
+    end
+
+    # doc false
+    def encode_plain_with_one_option do
+      Avrora.encode_plain(%{"k" => "v"}, schema_name: "avrora.Record")
     end
   end
 end

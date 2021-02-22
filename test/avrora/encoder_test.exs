@@ -402,6 +402,53 @@ defmodule Avrora.EncoderTest do
     end
   end
 
+  describe "decode_plain/2" do
+    test "when decoding plain message that starts with what looks like a magic byte" do
+      schema_name = "io.confluent.NumericTransfer"
+      numeric_transfer_schema = numeric_transfer_schema()
+
+      Avrora.Storage.MemoryMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.NumericTransfer"
+
+        {:ok, nil}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.NumericTransfer"
+        assert value == numeric_transfer_schema
+
+        {:ok, value}
+      end)
+
+      Avrora.Storage.RegistryMock
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.NumericTransfer"
+        assert value == numeric_transfer_json_schema()
+
+        {:error, :unconfigured_registry_url}
+      end)
+
+      Avrora.Storage.FileMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.NumericTransfer"
+
+        {:ok, numeric_transfer_schema}
+      end)
+
+      {:ok, decoded} =
+        Avrora.decode_plain(
+          numeric_transfer_plain_message_with_fake_magic_byte(),
+          schema_name: schema_name
+        )
+
+      assert decoded == %{
+               "link_is_enabled" => false,
+               "updated_at" => 1_586_632_500,
+               "updated_by_id" => 1_00
+             }
+    end
+  end
+
   describe "encode/2" do
     test "when registry is not configured" do
       payment_schema = payment_schema()
@@ -706,6 +753,10 @@ defmodule Avrora.EncoderTest do
       119, 32, 97, 114, 101, 32, 121, 111, 117, 63, 0>>
   end
 
+  defp numeric_transfer_plain_message_with_fake_magic_byte do
+    <<0, 232, 220, 144, 233, 11, 200, 1>>
+  end
+
   defp payment_schema do
     {:ok, schema} = Schema.parse(payment_json_schema())
     %{schema | id: nil, version: nil}
@@ -721,6 +772,11 @@ defmodule Avrora.EncoderTest do
     %{schema | id: nil, version: nil}
   end
 
+  defp numeric_transfer_schema do
+    {:ok, schema} = Schema.parse(numeric_transfer_json_schema())
+    %{schema | id: nil, version: nil}
+  end
+
   defp messenger_json_schema do
     ~s({"namespace":"io.confluent","name":"Messenger","type":"record","fields":[{"name":"inbox","type":{"type":"array","items":{"type":"record","name":"Message","fields":[{"name":"text","type":"string"}]}}},{"name":"archive","type":{"type":"array","items":"io.confluent.Message"}}]})
   end
@@ -731,5 +787,9 @@ defmodule Avrora.EncoderTest do
 
   defp payment_json_schema do
     ~s({"namespace":"io.confluent","name":"Payment","type":"record","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
+  end
+
+  defp numeric_transfer_json_schema do
+    ~s({"namespace":"io.confluent","name":"NumericTransfer","type":"record","fields":[{"name":"link_is_enabled","type":"boolean"},{"name":"updated_at","type":"int"},{"name":"updated_by_id","type":"int"}]})
   end
 end
