@@ -52,29 +52,6 @@ defmodule Avrora.Encoder do
   end
 
   @doc """
-  Decode binary Avro message with :plain format and given schema.
-
-  ## Examples
-
-      ...> payload = <<0, 232, 220, 144, 233, 11, 200, 1>>
-      ...> Avrora.Encoder.decode_plain(payload,"io.confluent.NumericTransfer")
-      {:ok, %{ "link_is_enabled" => false, "updated_at" => 1_586_632_500, "updated_by_id" => 1_00 }
-  """
-  @spec decode_plain(binary(), schema_name: String.t()) ::
-          {:ok, map() | list(map())} | {:error, term()}
-  def decode_plain(payload, schema_name: schema_name) when is_binary(payload) do
-    with {:ok, schema_name} <- Name.parse(schema_name) do
-      unless is_nil(schema_name.version) do
-        Logger.warn(
-          "decoding message with schema version is not supported, `#{schema_name.name}` used instead"
-        )
-      end
-
-      Codec.Plain.decode(payload, schema: %Schema{full_name: schema_name.name})
-    end
-  end
-
-  @doc """
   Decode binary Avro message, loading schema from local file or Schema Registry.
 
   ## Examples
@@ -90,7 +67,7 @@ defmodule Avrora.Encoder do
     with {:ok, schema_name} <- Name.parse(schema_name) do
       unless is_nil(schema_name.version) do
         Logger.warn(
-          "decoding message with schema version is not supported, `#{schema_name.name}` used instead"
+          "decoding with schema version is not supported, `#{schema_name.name}` used instead"
         )
       end
 
@@ -101,6 +78,28 @@ defmodule Avrora.Encoder do
         |> Enum.find(& &1.is_decodable(payload))
 
       codec.decode(payload, schema: schema)
+    end
+  end
+
+  @doc """
+  Decode binary Avro message with a :plain format and load schema from local file.
+
+  ## Examples
+
+      ...> payload = <<0, 232, 220, 144, 233, 11, 200, 1>>
+      ...> Avrora.Encoder.decode_plain(payload,"io.confluent.NumericTransfer")
+      {:ok, %{"link_is_enabled" => false, "updated_at" => 1586632500, "updated_by_id" => 100}
+  """
+  @spec decode_plain(binary(), schema_name: String.t()) :: {:ok, map()} | {:error, term()}
+  def decode_plain(payload, schema_name: schema_name) when is_binary(payload) do
+    with {:ok, schema_name} <- Name.parse(schema_name) do
+      unless is_nil(schema_name.version) do
+        Logger.warn(
+          "decoding with schema version is not supported, `#{schema_name.name}` used instead"
+        )
+      end
+
+      Codec.Plain.decode(payload, schema: %Schema{full_name: schema_name.name})
     end
   end
 
@@ -134,7 +133,7 @@ defmodule Avrora.Encoder do
     with {:ok, schema_name} <- Name.parse(schema_name) do
       unless is_nil(schema_name.version) do
         Logger.warn(
-          "encoding message with schema version is not supported yet, `#{schema_name.name}` used instead"
+          "encoding with schema version is not supported yet, `#{schema_name.name}` used instead"
         )
       end
 
@@ -161,19 +160,20 @@ defmodule Avrora.Encoder do
   end
 
   @doc """
-  Encode binary Avro message with :plain format and given schema.
+  Encode binary Avro message with a :plain format and load schema from local file.
 
   ## Examples
 
-      ...> payload = %{ "link_is_enabled" => false, "updated_at" => 1_586_632_500, "updated_by_id" => 1_00 }
+      ...> payload = %{"link_is_enabled" => false, "updated_at" => 1586632500, "updated_by_id" => 100}
       ...> Avrora.Encoder.encode_plain(payload,"io.confluent.NumericTransfer")
       {:ok, <<0, 232, 220, 144, 233, 11, 200, 1>>}
   """
+  @spec encode_plain(map(), schema_name: String.t()) :: {:ok, binary()} | {:error, term()}
   def encode_plain(payload, schema_name: schema_name) when is_map(payload) do
     with {:ok, schema_name} <- Name.parse(schema_name) do
       unless is_nil(schema_name.version) do
         Logger.warn(
-          "encoding message with schema version is not supported yet, `#{schema_name.name}` used instead"
+          "encoding with schema version is not supported for plain format, `#{schema_name.name}` used instead"
         )
       end
 

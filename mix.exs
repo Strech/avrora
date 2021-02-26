@@ -4,7 +4,7 @@ defmodule Avrora.MixProject do
   def project do
     [
       app: :avrora,
-      version: "0.17.0",
+      version: "0.18.0",
       elixir: "~> 1.6",
       description: description(),
       package: package(),
@@ -66,17 +66,24 @@ defmodule Avrora.MixProject do
       main: "readme",
       logo: "assets/logo.png",
       source_url: "https://github.com/Strech/avrora",
+      formatters: ~w(html),
       before_closing_body_tag: fn _format ->
         """
         <script type="text/javascript">
+          // fix github flavoured markdown
           var gfm = document.getElementsByClassName("gfm");
           for (var index = 0; index < gfm.length; index++) {
             gfm[index].innerHTML = gfm[index].textContent;
           };
 
+          // fix <sup> tags
+          document.body.innerHTML = document.body.innerHTML.replace(/&lt;([\/]?)sup&gt;/g, '<$1sup>');
+
+          // fix logo path
           var image = document.getElementById("avroraLogo");
           image.src = image.getAttribute("src").replace("/assets", "assets");
 
+          // hide
           var nodoc = document.getElementsByClassName("nodoc");
           while (nodoc.length > 0) {
             nodoc[0].parentNode.removeChild(nodoc[0]);

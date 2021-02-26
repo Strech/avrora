@@ -404,7 +404,6 @@ defmodule Avrora.EncoderTest do
 
   describe "decode_plain/2" do
     test "when decoding plain message that starts with what looks like a magic byte" do
-      schema_name = "io.confluent.NumericTransfer"
       numeric_transfer_schema = numeric_transfer_schema()
 
       Avrora.Storage.MemoryMock
@@ -438,14 +437,10 @@ defmodule Avrora.EncoderTest do
       {:ok, decoded} =
         Avrora.decode_plain(
           numeric_transfer_plain_message_with_fake_magic_byte(),
-          schema_name: schema_name
+          schema_name: "io.confluent.NumericTransfer"
         )
 
-      assert decoded == %{
-               "link_is_enabled" => false,
-               "updated_at" => 1_586_632_500,
-               "updated_by_id" => 1_00
-             }
+      assert decoded == numeric_transfer_payload()
     end
   end
 
@@ -707,6 +702,53 @@ defmodule Avrora.EncoderTest do
     end
   end
 
+  describe "encode_plain/2" do
+    test "when encoded message will contain fake magic byte" do
+      numeric_transfer_schema = numeric_transfer_schema()
+
+      Avrora.Storage.MemoryMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.NumericTransfer"
+
+        {:ok, nil}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.NumericTransfer"
+        assert value == numeric_transfer_schema
+
+        {:ok, value}
+      end)
+
+      Avrora.Storage.RegistryMock
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.NumericTransfer"
+        assert value == numeric_transfer_json_schema()
+
+        {:error, :unconfigured_registry_url}
+      end)
+
+      Avrora.Storage.FileMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.NumericTransfer"
+
+        {:ok, numeric_transfer_schema}
+      end)
+
+      output =
+        capture_log(fn ->
+          {:ok, encoded} =
+            Avrora.encode_plain(
+              numeric_transfer_payload(),
+              schema_name: "io.confluent.NumericTransfer:1"
+            )
+
+          assert encoded == numeric_transfer_plain_message_with_fake_magic_byte()
+        end)
+
+      assert output =~ "with schema version is not supported"
+    end
+  end
+
   defp is_payment_ocf(payload) do
     match?(
       <<79, 98, 106, 1, _::size(1504), 72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45,
@@ -720,6 +762,9 @@ defmodule Avrora.EncoderTest do
 
   defp messenger_payload,
     do: %{"inbox" => [%{"text" => "Hello world!"}], "archive" => [%{"text" => "How are you?"}]}
+
+  defp numeric_transfer_payload,
+    do: %{"link_is_enabled" => false, "updated_at" => 1_586_632_500, "updated_by_id" => 1_00}
 
   defp payment_registry_message do
     <<0, 0, 0, 0, 42, 72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48,
