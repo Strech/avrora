@@ -76,8 +76,18 @@ defmodule Avrora.MixProject do
             gfm[index].innerHTML = gfm[index].textContent;
           };
 
-          // fix <sup> tags
+          // fix <sup> tags and Emoji's
           document.body.innerHTML = document.body.innerHTML.replace(/&lt;([\/]?)sup&gt;/g, '<$1sup>');
+          document.body.innerHTML = document.body.innerHTML.replace(/:[\\w_]+:/g, function (match) {
+            console.log(match);
+
+            return {
+              ':bulb:': '💡',
+              ':blue_heart:': '💙',
+              ':point_down:': '👇',
+              ':beginner:': '🔰'
+            }[match];
+          });
 
           // fix logo path
           var image = document.getElementById("avroraLogo");

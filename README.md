@@ -28,6 +28,7 @@
 [7]: https://github.com/dasch/avro_turf
 [8]: https://www.confluent.io/blog/multiple-event-types-in-the-same-kafka-topic/#avro-unions-with-schema-references
 [9]: https://github.com/Strech/avrora/wiki/Schema-name-resolution
+[10]: https://github.com/Strech/avrora/pull/70
 
 # Getting Started
 
@@ -286,6 +287,10 @@ message =
 {:ok, decoded} = Avrora.decode(message)
 [%{"id" => "tx-1", "amount" => 15.99}]
 ```
+
+:bulb: Due to [possible collision][10] of the `:plain` format and `:registry` via magic-like
+byte sequence it is recommended<sup>[v0.18]</sup> to use `Avrora.decode_plain/2` and `Avrora.encode_plain/2` if
+you are working with `:plain` format (see in all available functions).
 
 <details class="nodoc">
   <summary>:mag: Click to expand for all available functions</summary>
