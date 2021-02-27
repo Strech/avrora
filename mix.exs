@@ -79,7 +79,7 @@ defmodule Avrora.MixProject do
           // fix <sup> tags and Emoji
           document.body.innerHTML =
             document.body.innerHTML
-              .replace(/&lt;([\/]?)sup&gt;/g, '<$1sup>');
+              .replace(/&lt;([\/]?)sup&gt;/g, '<$1sup>')
               .replace(/:[\\w_]+:/g, function (match) {
                 return {
                   ':bulb:': '💡',
