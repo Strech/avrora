@@ -18,6 +18,7 @@
 [v0.15]: https://github.com/Strech/avrora/releases/tag/v0.15.0
 [v0.16]: https://github.com/Strech/avrora/releases/tag/v0.16.0
 [v0.17]: https://github.com/Strech/avrora/releases/tag/v0.17.0
+[v0.18]: https://github.com/Strech/avrora/releases/tag/v0.18.0
 [1]: https://avro.apache.org/
 [2]: https://www.confluent.io/confluent-schema-registry
 [3]: https://docs.confluent.io/current/schema-registry/serializer-formatter.html#wire-format
@@ -27,6 +28,7 @@
 [7]: https://github.com/dasch/avro_turf
 [8]: https://www.confluent.io/blog/multiple-event-types-in-the-same-kafka-topic/#avro-unions-with-schema-references
 [9]: https://github.com/Strech/avrora/wiki/Schema-name-resolution
+[10]: https://github.com/Strech/avrora/pull/70
 
 # Getting Started
 
@@ -55,7 +57,7 @@ Add Avrora to `mix.exs` as a dependency
 ```elixir
 def deps do
   [
-    {:avrora, "~> 0.17"}
+    {:avrora, "~> 0.18"}
   ]
 end
 ```
@@ -228,7 +230,7 @@ message = %{"id" => "tx-1", "amount" => 15.99}
 
 The `:format` argument controls output format:
 
-- `:plain` - Just return Avro binary data, with no header or embedded schema
+- `:plain`<sup>deprecated [v0.18]</sup> - Just return Avro binary data, with no header or embedded schema
 - `:ocf` - Use [Object Container File][4]
   format, embedding the full schema with the data
 - `:registry` - Write data with Confluent Schema Registry
@@ -240,8 +242,8 @@ The `:format` argument controls output format:
 {:ok, pid} = Avrora.start_link()
 message = %{"id" => "tx-1", "amount" => 15.99}
 
-{:ok, encoded} = Avrora.encode(message, schema_name: "io.confluent.Payment", format: :plain)
-<<8, 116, 120, 45, 49, 123, 20, 174, 71, 225, 250, 47, 64>>
+{:ok, encoded} = Avrora.encode(message, schema_name: "io.confluent.Payment", format: :registry)
+<<0, 0, 42, 0, 8, 116, 120, 45, 49, 123, 20, 174, 71, 225, 250, 47, 64>>
 ```
 
 ### decode/2
@@ -250,7 +252,7 @@ Decode `Payment` message using the specified schema
 
 ```elixir
 {:ok, pid} = Avrora.start_link()
-message = <<8, 116, 120, 45, 49, 123, 20, 174, 71, 225, 250, 47, 64>>
+message = <<0, 0, 42, 0, 8, 116, 120, 45, 49, 123, 20, 174, 71, 225, 250, 47, 64>>
 
 {:ok, decoded} = Avrora.decode(message, schema_name: "io.confluent.Payment")
 %{"id" => "tx-1", "amount" => 15.99}
@@ -286,8 +288,36 @@ message =
 [%{"id" => "tx-1", "amount" => 15.99}]
 ```
 
+:bulb: Due to [possible collision][10] of the `:plain` format and `:registry` via magic-like
+byte sequence it is recommended<sup>[v0.18]</sup> to use `Avrora.decode_plain/2` and `Avrora.encode_plain/2` if
+you are working with `:plain` format (see in all available functions).
+
 <details class="nodoc">
   <summary>:mag: Click to expand for all available functions</summary>
+
+### decode_plain/2<sup>[0.18]</sup>
+
+Decode a message encoded in a `:plain` format.
+
+```elixir
+{:ok, pid} = Avrora.start_link()
+message = <<8, 116, 120, 45, 49, 123, 20, 174, 71, 225, 250, 47, 64>>
+
+{:ok, decoded} = Avrora.decode(message, schema_name: "io.confluent.Payment")
+%{"id" => "tx-1", "amount" => 15.99}
+```
+
+### encode_plain/2<sup>[0.18]</sup>
+
+Encode a payload in a `:plain` format.
+
+```elixir
+{:ok, pid} = Avrora.start_link()
+message = %{"id" => "tx-1", "amount" => 15.99}
+
+{:ok, encoded} = Avrora.encode(message, schema_name: "io.confluent.Payment")
+<<8, 116, 120, 45, 49, 123, 20, 174, 71, 225, 250, 47, 64>>
+```
 
 ### extract_schema/1
 
