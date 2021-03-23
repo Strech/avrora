@@ -90,7 +90,7 @@ defmodule Avrora.Encoder do
       ...> Avrora.Encoder.decode_plain(payload,"io.confluent.NumericTransfer")
       {:ok, %{"link_is_enabled" => false, "updated_at" => 1586632500, "updated_by_id" => 100}
   """
-  @spec decode_plain(binary(), schema_name: String.t()) :: {:ok, map()} | {:error, term()}
+  @spec decode_plain(binary(), schema_name: String.t()) :: {:ok, :avro.out()} | {:error, term()}
   def decode_plain(payload, schema_name: schema_name) when is_binary(payload) do
     with {:ok, schema_name} <- Name.parse(schema_name) do
       unless is_nil(schema_name.version) do
