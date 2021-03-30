@@ -122,6 +122,8 @@ defmodule Avrora.Client do
       defdelegate decode(payload), to: :"Elixir.#{unquote(module)}.Encoder"
       defdelegate encode(payload, opts), to: :"Elixir.#{unquote(module)}.Encoder"
       defdelegate decode(payload, opts), to: :"Elixir.#{unquote(module)}.Encoder"
+      defdelegate decode_plain(payload, opts), to: :"Elixir.#{unquote(module)}.Encoder"
+      defdelegate encode_plain(payload, opts), to: :"Elixir.#{unquote(module)}.Encoder"
       defdelegate extract_schema(payload), to: :"Elixir.#{unquote(module)}.Encoder"
 
       def start_link(opts \\ []), do: Supervisor.start_link(__MODULE__, opts, name: __MODULE__)
