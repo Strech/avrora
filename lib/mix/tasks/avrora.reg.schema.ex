@@ -10,7 +10,7 @@ defmodule Mix.Tasks.Avrora.Reg.Schema do
   The search of the schemas will be performed under path configured in `schemas_path`
   configuration option. One of either option must be given.
 
-  ## Options
+  ## Command line options
 
     * `--name` - the full name of the schema to register (exclusive with `--all`)
     * `--as` - the name which will be used to register schema (i.e subject)
@@ -37,7 +37,9 @@ defmodule Mix.Tasks.Avrora.Reg.Schema do
   """
   @shortdoc "Register schema(s) in the Confluent Schema Registry"
 
-  @options [
+  alias Mix.Tasks
+
+  @cli_options [
     strict: [
       as: :string,
       all: :boolean,
@@ -48,12 +50,14 @@ defmodule Mix.Tasks.Avrora.Reg.Schema do
 
   @impl Mix.Task
   def run(argv) do
-    {opts, _, _} = OptionParser.parse(argv, @options)
+    Tasks.Loadpaths.run(["--no-elixir-version-check", "--no-archives-check"])
+
+    {opts, _, _} = OptionParser.parse(argv, @cli_options)
     {module_name, opts} = Keyword.pop(opts, :module, "Avrora")
 
-    module = Module.safe_concat(Elixir, module_name)
-    config = Module.safe_concat(module, Config)
-    registrar = Module.safe_concat(module, Utils.Registrar)
+    module = Module.concat(Elixir, module_name)
+    config = Module.concat(module, Config)
+    registrar = Module.concat(module, Utils.Registrar)
 
     {:ok, _} = Application.ensure_all_started(:avrora)
     {:ok, _} = module.start_link()
