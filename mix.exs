@@ -4,7 +4,7 @@ defmodule Avrora.MixProject do
   def project do
     [
       app: :avrora,
-      version: "0.18.1",
+      version: "0.19.0",
       elixir: "~> 1.6",
       description: description(),
       package: package(),
@@ -14,7 +14,7 @@ defmodule Avrora.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       dialyzer: [
         plt_file: {:no_warn, "priv/plts/dialyzer.plt"},
-        plt_add_apps: [:mix]
+        plt_add_apps: [:mix, :ex_unit]
       ],
       preferred_cli_env: [
         coveralls: :test,

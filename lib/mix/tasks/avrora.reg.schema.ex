@@ -55,7 +55,7 @@ defmodule Mix.Tasks.Avrora.Reg.Schema do
     {opts, _, _} = OptionParser.parse(argv, @cli_options)
     {module_name, opts} = Keyword.pop(opts, :module, "Avrora")
 
-    module = Module.concat(Elixir, module_name)
+    module = Module.concat(Elixir, String.trim(module_name))
     config = Module.concat(module, Config)
     registrar = Module.concat(module, Utils.Registrar)
 
