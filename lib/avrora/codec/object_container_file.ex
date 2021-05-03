@@ -1,4 +1,6 @@
 defmodule Avrora.Codec.ObjectContainerFile do
+  @dialyzer {:no_opaque, [extract_json_schema: 1, extract_schema: 1]}
+
   @moduledoc """
   An Avro encoder/decoder working with an Object Container File formatted Avro messages.
 

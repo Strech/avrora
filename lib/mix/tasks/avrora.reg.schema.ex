@@ -3,18 +3,22 @@ defmodule Mix.Tasks.Avrora.Reg.Schema do
 
   @moduledoc """
   Register either one schema or all schemas in the `Avrora.Config.schemas_path`
-  directory.
+  directory (or your private client schemas path).
 
-      mix avrora.reg.schema [--all] [--name NAME] [--as NEW_NAME]
+      mix avrora.reg.schema [--all] [--name NAME] [--as NEW_NAME] [--module MODULE]
 
   The search of the schemas will be performed under path configured in `schemas_path`
   configuration option. One of either option must be given.
 
-  ## Options
+  ## Command line options
 
     * `--name` - the full name of the schema to register (exclusive with `--all`)
     * `--as` - the name which will be used to register schema (i.e subject)
     * `--all` - register all found schemas
+    * `--module` - private Avrora client module (i.e MyClient)
+
+  The `--module` option allows to use your private Avrora client module instead of
+  the default `Avrora`.
 
   The `--as` option is possible to use only together with `--name`.
 
@@ -28,36 +32,56 @@ defmodule Mix.Tasks.Avrora.Reg.Schema do
 
       mix avrora.reg.schema --name io.confluent.Payment
       mix avrora.reg.schema --name io.confluent.Payment --as MyCustomName
+      mix avrora.reg.schema --all --module MyClient
       mix avrora.reg.schema --all
   """
-
-  alias Avrora.{Config, Utils}
-
   @shortdoc "Register schema(s) in the Confluent Schema Registry"
+
+  alias Mix.Tasks
+
+  @cli_options [
+    strict: [
+      as: :string,
+      all: :boolean,
+      name: :string,
+      module: :string
+    ]
+  ]
 
   @impl Mix.Task
   def run(argv) do
-    {:ok, _} = Application.ensure_all_started(:avrora)
-    {:ok, _} = Avrora.start_link()
+    Tasks.Loadpaths.run(["--no-elixir-version-check", "--no-archives-check"])
 
-    case argv do
-      ["--all"] ->
-        [schemas_path(), "**", "*.avsc"]
+    {opts, _, _} = OptionParser.parse(argv, @cli_options)
+    {module_name, opts} = Keyword.pop(opts, :module, "Avrora")
+
+    module = Module.concat(Elixir, String.trim(module_name))
+    config = Module.concat(module, Config)
+    registrar = Module.concat(module, Utils.Registrar)
+
+    {:ok, _} = Application.ensure_all_started(:avrora)
+    {:ok, _} = module.start_link()
+
+    case opts |> Keyword.keys() |> Enum.sort() do
+      [:all] ->
+        [config.self().schemas_path(), "**", "*.avsc"]
         |> Path.join()
         |> Path.wildcard()
         |> Enum.each(fn file_path ->
           file_path
-          |> Path.relative_to(schemas_path())
+          |> Path.relative_to(config.self().schemas_path())
           |> Path.rootname()
           |> String.replace("/", ".")
-          |> register()
+          |> register_schema_by_name(registrar)
         end)
 
-      ["--name", name] ->
-        name |> String.trim() |> register()
+      [:name] ->
+        opts[:name] |> String.trim() |> register_schema_by_name(registrar)
 
-      ["--name", name, "--as", new_name] ->
-        name |> String.trim() |> register(as: String.trim(new_name))
+      [:as, :name] ->
+        opts[:name]
+        |> String.trim()
+        |> register_schema_by_name(registrar, as: String.trim(opts[:as]))
 
       _ ->
         message = """
@@ -70,24 +94,18 @@ defmodule Mix.Tasks.Avrora.Reg.Schema do
     end
   end
 
-  defp register(name, opts \\ []) do
+  defp register_schema_by_name(name, registrar, opts \\ []) do
     opts = Keyword.merge(opts, force: true)
 
-    case Utils.Registrar.register_schema_by_name(name, opts) do
+    case registrar.register_schema_by_name(name, opts) do
       {:ok, _} ->
-        message =
-          if Keyword.has_key?(opts, :as) do
-            "schema `#{name}' will be registered as `#{opts[:as]}'"
-          else
-            "schema `#{name}' will be registered"
-          end
-
-        Mix.shell().info(message)
+        case Keyword.get(opts, :as) do
+          nil -> Mix.shell().info("schema `#{name}' will be registered")
+          new_name -> Mix.shell().info("schema `#{name}' will be registered as `#{new_name}'")
+        end
 
       {:error, error} ->
         Mix.shell().error("schema `#{name}' will be skipped due to an error `#{error}'")
     end
   end
-
-  defp schemas_path, do: Config.self().schemas_path()
 end
