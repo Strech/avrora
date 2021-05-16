@@ -49,9 +49,55 @@ defmodule Interfaces do
       Avrora.encode(%{"k" => "v"}, schema_name: "avrora.Record", format: :plain)
     end
 
-    # doc false
+    @doc false
     def encode_plain_with_one_option do
       Avrora.encode_plain(%{"k" => "v"}, schema_name: "avrora.Record")
+    end
+  end
+
+  defmodule PrivateClientTest do
+    @moduledoc false
+
+    defmodule MyClient do
+      @moduledoc false
+      use Avrora.Client
+    end
+
+    alias Interfaces.PrivateClientTest.MyClient
+
+    @doc false
+    def extract_schema_with_no_options do
+      MyClient.extract_schema(<<2, 118>>)
+    end
+
+    @doc false
+    def decode_with_no_options do
+      MyClient.decode(<<2, 118>>)
+    end
+
+    @doc false
+    def decode_with_one_option do
+      MyClient.decode(<<2, 118>>, schema_name: "avrora.Record")
+    end
+
+    @doc false
+    def decode_plain_with_one_option do
+      MyClient.decode(<<2, 118>>, schema_name: "avrora.Record")
+    end
+
+    @doc false
+    def encode_with_one_option do
+      MyClient.encode(%{"k" => "v"}, schema_name: "avrora.Record")
+    end
+
+    @doc false
+    def encode_with_two_options do
+      MyClient.encode(%{"k" => "v"}, schema_name: "avrora.Record", format: :plain)
+    end
+
+    @doc false
+    def encode_plain_with_one_option do
+      MyClient.encode_plain(%{"k" => "v"}, schema_name: "avrora.Record")
     end
   end
 end
