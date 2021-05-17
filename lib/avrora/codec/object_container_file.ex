@@ -17,7 +17,7 @@ defmodule Avrora.Codec.ObjectContainerFile do
   alias Avrora.Codec
   alias Avrora.Config
   alias Avrora.Resolver
-  alias Avrora.Schema
+  alias Avrora.Schema.Codec, as: SchemaCodec
 
   @impl true
   def is_decodable(payload) when is_binary(payload) do
@@ -32,7 +32,7 @@ defmodule Avrora.Codec.ObjectContainerFile do
     with {:ok, {headers, {_, _, _, _, _, _, full_name, _} = erlavro, _}} <- do_decode(payload),
          {:ok, nil} <- memory_storage().get(full_name),
          {:ok, json} <- extract_json_schema(headers),
-         {:ok, schema} <- Schema.from_erlavro(erlavro, json: json) do
+         {:ok, schema} <- SchemaCodec.from_erlavro(erlavro, json: json) do
       memory_storage().put(full_name, schema)
     end
   end
@@ -52,7 +52,7 @@ defmodule Avrora.Codec.ObjectContainerFile do
   def encode(payload, schema: schema) when is_map(payload) do
     with {:ok, schema} <- resolve(schema),
          {:ok, body} <- Codec.Plain.encode(payload, schema: schema),
-         {:ok, schema} <- Schema.to_erlavro(schema) do
+         {:ok, schema} <- SchemaCodec.to_erlavro(schema) do
       do_encode(body, schema)
     end
   end

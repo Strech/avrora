@@ -353,17 +353,17 @@ defmodule Avrora.Utils.RegistrarTest do
   end
 
   defp schema_without_id_and_version do
-    {:ok, schema} = Schema.parse(json_schema())
+    {:ok, schema} = Schema.Codec.from_json(json_schema())
     %{schema | id: nil, version: nil}
   end
 
   defp schema_with_id do
-    {:ok, schema} = Schema.parse(json_schema())
+    {:ok, schema} = Schema.Codec.from_json(json_schema())
     %{schema | id: 1, version: nil}
   end
 
   defp schema_with_version do
-    {:ok, schema} = Schema.parse(json_schema())
+    {:ok, schema} = Schema.Codec.from_json(json_schema())
     %{schema | id: nil, version: 2}
   end
 

@@ -28,11 +28,11 @@ defmodule Avrora.Client do
   """
 
   @modules ~w(
-    schema
     encoder
     resolver
     avro_schema_store
     avro_decoder_options
+    schema/codec
     codec/plain
     codec/schema_registry
     codec/object_container_file
@@ -45,8 +45,8 @@ defmodule Avrora.Client do
   @aliases ~w(
     Codec
     Config
-    Schema
     Resolver
+    Schema.Codec
     AvroDecoderOptions
     Codec.Plain
     Codec.SchemaRegistry
@@ -58,11 +58,11 @@ defmodule Avrora.Client do
   defp personalize(definition, module: module) do
     definition = Regex.replace(~r/defmodule Avrora\./, definition, "defmodule ")
 
-    ~r/alias Avrora\.(.*)/
+    ~r/alias Avrora\.([\w\.]+)(, as: [\w\.]+)?/
     |> Regex.scan(definition)
-    |> Enum.reject(fn [_, m] -> !Enum.member?(@aliases, m) end)
-    |> Enum.reduce(definition, fn [als, mdl], dfn ->
-      Regex.replace(~r/#{als}(?=[[:cntrl:]])/, dfn, "alias #{module}.#{mdl}")
+    |> Enum.reject(fn [_, modl | _] -> !Enum.member?(@aliases, modl) end)
+    |> Enum.reduce(definition, fn [alis, modl | as], defn ->
+      Regex.replace(~r/#{alis}(?=[[:cntrl:]])/, defn, "alias #{module}.#{modl}#{as}")
     end)
   end
 

@@ -391,12 +391,12 @@ defmodule Avrora.Codec.SchemaRegistryTest do
   end
 
   defp payment_schema_with_id do
-    {:ok, schema} = Schema.parse(payment_json_schema())
+    {:ok, schema} = Schema.Codec.from_json(payment_json_schema())
     %{schema | id: 42, version: nil}
   end
 
   defp payment_schema do
-    {:ok, schema} = Schema.parse(payment_json_schema())
+    {:ok, schema} = Schema.Codec.from_json(payment_json_schema())
     %{schema | id: nil, version: nil}
   end
 
