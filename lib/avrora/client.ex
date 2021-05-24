@@ -32,7 +32,7 @@ defmodule Avrora.Client do
     resolver
     avro_schema_store
     avro_decoder_options
-    schema/codec
+    schema/encoder
     codec/plain
     codec/schema_registry
     codec/object_container_file
@@ -46,7 +46,7 @@ defmodule Avrora.Client do
     Codec
     Config
     Resolver
-    Schema.Codec
+    Schema.Encoder
     AvroDecoderOptions
     Codec.Plain
     Codec.SchemaRegistry

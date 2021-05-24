@@ -803,22 +803,22 @@ defmodule Avrora.EncoderTest do
   end
 
   defp payment_schema do
-    {:ok, schema} = Schema.Codec.from_json(payment_json_schema())
+    {:ok, schema} = Schema.Encoder.from_json(payment_json_schema())
     %{schema | id: nil, version: nil}
   end
 
   defp payment_schema_with_id do
-    {:ok, schema} = Schema.Codec.from_json(payment_json_schema())
+    {:ok, schema} = Schema.Encoder.from_json(payment_json_schema())
     %{schema | id: 42, version: nil}
   end
 
   defp messenger_schema do
-    {:ok, schema} = Schema.Codec.from_json(messenger_json_schema())
+    {:ok, schema} = Schema.Encoder.from_json(messenger_json_schema())
     %{schema | id: nil, version: nil}
   end
 
   defp numeric_transfer_schema do
-    {:ok, schema} = Schema.Codec.from_json(numeric_transfer_json_schema())
+    {:ok, schema} = Schema.Encoder.from_json(numeric_transfer_json_schema())
     %{schema | id: nil, version: nil}
   end
 

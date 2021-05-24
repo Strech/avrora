@@ -202,12 +202,12 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
   end
 
   defp payment_schema do
-    {:ok, schema} = Schema.Codec.from_json(payment_json_schema())
+    {:ok, schema} = Schema.Encoder.from_json(payment_json_schema())
     %{schema | id: nil, version: nil}
   end
 
   defp null_value_schema do
-    {:ok, schema} = Schema.Codec.from_json(null_value_json_schema())
+    {:ok, schema} = Schema.Encoder.from_json(null_value_json_schema())
     %{schema | id: nil, version: nil}
   end
 

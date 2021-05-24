@@ -492,17 +492,17 @@ defmodule Avrora.ResolverTest do
   end
 
   defp schema_without_id_and_version do
-    {:ok, schema} = Schema.Codec.from_json(json_schema())
+    {:ok, schema} = Schema.Encoder.from_json(json_schema())
     %{schema | id: nil, version: nil}
   end
 
   defp schema_with_id do
-    {:ok, schema} = Schema.Codec.from_json(json_schema())
+    {:ok, schema} = Schema.Encoder.from_json(json_schema())
     %{schema | id: 1, version: nil}
   end
 
   defp schema_with_id_and_version do
-    {:ok, schema} = Schema.Codec.from_json(json_schema())
+    {:ok, schema} = Schema.Encoder.from_json(json_schema())
     %{schema | id: 42, version: 3}
   end
 

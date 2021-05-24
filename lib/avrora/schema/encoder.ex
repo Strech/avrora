@@ -1,9 +1,10 @@
-defmodule Avrora.Schema.Codec do
+defmodule Avrora.Schema.Encoder do
   @moduledoc """
-  TODO
+  Encodes and parses Avro schemas from various formats, like JSON and erlavro into `Avrora.Schema`.
   """
 
-  alias Avrora.{Config, Schema}
+  alias Avrora.Config
+  alias Avrora.Schema
   alias Avrora.Schema.ReferenceCollector
 
   @type reference_lookup_fun :: (String.t() -> {:ok, String.t()} | {:error, term()})
@@ -15,7 +16,7 @@ defmodule Avrora.Schema.Codec do
   ## Examples
 
       iex> json = ~s({"namespace":"io.confluent","type":"record","name":"Payment","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
-      iex> {:ok, schema} = Avrora.Schema.Codec.from_json(json)
+      iex> {:ok, schema} = Avrora.Schema.Encoder.from_json(json)
       iex> schema.full_name
       "io.confluent.Payment"
   """
@@ -62,7 +63,7 @@ defmodule Avrora.Schema.Codec do
       ...>          {:avro_record_field, "amount", "", {:avro_primitive_type, "double", []}, :undefined,
       ...>           :ascending, []}
       ...>        ], "io.confluent.Payment", []}
-      iex> {:ok, schema} = Avrora.Schema.Codec.from_erlavro(payload)
+      iex> {:ok, schema} = Avrora.Schema.Encoder.from_erlavro(payload)
       iex> schema.id
       nil
       iex> schema.full_name
@@ -98,8 +99,8 @@ defmodule Avrora.Schema.Codec do
   ## Examples
 
       iex> json = ~s({"namespace":"io.confluent","type":"record","name":"Payment","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
-      iex> {:ok, schema} = Avrora.Schema.Codec.from_json(json)
-      iex> {:ok, {type, _, _, _, _, _, full_name, _}} = Avrora.Schema.Codec.to_erlavro(schema)
+      iex> {:ok, schema} = Avrora.Schema.Encoder.from_json(json)
+      iex> {:ok, {type, _, _, _, _, _, full_name, _}} = Avrora.Schema.Encoder.to_erlavro(schema)
       iex> full_name
       "io.confluent.Payment"
       iex> type

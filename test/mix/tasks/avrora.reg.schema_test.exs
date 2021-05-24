@@ -262,12 +262,12 @@ defmodule Mix.Tasks.Avrora.Reg.SchemaTest do
   end
 
   defp payment_schema_with_id do
-    {:ok, schema} = Schema.Codec.from_json(payment_json_schema())
+    {:ok, schema} = Schema.Encoder.from_json(payment_json_schema())
     %{schema | id: 1, version: nil}
   end
 
   defp payment_schema_without_id_and_version do
-    {:ok, schema} = Schema.Codec.from_json(payment_json_schema())
+    {:ok, schema} = Schema.Encoder.from_json(payment_json_schema())
     %{schema | id: nil, version: nil}
   end
 
@@ -276,12 +276,12 @@ defmodule Mix.Tasks.Avrora.Reg.SchemaTest do
   end
 
   defp event_schema_with_id do
-    {:ok, schema} = Schema.Codec.from_json(event_json_schema())
+    {:ok, schema} = Schema.Encoder.from_json(event_json_schema())
     %{schema | id: 2, version: nil}
   end
 
   defp event_schema_without_id_and_version do
-    {:ok, schema} = Schema.Codec.from_json(event_json_schema())
+    {:ok, schema} = Schema.Encoder.from_json(event_json_schema())
     %{schema | id: nil, version: nil}
   end
 
