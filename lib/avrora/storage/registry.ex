@@ -10,7 +10,7 @@ defmodule Avrora.Storage.Registry do
   require Logger
 
   alias Avrora.Config
-  alias Avrora.Schema
+  alias Avrora.Schema.Encoder, as: SchemaEncoder
   alias Avrora.Schema.Name
 
   @behaviour Avrora.Storage
@@ -39,7 +39,7 @@ defmodule Avrora.Storage.Registry do
          {:ok, version} <- Map.fetch(response, "version"),
          {:ok, schema} <- Map.fetch(response, "schema"),
          {:ok, references} <- extract_references(response),
-         {:ok, schema} <- Schema.parse(schema, make_reference_lookup_function(references)) do
+         {:ok, schema} <- SchemaEncoder.from_json(schema, make_reference_lookup_fun(references)) do
       Logger.debug("obtaining schema `#{schema_name.name}` with version `#{version}`")
 
       {:ok, %{schema | id: id, version: version}}
@@ -50,7 +50,7 @@ defmodule Avrora.Storage.Registry do
     with {:ok, response} <- http_client_get("schemas/ids/#{key}"),
          {:ok, schema} <- Map.fetch(response, "schema"),
          {:ok, references} <- extract_references(response),
-         {:ok, schema} <- Schema.parse(schema, make_reference_lookup_function(references)) do
+         {:ok, schema} <- SchemaEncoder.from_json(schema, make_reference_lookup_fun(references)) do
       Logger.debug("obtaining schema with global id `#{key}`")
 
       {:ok, %{schema | id: key}}
@@ -71,7 +71,7 @@ defmodule Avrora.Storage.Registry do
     with {:ok, schema_name} <- Name.parse(key),
          {:ok, response} <- http_client_post("subjects/#{schema_name.name}/versions", value),
          {:ok, id} <- Map.fetch(response, "id"),
-         {:ok, schema} <- Schema.parse(value) do
+         {:ok, schema} <- SchemaEncoder.from_json(value) do
       unless is_nil(schema_name.version) do
         Logger.warn(
           "storing schema with version is not allowed, `#{schema_name.name}` used instead"
@@ -110,10 +110,10 @@ defmodule Avrora.Storage.Registry do
     error -> {:error, error}
   end
 
-  def make_reference_lookup_function(map) when map_size(map) == 0,
-    do: &Avrora.Schema.reference_lookup/1
+  defp make_reference_lookup_fun(map) when map_size(map) == 0,
+    do: &SchemaEncoder.reference_lookup/1
 
-  def make_reference_lookup_function(references),
+  defp make_reference_lookup_fun(references),
     do: &Map.fetch(references, &1)
 
   defp http_client_get(path) do

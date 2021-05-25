@@ -1,6 +1,6 @@
-defmodule Avrora.SchemaTest do
+defmodule Avrora.Schema.EncoderTest do
   use ExUnit.Case, async: true
-  doctest Avrora.Schema
+  doctest Avrora.Schema.Encoder
 
   import Support.Config
   alias Avrora.Schema
@@ -9,8 +9,8 @@ defmodule Avrora.SchemaTest do
 
   describe "parse/2" do
     test "when payload is a valid json schema" do
-      {:ok, schema} = Schema.parse(payment_json())
-      {:ok, {type, _, _, _, _, fields, full_name, _}} = Schema.to_erlavro(schema)
+      {:ok, schema} = Schema.Encoder.from_json(payment_json())
+      {:ok, {type, _, _, _, _, fields, full_name, _}} = Schema.Encoder.to_erlavro(schema)
 
       assert type == :avro_record_type
       assert full_name == "io.confluent.Payment"
@@ -22,7 +22,7 @@ defmodule Avrora.SchemaTest do
 
     test "when payload is a valid json schema with external reference and callback returns valid schema" do
       {:ok, schema} =
-        Schema.parse(message_with_reference_json(), fn name ->
+        Schema.Encoder.from_json(message_with_reference_json(), fn name ->
           case name do
             "io.confluent.Attachment" -> {:ok, attachment_json()}
             "io.confluent.Signature" -> {:ok, signature_json()}
@@ -30,7 +30,7 @@ defmodule Avrora.SchemaTest do
           end
         end)
 
-      {:ok, {type, _, _, _, _, fields, full_name, _}} = Schema.to_erlavro(schema)
+      {:ok, {type, _, _, _, _, fields, full_name, _}} = Schema.Encoder.to_erlavro(schema)
 
       assert type == :avro_record_type
       assert full_name == "io.confluent.Message"
@@ -59,7 +59,7 @@ defmodule Avrora.SchemaTest do
 
     test "when payload is a valid json schema with external reference and callback returns invalid schema" do
       result =
-        Schema.parse(message_with_reference_json(), fn name ->
+        Schema.Encoder.from_json(message_with_reference_json(), fn name ->
           assert name == "io.confluent.Attachment"
           {:ok, ~s({})}
         end)
@@ -69,7 +69,7 @@ defmodule Avrora.SchemaTest do
 
     test "when payload is a valid json schema with external reference and callback returns error" do
       result =
-        Schema.parse(message_with_reference_json(), fn name ->
+        Schema.Encoder.from_json(message_with_reference_json(), fn name ->
           assert name == "io.confluent.Attachment"
           {:error, :bad_thing_happen}
         end)
@@ -78,19 +78,20 @@ defmodule Avrora.SchemaTest do
     end
 
     test "when payload is a valid json schema with external reference and no callback is given" do
-      assert {:error, {:not_found, "type"}} == Schema.parse(message_with_reference_json())
+      assert {:error, {:not_found, "type"}} ==
+               Schema.Encoder.from_json(message_with_reference_json())
     end
 
     test "when payload is an invalid json schema" do
-      assert Schema.parse("a:b") == {:error, "argument error"}
-      assert Schema.parse("{}") == {:error, {:not_found, "type"}}
+      assert Schema.Encoder.from_json("a:b") == {:error, "argument error"}
+      assert Schema.Encoder.from_json("{}") == {:error, {:not_found, "type"}}
     end
   end
 
   describe "to_erlavro/1" do
     test "when payload is a valid json schema" do
-      {:ok, schema} = Schema.parse(payment_json())
-      {:ok, {type, _, _, _, _, fields, full_name, _}} = Schema.to_erlavro(schema)
+      {:ok, schema} = Schema.Encoder.from_json(payment_json())
+      {:ok, {type, _, _, _, _, fields, full_name, _}} = Schema.Encoder.to_erlavro(schema)
 
       assert type == :avro_record_type
       assert full_name == "io.confluent.Payment"
@@ -100,7 +101,7 @@ defmodule Avrora.SchemaTest do
 
   describe "from_erlavro/2" do
     test "when payload is valid and no attributes are given" do
-      {:ok, schema} = Schema.from_erlavro(payment_erlavro())
+      {:ok, schema} = Schema.Encoder.from_erlavro(payment_erlavro())
 
       assert is_nil(schema.id)
       assert is_nil(schema.version)
@@ -110,7 +111,7 @@ defmodule Avrora.SchemaTest do
     end
 
     test "when payload is valid and JSON attribute is given" do
-      {:ok, schema} = Schema.from_erlavro(payment_erlavro(), json: "{}")
+      {:ok, schema} = Schema.Encoder.from_erlavro(payment_erlavro(), json: "{}")
 
       assert is_nil(schema.id)
       assert is_nil(schema.version)

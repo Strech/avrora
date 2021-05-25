@@ -6,6 +6,9 @@ defmodule Avrora.ClientTest do
   alias Fixtures.Alpha.Storage.Memory, as: AlphaMemory
   alias Fixtures.Beta.Storage.Memory, as: BetaMemory
 
+  import Support.Config
+  setup :support_config
+
   setup do
     start_supervised(Alpha)
     start_supervised(Beta)

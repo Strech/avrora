@@ -28,11 +28,11 @@ defmodule Avrora.Client do
   """
 
   @modules ~w(
-    schema
     encoder
     resolver
     avro_schema_store
     avro_decoder_options
+    schema/encoder
     codec/plain
     codec/schema_registry
     codec/object_container_file
@@ -45,8 +45,8 @@ defmodule Avrora.Client do
   @aliases ~w(
     Codec
     Config
-    Schema
     Resolver
+    Schema.Encoder
     AvroDecoderOptions
     Codec.Plain
     Codec.SchemaRegistry
@@ -55,16 +55,14 @@ defmodule Avrora.Client do
     Storage.File
   )
 
-  import Keyword, only: [get: 3]
-
   defp personalize(definition, module: module) do
     definition = Regex.replace(~r/defmodule Avrora\./, definition, "defmodule ")
 
-    ~r/alias Avrora\.(.*)/
+    ~r/alias Avrora\.([\w\.]+)(, as: [\w\.]+)?/
     |> Regex.scan(definition)
-    |> Enum.reject(fn [_, m] -> !Enum.member?(@aliases, m) end)
-    |> Enum.reduce(definition, fn [als, mdl], dfn ->
-      Regex.replace(~r/#{als}(?=[[:cntrl:]])/, dfn, "alias #{module}.#{mdl}")
+    |> Enum.reject(fn [_, modl | _] -> !Enum.member?(@aliases, modl) end)
+    |> Enum.reduce(definition, fn [alis, modl | as], defn ->
+      Regex.replace(~r/#{alis}(?=[[:cntrl:]])/, defn, "alias #{module}.#{modl}#{as}")
     end)
   end
 
@@ -96,14 +94,17 @@ defmodule Avrora.Client do
       quote do
         defmodule Config do
           @moduledoc false
+          @opts unquote(opts)
 
-          def schemas_path, do: unquote(get(opts, :schemas_path, Path.expand("./priv/schemas")))
-          def registry_url, do: unquote(get(opts, :registry_url, nil))
-          def registry_auth, do: unquote(get(opts, :registry_auth, nil))
-          def registry_schemas_autoreg, do: unquote(get(opts, :registry_schemas_autoreg, true))
-          def convert_null_values, do: unquote(get(opts, :convert_null_values, true))
-          def convert_map_to_proplist, do: unquote(get(opts, :convert_map_to_proplist, false))
-          def names_cache_ttl, do: unquote(get(opts, :names_cache_ttl, :infinity))
+          import Keyword, only: [get: 3]
+
+          def schemas_path, do: get(@opts, :schemas_path, Path.expand("./priv/schemas"))
+          def registry_url, do: get(@opts, :registry_url, nil)
+          def registry_auth, do: get(@opts, :registry_url, nil)
+          def registry_schemas_autoreg, do: get(@opts, :registry_schemas_autoreg, true)
+          def convert_null_values, do: get(@opts, :convert_null_values, true)
+          def convert_map_to_proplist, do: get(@opts, :convert_map_to_proplist, false)
+          def names_cache_ttl, do: get(@opts, :names_cache_ttl, :infinity)
           def file_storage, do: :"Elixir.#{unquote(module)}.Storage.File"
           def memory_storage, do: :"Elixir.#{unquote(module)}.Storage.Memory"
           def registry_storage, do: :"Elixir.#{unquote(module)}.Storage.Registry"
