@@ -49,7 +49,7 @@ defmodule Avrora.Codec.ObjectContainerFile do
   end
 
   @impl true
-  def encode(payload, schema: schema) when is_map(payload) do
+  def encode(payload, schema: schema) when is_binary(payload) or is_map(payload) do
     with {:ok, schema} <- resolve(schema),
          {:ok, body} <- Codec.Plain.encode(payload, schema: schema),
          {:ok, schema} <- SchemaEncoder.to_erlavro(schema) do

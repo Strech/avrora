@@ -26,7 +26,7 @@ defmodule Avrora.Codec.Plain do
   end
 
   @impl true
-  def encode(payload, schema: schema) when is_map(payload) do
+  def encode(payload, schema: schema) when is_binary(payload) or is_map(payload) do
     with {:ok, schema} <- resolve(schema), do: do_encode(payload, schema)
   end
 
@@ -57,6 +57,7 @@ defmodule Avrora.Codec.Plain do
     encoded =
       schema.lookup_table
       |> :avro_binary_encoder.encode(schema.full_name, payload)
+      |> List.wrap()
       |> :erlang.list_to_binary()
 
     {:ok, encoded}

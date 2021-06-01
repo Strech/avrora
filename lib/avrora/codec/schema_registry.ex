@@ -70,7 +70,7 @@ defmodule Avrora.Codec.SchemaRegistry do
   end
 
   @impl true
-  def encode(payload, schema: schema) when is_map(payload) do
+  def encode(payload, schema: schema) when is_binary(payload) or is_map(payload) do
     with {:ok, schema} <- resolve(schema) do
       schema = if is_nil(schema.id), do: {:error, :invalid_schema_id}, else: {:ok, schema}
 
