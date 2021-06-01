@@ -33,15 +33,15 @@ defmodule Avrora.Schema.EncoderTest do
     end
 
     test "when payload is a valid Fixed schema" do
-      {:ok, schema} = Schema.Encoder.from_json(md5_json())
+      {:ok, schema} = Schema.Encoder.from_json(crc32_json())
       {:ok, {type, _, _, _, value, full_name, _}} = Schema.Encoder.to_erlavro(schema)
 
       assert type == :avro_fixed_type
-      assert full_name == "io.confluent.MD5"
-      assert value == 16
+      assert full_name == "io.confluent.CRC32"
+      assert value == 8
 
-      assert schema.full_name == "io.confluent.MD5"
-      assert schema.json == md5_json()
+      assert schema.full_name == "io.confluent.CRC32"
+      assert schema.json == crc32_json()
     end
 
     test "when payload is a valid json schema with external reference and callback returns valid schema" do
@@ -165,7 +165,7 @@ defmodule Avrora.Schema.EncoderTest do
 
   defp unnamed_erlavro, do: {:avro_array_type, {:avro_primitive_type, "string", []}, []}
   defp unnamed_json, do: ~s({"type":"array","items":"string","default":[]})
-  defp md5_json, do: ~s({"namespace":"io.confluent","name":"MD5","type":"fixed","size":16})
+  defp crc32_json, do: ~s({"namespace":"io.confluent","name":"CRC32","type":"fixed","size":8})
 
   defp signature_json do
     ~s({"namespace":"io.confluent","name":"Signature","type":"record","fields":[{"name":"checksum","type":{"name":"SignatureChecksum","type":"fixed","size":1048576}}]})
