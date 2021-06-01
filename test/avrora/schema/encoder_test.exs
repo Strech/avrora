@@ -7,8 +7,8 @@ defmodule Avrora.Schema.EncoderTest do
 
   setup :support_config
 
-  describe "parse/2" do
-    test "when payload is a valid json schema" do
+  describe "from_json/2" do
+    test "when payload is a valid Record json schema" do
       {:ok, schema} = Schema.Encoder.from_json(payment_json())
       {:ok, {type, _, _, _, _, fields, full_name, _}} = Schema.Encoder.to_erlavro(schema)
 
@@ -18,6 +18,30 @@ defmodule Avrora.Schema.EncoderTest do
 
       assert schema.full_name == "io.confluent.Payment"
       assert schema.json == payment_json()
+    end
+
+    test "when payload is a valid Enum schema" do
+      {:ok, schema} = Schema.Encoder.from_json(card_type_json())
+      {:ok, {type, _, _, _, _, fields, full_name, _}} = Schema.Encoder.to_erlavro(schema)
+
+      assert type == :avro_enum_type
+      assert full_name == "io.confluent.CardType"
+      assert length(fields) == 3
+
+      assert schema.full_name == "io.confluent.CardType"
+      assert schema.json == card_type_json()
+    end
+
+    test "when payload is a valid Fixed schema" do
+      {:ok, schema} = Schema.Encoder.from_json(crc32_json())
+      {:ok, {type, _, _, _, value, full_name, _}} = Schema.Encoder.to_erlavro(schema)
+
+      assert type == :avro_fixed_type
+      assert full_name == "io.confluent.CRC32"
+      assert value == 8
+
+      assert schema.full_name == "io.confluent.CRC32"
+      assert schema.json == crc32_json()
     end
 
     test "when payload is a valid json schema with external reference and callback returns valid schema" do
@@ -82,6 +106,10 @@ defmodule Avrora.Schema.EncoderTest do
                Schema.Encoder.from_json(message_with_reference_json())
     end
 
+    test "when payload is not a named type schema" do
+      assert Schema.Encoder.from_json(unnamed_json()) == {:error, :unnamed_type}
+    end
+
     test "when payload is an invalid json schema" do
       assert Schema.Encoder.from_json("a:b") == {:error, "argument error"}
       assert Schema.Encoder.from_json("{}") == {:error, {:not_found, "type"}}
@@ -119,6 +147,10 @@ defmodule Avrora.Schema.EncoderTest do
       assert schema.full_name == "io.confluent.Payment"
       assert schema.json == "{}"
     end
+
+    test "when payload is not a named type schema" do
+      assert Schema.Encoder.from_erlavro(unnamed_erlavro()) == {:error, :unnamed_type}
+    end
   end
 
   defp payment_erlavro do
@@ -131,6 +163,10 @@ defmodule Avrora.Schema.EncoderTest do
      ], "io.confluent.Payment", []}
   end
 
+  defp unnamed_erlavro, do: {:avro_array_type, {:avro_primitive_type, "string", []}, []}
+  defp unnamed_json, do: ~s({"type":"array","items":"string","default":[]})
+  defp crc32_json, do: ~s({"namespace":"io.confluent","name":"CRC32","type":"fixed","size":8})
+
   defp signature_json do
     ~s({"namespace":"io.confluent","name":"Signature","type":"record","fields":[{"name":"checksum","type":{"name":"SignatureChecksum","type":"fixed","size":1048576}}]})
   end
@@ -141,6 +177,10 @@ defmodule Avrora.Schema.EncoderTest do
 
   defp payment_json do
     ~s({"namespace":"io.confluent","name":"Payment","type":"record","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
+  end
+
+  defp card_type_json do
+    ~s({"namespace":"io.confluent","name":"CardType","type":"enum","symbols":["MASTERCARD","VISA","AMERICANEXPRESS"]})
   end
 
   defp message_with_reference_json do

@@ -25,7 +25,7 @@ defmodule Avrora.Schema.Encoder do
     lookup_table = ets().new()
 
     with {:ok, [schema | _]} <- parse_recursive(payload, lookup_table, reference_lookup_fun),
-         {_, _, _, _, _, _, full_name, _} <- schema,
+         {:ok, full_name} <- extract_full_name(schema),
          {:ok, schema} <- do_compile(full_name, lookup_table) do
       {
         :ok,
@@ -73,7 +73,7 @@ defmodule Avrora.Schema.Encoder do
   def from_erlavro(schema, attributes \\ []) do
     lookup_table = ets().new()
 
-    with {_, _, _, _, _, _, full_name, _} <- schema,
+    with {:ok, full_name} <- extract_full_name(schema),
          lookup_table <- :avro_schema_store.add_type(schema, lookup_table),
          json <- Keyword.get_lazy(attributes, :json, fn -> to_json(schema) end) do
       {
@@ -114,6 +114,7 @@ defmodule Avrora.Schema.Encoder do
 
   defp parse_recursive(payload, lookup_table, reference_lookup_fun) do
     with {:ok, schema} <- do_parse(payload),
+         {:ok, _} <- extract_full_name(schema),
          {:ok, references} <- ReferenceCollector.collect(schema),
          lookup_table <- :avro_schema_store.add_type(schema, lookup_table) do
       payloads =
@@ -136,6 +137,15 @@ defmodule Avrora.Schema.Encoder do
 
   defp unwrap!({:ok, result}), do: result
   defp unwrap!({:error, error}), do: throw(error)
+
+  defp extract_full_name(schema) do
+    case schema do
+      {:avro_fixed_type, _, _, _, _, full_name, _} -> {:ok, full_name}
+      {:avro_enum_type, _, _, _, _, _, full_name, _} -> {:ok, full_name}
+      {:avro_record_type, _, _, _, _, _, full_name, _} -> {:ok, full_name}
+      _ -> {:error, :unnamed_type}
+    end
+  end
 
   # Compile complete version of the `erlavro` format with all references
   # being resolved, converting errors to error return

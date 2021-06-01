@@ -134,7 +134,7 @@ defmodule Avrora.Codec.PlainTest do
       assert encoded == payment_message()
     end
 
-    test "when payload is matching the schema and schema is resolvable" do
+    test "when payload is matching the Record schema and schema is resolvable" do
       payment_schema = payment_schema()
 
       Avrora.Storage.MemoryMock
@@ -170,6 +170,80 @@ defmodule Avrora.Codec.PlainTest do
 
       assert encoded == payment_message()
     end
+
+    test "when payload is matching the Enum schema and schema is resolvable" do
+      enum_schema = enum_schema()
+
+      Avrora.Storage.MemoryMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.CardType"
+
+        {:ok, nil}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.CardType"
+        assert value == enum_schema
+
+        {:ok, value}
+      end)
+
+      Avrora.Storage.RegistryMock
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.CardType"
+        assert value == enum_json_schema()
+
+        {:error, :unconfigured_registry_url}
+      end)
+
+      Avrora.Storage.FileMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.CardType"
+
+        {:ok, enum_schema}
+      end)
+
+      {:ok, encoded} =
+        Codec.Plain.encode("VISA", schema: %Schema{full_name: "io.confluent.CardType"})
+
+      assert encoded == <<2>>
+    end
+
+    test "when payload is matching the Fixed schema and schema is resolvable" do
+      fixed_schema = fixed_schema()
+
+      Avrora.Storage.MemoryMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.CRC32"
+
+        {:ok, nil}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.CRC32"
+        assert value == fixed_schema
+
+        {:ok, value}
+      end)
+
+      Avrora.Storage.RegistryMock
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.CRC32"
+        assert value == fixed_json_schema()
+
+        {:error, :unconfigured_registry_url}
+      end)
+
+      Avrora.Storage.FileMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.CRC32"
+
+        {:ok, fixed_schema}
+      end)
+
+      {:ok, encoded} =
+        Codec.Plain.encode("59B02128", schema: %Schema{full_name: "io.confluent.CRC32"})
+
+      assert encoded == "59B02128"
+    end
   end
 
   defp missing_field_error do
@@ -197,6 +271,16 @@ defmodule Avrora.Codec.PlainTest do
     %{schema | id: nil, version: nil}
   end
 
+  defp enum_schema do
+    {:ok, schema} = Schema.Encoder.from_json(enum_json_schema())
+    %{schema | id: nil, version: nil}
+  end
+
+  defp fixed_schema do
+    {:ok, schema} = Schema.Encoder.from_json(fixed_json_schema())
+    %{schema | id: nil, version: nil}
+  end
+
   defp payment_json_schema do
     ~s({"namespace":"io.confluent","name":"Payment","type":"record","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
   end
@@ -207,6 +291,14 @@ defmodule Avrora.Codec.PlainTest do
 
   defp map_json_schema do
     ~s({"namespace":"io.confluent","name":"Map_Value","type":"record","fields":[{"name":"map_field", "type": {"type": "map", "values": "string"}}]})
+  end
+
+  defp enum_json_schema do
+    ~s({"namespace":"io.confluent","name":"CardType","type":"enum","symbols":["MASTERCARD","VISA","AMERICANEXPRESS"]})
+  end
+
+  defp fixed_json_schema do
+    ~s({"namespace":"io.confluent","name":"CRC32","type":"fixed","size":8})
   end
 
   defp payment_message do
