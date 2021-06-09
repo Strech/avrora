@@ -57,14 +57,14 @@ Add Avrora to `mix.exs` as a dependency
 ```elixir
 def deps do
   [
-    {:avrora, "~> 0.18"}
+    {:avrora, "~> 0.21"}
   ]
 end
 ```
 
 ## Configuration
 
-:beginner: It is recommended to configure private Avrora client<sup>[v0.17]</sup> to avoid
+:beginner: It's recommended to configure private Avrora client<sup>[v0.17]</sup> to avoid
 risk of conflicts with other dependencies which might use shared `Avrora` client.
 
 Don't worry if you already using the shared client because migration to the private is a
@@ -113,15 +113,15 @@ config :avrora,
 - `names_cache_ttl`<sup>[v0.10]</sup> - Time in ms to cache schemas by name in memory, default `:infinity`
 
 Set `names_cache_ttl` to `:infinity` will cache forever (no more disk reads will
-happen). This is safe when schemas are resolved in the Schema Registry by
+happen). This is safe when schemas resolved in the Schema Registry by
 numeric id or **versioned** name, as it is unique. If you need to reload schema
 from the disk periodically, TTL different from `:infinity` ensures that.
 
-If the schema is resolved by name it will be always overwritten with the latest
+If the schema resolved by name it will be always overwritten with the latest
 schema received from Schema Registry.<sup>[v0.10]</sup>
 
 :bulb: Disable schemas auto-registration if you want to avoid storing schemas
-and manually control registration process. Also it is recommended to turn off auto-registration
+and manually control registration process. Also it's recommended to turn off auto-registration
 when schemas containing [Confluent Schema References][8].<sup>[v0.14]</sup>
 
 ## Start cache process
@@ -174,7 +174,7 @@ just replace `Avrora` with your client module name.
 The primary way to use the library is via the `Avrora.encode/2` and
 `Avrora.decode/2` functions. These functions load the Avro schema for you.
 
-If `registry_url` is defined, it enables Schema Registry storage. If the schema
+If `registry_url` defined, it enables Schema Registry storage. If the schema
 file found locally but not in the registry, either fuction will register the schema.
 
 These examples assume you have a `Payment` schema stored in the file
@@ -198,7 +198,7 @@ These examples assume you have a `Payment` schema stored in the file
 }
 ```
 
-When running interactively, first make sure the cache is started
+When running interactively, first make sure the cache started
 
 ```elixir
 {:ok, pid} = Avrora.start_link()
@@ -265,7 +265,7 @@ It first tries resolving the schema using the integer id in the [wire format][3]
 
 Next it tries reading using the [Object Container Files][4] embedded schema.
 
-**NOTE:** Messages encoded with OCF are wrapped in a List.
+**NOTE:** Messages encoded with OCF wrapped in a List.
 
 ```elixir
 {:ok, pid} = Avrora.start_link()
@@ -289,7 +289,7 @@ message =
 ```
 
 :bulb: Due to [possible collision][10] of the `:plain` format and `:registry` via magic-like
-byte sequence it is recommended<sup>[v0.18]</sup> to use `Avrora.decode_plain/2` and `Avrora.encode_plain/2` if
+byte sequence it's recommended<sup>[v0.18]</sup> to use `Avrora.decode_plain/2` and `Avrora.encode_plain/2` if
 you are working with `:plain` format (see in all available functions).
 
 <details class="nodoc">
@@ -357,7 +357,7 @@ message =
 
 ## Schemas registration
 
-There are a few ways you can register AVRO schemas if you have disabled auto-registration.
+There are two ways you can register AVRO schemas if you have disabled auto-registration.
 
 If you want to make it a part of your code, but with better control, you can use
 `Avrora.Utils.Registrar` module and if you want to embed it in the deployment use
