@@ -11,26 +11,7 @@ defmodule Avrora.EncoderTest do
   setup :support_config
 
   describe "extract_schema/1" do
-    test "when payload was encoded with magic byte and registry is not configured" do
-      Avrora.Storage.MemoryMock
-      |> expect(:get, fn key ->
-        assert key == 42
-
-        {:ok, nil}
-      end)
-
-      Avrora.Storage.RegistryMock
-      |> expect(:get, fn key ->
-        assert key == 42
-
-        {:error, :unconfigured_registry_url}
-      end)
-
-      assert Encoder.extract_schema(payment_registry_message()) ==
-               {:error, :unconfigured_registry_url}
-    end
-
-    test "when payload was encoded with magic byte and registry is configured" do
+    test "when payload was encoded with schema registry magic byte" do
       payment_schema_with_id = payment_schema_with_id()
 
       Avrora.Storage.MemoryMock
@@ -83,18 +64,13 @@ defmodule Avrora.EncoderTest do
       assert schema.json == payment_json_schema()
     end
 
-    test "when payload was encoded with plain format" do
+    test "when payload was encoded with no magic bytes" do
       assert Encoder.extract_schema(messenger_plain_message()) == {:error, :schema_not_found}
     end
   end
 
   describe "decode/1" do
-    test "when payload was encoded with OCF magic byte" do
-      {:ok, decoded} = Encoder.decode(payment_ocf_message())
-      assert decoded == [%{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}]
-    end
-
-    test "when payload was encoded with magic byte and registry is configured" do
+    test "when payload was encoded with schema registry magic byte" do
       payment_schema_with_id = payment_schema_with_id()
 
       Avrora.Storage.MemoryMock
@@ -121,22 +97,9 @@ defmodule Avrora.EncoderTest do
       assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
     end
 
-    test "when payload was encoded with magic byte and registry is not configured" do
-      Avrora.Storage.MemoryMock
-      |> expect(:get, fn key ->
-        assert key == 42
-
-        {:ok, nil}
-      end)
-
-      Avrora.Storage.RegistryMock
-      |> expect(:get, fn key ->
-        assert key == 42
-
-        {:error, :unconfigured_registry_url}
-      end)
-
-      assert Encoder.decode(payment_registry_message()) == {:error, :unconfigured_registry_url}
+    test "when payload was encoded with OCF magic byte" do
+      {:ok, decoded} = Encoder.decode(payment_ocf_message())
+      assert decoded == [%{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}]
     end
 
     test "when payload was encoded with no magic bytes" do
@@ -145,7 +108,7 @@ defmodule Avrora.EncoderTest do
   end
 
   describe "decode/2" do
-    test "when payload was encoded without magic byte and registry is not configured" do
+    test "when payload contains no magic byte and registry is not configured it uses local schema file" do
       payment_schema = payment_schema()
 
       Avrora.Storage.MemoryMock
@@ -182,7 +145,7 @@ defmodule Avrora.EncoderTest do
       assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
     end
 
-    test "when payload was encoded without magic byte and registry is configured" do
+    test "when payload contains no magic byte and registry is configured it registers local schema file" do
       payment_schema_with_id = payment_schema_with_id()
 
       Avrora.Storage.MemoryMock
@@ -231,7 +194,7 @@ defmodule Avrora.EncoderTest do
       assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
     end
 
-    test "when payload was encoded with magic byte and registry is not configured" do
+    test "when payload contains magic byte and registry is not configured it uses local schema file" do
       payment_schema = payment_schema()
 
       Avrora.Storage.MemoryMock
@@ -278,36 +241,7 @@ defmodule Avrora.EncoderTest do
       assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
     end
 
-    test "when payload was encoded with magic byte and registry is configured" do
-      payment_schema_with_id = payment_schema_with_id()
-
-      Avrora.Storage.MemoryMock
-      |> expect(:get, fn key ->
-        assert key == 42
-
-        {:ok, nil}
-      end)
-      |> expect(:put, fn key, value ->
-        assert key == 42
-        assert value == payment_schema_with_id
-
-        {:ok, value}
-      end)
-
-      Avrora.Storage.RegistryMock
-      |> expect(:get, fn key ->
-        assert key == 42
-
-        {:ok, payment_schema_with_id}
-      end)
-
-      {:ok, decoded} =
-        Encoder.decode(payment_registry_message(), schema_name: "io.confluent.Payment")
-
-      assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
-    end
-
-    test "when decoding with schema name containing version" do
+    test "when given schema_name contains version it warns about it" do
       payment_schema = payment_schema()
 
       Avrora.Storage.MemoryMock
@@ -349,7 +283,7 @@ defmodule Avrora.EncoderTest do
       assert output =~ "with schema version is not supported"
     end
 
-    test "when decoding with schema name OCF message" do
+    test "when payload is OCF and given schema_name it warn about enbeded schema" do
       output =
         capture_log(fn ->
           {:ok, decoded} =
@@ -361,7 +295,7 @@ defmodule Avrora.EncoderTest do
       assert output =~ "message already contains embeded schema, given schema will be ignored"
     end
 
-    test "when decoding plain message with type reference in it" do
+    test "when payload contains type references it resolves them and generates new schema" do
       messenger_schema = messenger_schema()
 
       Avrora.Storage.MemoryMock
@@ -445,7 +379,7 @@ defmodule Avrora.EncoderTest do
   end
 
   describe "encode/2" do
-    test "when registry is not configured" do
+    test "when registry is not configured it uses local schema file" do
       payment_schema = payment_schema()
 
       Avrora.Storage.MemoryMock
@@ -485,7 +419,7 @@ defmodule Avrora.EncoderTest do
       assert is_payment_ocf(encoded)
     end
 
-    test "when registry is not configured, but format requires schema version" do
+    test "when registry is not configured, but format requires schema id" do
       payment_schema = payment_schema()
 
       Avrora.Storage.MemoryMock
@@ -618,7 +552,7 @@ defmodule Avrora.EncoderTest do
       assert encoded == payment_registry_message()
     end
 
-    test "when schema name provided with version" do
+    test "when given schema_name contains version it warns about it" do
       payment_schema = payment_schema()
 
       Avrora.Storage.MemoryMock
@@ -664,7 +598,7 @@ defmodule Avrora.EncoderTest do
       assert output =~ "with schema version is not supported"
     end
 
-    test "when registry is not configured and payload contains type reference" do
+    test "when payload contains type references it resolves them and generates new schema" do
       messenger_schema = messenger_schema()
 
       Avrora.Storage.MemoryMock
