@@ -98,7 +98,13 @@ defmodule Avrora.Client do
 
           import Keyword, only: [get: 3]
 
-          def schemas_path, do: get(@opts, :schemas_path, Path.expand("./priv/schemas"))
+          def schemas_path do
+            case get(@opts, :schemas_path, Path.expand("./priv/schemas")) do
+              {app, path} -> Application.app_dir(app, path)
+              path -> path
+            end
+          end
+          
           def registry_url, do: get(@opts, :registry_url, nil)
           def registry_auth, do: get(@opts, :registry_url, nil)
           def registry_schemas_autoreg, do: get(@opts, :registry_schemas_autoreg, true)
