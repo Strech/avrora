@@ -100,7 +100,7 @@ defmodule Avrora.Client do
 
           def schemas_path, do: get(@opts, :schemas_path, Path.expand("./priv/schemas"))
           def registry_url, do: get(@opts, :registry_url, nil)
-          def registry_auth, do: get(@opts, :registry_url, nil)
+          def registry_auth, do: get(@opts, :registry_auth, nil)
           def registry_schemas_autoreg, do: get(@opts, :registry_schemas_autoreg, true)
           def convert_null_values, do: get(@opts, :convert_null_values, true)
           def convert_map_to_proplist, do: get(@opts, :convert_map_to_proplist, false)
