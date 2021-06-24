@@ -4,6 +4,7 @@ defmodule Avrora.Config do
 
   ## Options:
 
+      * `otp_app` name of the OTP application to use for addition `schemas_path` root folder configuration, default `nil`
       * `schemas_path` path to local schema files, default `./priv/schemas`
       * `registry_url` URL for Schema Registry, default `nil`
       * `registry_auth` authentication settings for Schema Registry, default `nil`
@@ -35,7 +36,12 @@ defmodule Avrora.Config do
   @callback ets_lib :: module() | atom()
 
   @doc false
-  def schemas_path, do: get_env(:schemas_path, Path.expand("./priv/schemas"))
+  def schemas_path do
+    path = get_env(:schemas_path, "./priv/schemas")
+    otp_app = get_env(:otp_app, nil)
+
+    if is_nil(otp_app), do: Path.expand(path), else: Application.app_dir(otp_app, path)
+  end
 
   @doc false
   def registry_url, do: get_env(:registry_url, nil)

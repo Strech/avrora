@@ -19,6 +19,7 @@
 [v0.16]: https://github.com/Strech/avrora/releases/tag/v0.16.0
 [v0.17]: https://github.com/Strech/avrora/releases/tag/v0.17.0
 [v0.18]: https://github.com/Strech/avrora/releases/tag/v0.18.0
+[v0.22]: https://github.com/Strech/avrora/releases/tag/v0.22.0
 [1]: https://avro.apache.org/
 [2]: https://www.confluent.io/confluent-schema-registry
 [3]: https://docs.confluent.io/current/schema-registry/serializer-formatter.html#wire-format
@@ -77,9 +78,10 @@ Create your private Avrora client module
 ```elixir
 defmodule MyClient do
   use Avrora.Client,
+    otp_app: :my_application,
     registry_url: "http://localhost:8081",
     registry_auth: {:basic, ["username", "password"]}
-    schemas_path: Path.expand("./priv/schemas"),
+    schemas_path: "./priv/schemas",
     registry_schemas_autoreg: false,
     convert_null_values: false,
     convert_map_to_proplist: false
@@ -95,15 +97,17 @@ Configure the `Avrora` shared client in `config/config.exs`
 
 ```elixir
 config :avrora,
+  otp_app: :my_application, # optional, if you want to use it as a root folder for `schemas_path`
   registry_url: "http://localhost:8081",
   registry_auth: {:basic, ["username", "password"]}, # optional
-  schemas_path: Path.expand("./priv/schemas"),
+  schemas_path: "./priv/schemas",
   registry_schemas_autoreg: false, # optional: if you want manually register schemas
   convert_null_values: false, # optional: if you want to keep decoded `:null` values as is
   convert_map_to_proplist: false # optional: if you want to restore the old behavior for decoding map-type
   names_cache_ttl: :timer.minutes(5) # optional: if you want periodic disk reads
 ```
 
+- `otp_app`<sup>[v0.22]</sup> - Name of the OTP application to use for additional `schemas_path` root folder configuration, default `nil`
 - `registry_url` - URL for the Schema Registry, default `nil`
 - `registry_auth` – Credentials to authenticate in the Schema Registry, default `nil`
 - `schemas_path` - Base path for locally stored schema files, default `./priv/schemas`
@@ -123,6 +127,10 @@ schema received from Schema Registry.<sup>[v0.10]</sup>
 :bulb: Disable schemas auto-registration if you want to avoid storing schemas
 and manually control registration process. Also it's recommended to turn off auto-registration
 when schemas containing [Confluent Schema References][8].<sup>[v0.14]</sup>
+
+:bulb: When you use releases and especially Umbrella apps with different clients it's
+recommended to set `otp_app` which will point to your OTP applications. This will allow you
+to have a per-client `schemas_path` runtime resolution.<sup>[v0.22]</sup>
 
 ## Start cache process
 
