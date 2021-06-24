@@ -35,7 +35,12 @@ defmodule Avrora.Config do
   @callback ets_lib :: module() | atom()
 
   @doc false
-  def schemas_path, do: get_env(:schemas_path, Path.expand("./priv/schemas"))
+  def schemas_path do
+    path = get_env(:schemas_path, "./priv/schemas")
+    otp_app = get_env(:otp_app, nil)
+
+    if is_nil(otp_app), do: Path.expand(path), else: Application.app_dir(otp_app, path)
+  end
 
   @doc false
   def registry_url, do: get_env(:registry_url, nil)
