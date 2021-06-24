@@ -4,6 +4,7 @@ defmodule Avrora.Config do
 
   ## Options:
 
+      * `otp_app` name of the OTP application to use for addition `schemas_path` root folder configuration, default `nil`
       * `schemas_path` path to local schema files, default `./priv/schemas`
       * `registry_url` URL for Schema Registry, default `nil`
       * `registry_auth` authentication settings for Schema Registry, default `nil`
