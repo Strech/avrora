@@ -99,10 +99,18 @@ defmodule Avrora.Client do
           import Keyword, only: [get: 3]
 
           def schemas_path do
-            path = get(@opts, :schemas_path, "./priv/schemas")
             otp_app = get(@opts, :otp_app, nil)
 
-            if is_nil(otp_app), do: Path.expand(path), else: Application.app_dir(otp_app, path)
+            runtime_path =
+              otp_app &&
+                Application.get_env(otp_app, unquote(__CALLER__.module), [])[:schemas_path]
+
+            if runtime_path do
+              runtime_path
+            else
+              static_path = get(@opts, :schemas_path, "./priv/schemas")
+              if is_nil(otp_app), do: Path.expand(static_path), else: Application.app_dir(otp_app, static_path)
+            end
           end
 
           def registry_url, do: get_config(@opts, :registry_url, nil)
