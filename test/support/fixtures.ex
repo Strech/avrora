@@ -20,4 +20,9 @@ defmodule Fixtures do
     @moduledoc false
     use Avrora.Client, schemas_path: Path.expand("./test/fixtures/avro")
   end
+
+  defmodule RuntimeConfigTest do
+    @moduledoc false
+    use Avrora.Client, otp_app: :runtime_config_test
+  end
 end

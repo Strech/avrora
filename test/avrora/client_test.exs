@@ -38,4 +38,27 @@ defmodule Avrora.ClientTest do
       assert {:ok, nil} == BetaMemory.get("io.Ping")
     end
   end
+
+  @config_methods [
+    :registry_url,
+    :registry_auth,
+    :registry_schemas_autoreg,
+    :convert_null_values,
+    :convert_map_to_proplist,
+    :names_cache_ttl
+  ]
+  for method <- @config_methods do
+    @tag method: method
+    describe "#{method}/0" do
+      test "when config is set", %{method: method} do
+        refute apply(Fixtures.RuntimeConfigTest.Config, method, []) == :config_value
+
+        Application.put_env(:runtime_config_test, Fixtures.RuntimeConfigTest.Config, [
+          {method, :config_value}
+        ])
+
+        assert apply(Fixtures.RuntimeConfigTest.Config, method, []) == :config_value
+      end
+    end
+  end
 end
