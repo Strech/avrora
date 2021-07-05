@@ -105,7 +105,7 @@ defmodule Avrora.Client do
       quote do
         defmodule Config do
           @moduledoc false
-          @opts Keyword.merge(unquote(opts), module: __MODULE__)
+          @opts Keyword.merge(unquote(opts), module: unquote(__CALLER__.module))
 
           import Keyword, only: [get: 3]
           alias Avrora.Client

@@ -53,7 +53,7 @@ defmodule Avrora.ClientTest do
       test "when config is set", %{method: method} do
         refute apply(Fixtures.RuntimeConfigTest.Config, method, []) == :config_value
 
-        Application.put_env(:runtime_config_test, Fixtures.RuntimeConfigTest.Config, [
+        Application.put_env(:runtime_config_test, Fixtures.RuntimeConfigTest, [
           {method, :config_value}
         ])
 
