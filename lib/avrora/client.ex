@@ -93,7 +93,9 @@ defmodule Avrora.Client do
     config =
       quote do
         defmodule Config do
+          @dialyzer {:no_match, [schemas_path: 0]}
           @moduledoc false
+
           @opts unquote(opts)
           @otp_app Keyword.get(@opts, :otp_app)
 
@@ -113,13 +115,13 @@ defmodule Avrora.Client do
           def memory_storage, do: unquote(:"Elixir.#{module}.Storage.Memory")
           def registry_storage, do: unquote(:"Elixir.#{module}.Storage.Registry")
           def http_client, do: Avrora.HTTPClient
-          def ets_lib, do: unquote(:"Elixir.#{module}.AvroSchemaStore")
+          def ets_lib, do: :"Elixir.#{unquote(module)}.AvroSchemaStore"
           def self, do: __MODULE__
 
           if is_nil(@otp_app) do
-            def get(opts, key, default), do: Keyword.get(opts, key, default)
+            defp get(opts, key, default), do: Keyword.get(opts, key, default)
           else
-            def get(opts, key, default) do
+            defp get(opts, key, default) do
               app_opts = Application.get_env(@otp_app, unquote(:"Elixir.#{module}"), [])
 
               Keyword.get(app_opts, key) || Keyword.get(opts, key, default)
