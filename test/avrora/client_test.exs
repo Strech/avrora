@@ -1,5 +1,5 @@
 defmodule Avrora.ClientTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   doctest Avrora.Client
 
   alias Fixtures.{Alpha, Beta, Gamma}
