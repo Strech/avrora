@@ -116,11 +116,14 @@ defmodule Avrora.Client do
           def registry_storage, do: unquote(:"Elixir.#{module}.Storage.Registry")
           def http_client, do: Avrora.HTTPClient
           def ets_lib, do: :"Elixir.#{unquote(module)}.AvroSchemaStore"
-          def self, do: __MODULE__
 
           if is_nil(@otp_app) do
+            def self, do: __MODULE__
+
             defp get(opts, key, default), do: Keyword.get(opts, key, default)
           else
+            def self, do: get(@opts, :config, __MODULE__)
+
             defp get(opts, key, default) do
               app_opts = Application.get_env(@otp_app, unquote(:"Elixir.#{module}"), [])
 
