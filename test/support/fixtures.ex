@@ -20,4 +20,9 @@ defmodule Fixtures do
     @moduledoc false
     use Avrora.Client, schemas_path: Path.expand("./test/fixtures/avro")
   end
+
+  defmodule Gamma do
+    @moduledoc false
+    use Avrora.Client, otp_app: :area, registry_url: "http://gamma.io", names_cache_ttl: 1_000
+  end
 end

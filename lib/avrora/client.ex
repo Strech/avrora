@@ -93,16 +93,16 @@ defmodule Avrora.Client do
     config =
       quote do
         defmodule Config do
+          @dialyzer {:no_match, [schemas_path: 0]}
           @moduledoc false
-          @opts unquote(opts)
 
-          import Keyword, only: [get: 3]
+          @opts unquote(opts)
+          @otp_app Keyword.get(@opts, :otp_app)
 
           def schemas_path do
             path = get(@opts, :schemas_path, "./priv/schemas")
-            otp_app = get(@opts, :otp_app, nil)
 
-            if is_nil(otp_app), do: Path.expand(path), else: Application.app_dir(otp_app, path)
+            if is_nil(@otp_app), do: Path.expand(path), else: Application.app_dir(@otp_app, path)
           end
 
           def registry_url, do: get(@opts, :registry_url, nil)
@@ -111,12 +111,25 @@ defmodule Avrora.Client do
           def convert_null_values, do: get(@opts, :convert_null_values, true)
           def convert_map_to_proplist, do: get(@opts, :convert_map_to_proplist, false)
           def names_cache_ttl, do: get(@opts, :names_cache_ttl, :infinity)
-          def file_storage, do: :"Elixir.#{unquote(module)}.Storage.File"
-          def memory_storage, do: :"Elixir.#{unquote(module)}.Storage.Memory"
-          def registry_storage, do: :"Elixir.#{unquote(module)}.Storage.Registry"
+          def file_storage, do: unquote(:"Elixir.#{module}.Storage.File")
+          def memory_storage, do: unquote(:"Elixir.#{module}.Storage.Memory")
+          def registry_storage, do: unquote(:"Elixir.#{module}.Storage.Registry")
           def http_client, do: Avrora.HTTPClient
           def ets_lib, do: :"Elixir.#{unquote(module)}.AvroSchemaStore"
-          def self, do: __MODULE__
+
+          if is_nil(@otp_app) do
+            def self, do: __MODULE__
+
+            defp get(opts, key, default), do: Keyword.get(opts, key, default)
+          else
+            def self, do: get(@opts, :config, __MODULE__)
+
+            defp get(opts, key, default) do
+              app_opts = Application.get_env(@otp_app, unquote(:"Elixir.#{module}"), [])
+
+              Keyword.get(app_opts, key) || Keyword.get(opts, key, default)
+            end
+          end
         end
       end
 
@@ -126,20 +139,20 @@ defmodule Avrora.Client do
 
       use Supervisor
 
-      defdelegate decode(payload), to: :"Elixir.#{unquote(module)}.Encoder"
-      defdelegate encode(payload, opts), to: :"Elixir.#{unquote(module)}.Encoder"
-      defdelegate decode(payload, opts), to: :"Elixir.#{unquote(module)}.Encoder"
-      defdelegate decode_plain(payload, opts), to: :"Elixir.#{unquote(module)}.Encoder"
-      defdelegate encode_plain(payload, opts), to: :"Elixir.#{unquote(module)}.Encoder"
-      defdelegate extract_schema(payload), to: :"Elixir.#{unquote(module)}.Encoder"
+      defdelegate decode(payload), to: unquote(:"Elixir.#{module}.Encoder")
+      defdelegate encode(payload, opts), to: unquote(:"Elixir.#{module}.Encoder")
+      defdelegate decode(payload, opts), to: unquote(:"Elixir.#{module}.Encoder")
+      defdelegate decode_plain(payload, opts), to: unquote(:"Elixir.#{module}.Encoder")
+      defdelegate encode_plain(payload, opts), to: unquote(:"Elixir.#{module}.Encoder")
+      defdelegate extract_schema(payload), to: unquote(:"Elixir.#{module}.Encoder")
 
       def start_link(opts \\ []), do: Supervisor.start_link(__MODULE__, opts, name: __MODULE__)
 
       @impl true
       def init(_state \\ []) do
         children = [
-          :"Elixir.#{unquote(module)}.AvroSchemaStore",
-          :"Elixir.#{unquote(module)}.Storage.Memory"
+          unquote(:"Elixir.#{module}.AvroSchemaStore"),
+          unquote(:"Elixir.#{module}.Storage.Memory")
         ]
 
         Supervisor.init(children, strategy: :one_for_all)
