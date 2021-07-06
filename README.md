@@ -20,6 +20,7 @@
 [v0.17]: https://github.com/Strech/avrora/releases/tag/v0.17.0
 [v0.18]: https://github.com/Strech/avrora/releases/tag/v0.18.0
 [v0.22]: https://github.com/Strech/avrora/releases/tag/v0.22.0
+[v0.23]: https://github.com/Strech/avrora/releases/tag/v0.23.0
 [1]: https://avro.apache.org/
 [2]: https://www.confluent.io/confluent-schema-registry
 [3]: https://docs.confluent.io/current/schema-registry/serializer-formatter.html#wire-format
@@ -107,7 +108,7 @@ config :avrora,
   names_cache_ttl: :timer.minutes(5) # optional: if you want periodic disk reads
 ```
 
-- `otp_app`<sup>[v0.22]</sup> - Name of the OTP application to use for additional `schemas_path` root folder configuration, default `nil`
+- `otp_app`<sup>[v0.22]</sup> - Name of the OTP application to use for runtime configuration via env, default `nil`
 - `registry_url` - URL for the Schema Registry, default `nil`
 - `registry_auth` – Credentials to authenticate in the Schema Registry, default `nil`
 - `schemas_path` - Base path for locally stored schema files, default `./priv/schemas`
@@ -130,7 +131,8 @@ when schemas containing [Confluent Schema References][8].<sup>[v0.14]</sup>
 
 :bulb: When you use releases and especially Umbrella apps with different clients it's
 recommended to set `otp_app` which will point to your OTP applications. This will allow you
-to have a per-client `schemas_path` runtime resolution.<sup>[v0.22]</sup>
+to have a per-client runtime resolution for all configuration options (i.e. `schemas_path`)
+with a fallback to staticly defined in a client itself.<sup>[v0.23]</sup>
 
 ## Start cache process
 
