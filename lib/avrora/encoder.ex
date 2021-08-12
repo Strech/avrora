@@ -77,6 +77,12 @@ defmodule Avrora.Encoder do
         [Codec.SchemaRegistry, Codec.ObjectContainerFile, Codec.Plain]
         |> Enum.find(& &1.is_decodable(payload))
 
+      if codec == Codec.Plain do
+        Logger.warn(
+          "`Avrora.Encoder.decode/2` with plain format is deprecated, use `Avrora.Encoder.decode_plain/2` instead"
+        )
+      end
+
       codec.decode(payload, schema: schema)
     end
   end
@@ -131,6 +137,12 @@ defmodule Avrora.Encoder do
 
   def encode(payload, schema_name: schema_name, format: format) when is_map(payload) do
     with {:ok, schema_name} <- Name.parse(schema_name) do
+      if format == :plain do
+        Logger.warn(
+          "`Avrora.Encoder.encode/2` with `format: :plain` is deprecated, use `Avrora.Encoder.encode_plain/2` instead"
+        )
+      end
+
       unless is_nil(schema_name.version) do
         Logger.warn(
           "encoding with schema version is not supported yet, `#{schema_name.name}` used instead"
