@@ -85,7 +85,7 @@ defmodule MyClient do
     schemas_path: "./priv/schemas",
     registry_schemas_autoreg: false,
     convert_null_values: false,
-    convert_map_to_proplist: false
+    convert_map_to_proplist: false,
     names_cache_ttl: :timer.minutes(5)
 end
 ```
@@ -104,7 +104,7 @@ config :avrora,
   schemas_path: "./priv/schemas",
   registry_schemas_autoreg: false, # optional: if you want manually register schemas
   convert_null_values: false, # optional: if you want to keep decoded `:null` values as is
-  convert_map_to_proplist: false # optional: if you want to restore the old behavior for decoding map-type
+  convert_map_to_proplist: false, # optional: if you want to restore the old behavior for decoding map-type
   names_cache_ttl: :timer.minutes(5) # optional: if you want periodic disk reads
 ```
 
