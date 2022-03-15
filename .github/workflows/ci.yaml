@@ -17,7 +17,7 @@ jobs:
       ELIXIR: "1.9"
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-elixir@v1
+      - uses: erlef/setup-beam@v1
         with:
           otp-version: ${{ env.OTP }}
           elixir-version: ${{ env.ELIXIR }}
@@ -54,7 +54,7 @@ jobs:
       ELIXIR: "1.9"
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-elixir@v1
+      - uses: erlef/setup-beam@v1
         with:
           otp-version: ${{ env.OTP }}
           elixir-version: ${{ env.ELIXIR }}
@@ -82,7 +82,7 @@ jobs:
       ELIXIR: "1.6"
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-elixir@v1
+      - uses: erlef/setup-beam@v1
         with:
           otp-version: ${{ env.OTP }}
           elixir-version: ${{ env.ELIXIR }}
@@ -111,7 +111,7 @@ jobs:
       ELIXIR: "1.9"
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-elixir@v1
+      - uses: erlef/setup-beam@v1
         with:
           otp-version: ${{ env.OTP }}
           elixir-version: ${{ env.ELIXIR }}
@@ -161,7 +161,7 @@ jobs:
             elixir: "1.11"
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-elixir@v1
+      - uses: erlef/setup-beam@v1
         with:
           otp-version: ${{ matrix.otp }}
           elixir-version: ${{ matrix.elixir }}
