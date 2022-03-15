@@ -9,7 +9,7 @@ on:
     branches: ["master"]
 jobs:
   internal_dialyzer:
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-20.04
     timeout-minutes: 30
     name: Internal Typespecs
     env:
@@ -47,7 +47,7 @@ jobs:
       - run: mix dialyzer --force-check
 
   credo:
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-20.04
     name: Code Style
     env:
       OTP: "22.3"
@@ -75,7 +75,7 @@ jobs:
       - run: mix credo
 
   formatter:
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-20.04
     name: Code Formatting
     env:
       OTP: "20.3"
@@ -103,7 +103,7 @@ jobs:
       - run: mix format --check-formatted
 
   external_dialyzer:
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-20.04
     timeout-minutes: 30
     name: External Typespecs
     env:
@@ -144,7 +144,7 @@ jobs:
         run: mix dialyzer --force-check
 
   test:
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-20.04
     name: OTP ${{ matrix.otp }} / Elixir ${{ matrix.elixir }}
     strategy:
       matrix:
