@@ -10,6 +10,7 @@ on:
 jobs:
   internal_dialyzer:
     runs-on: ubuntu-16.04
+    timeout-minutes: 30
     name: Internal Typespecs
     env:
       OTP: "22.3"
@@ -103,6 +104,7 @@ jobs:
 
   external_dialyzer:
     runs-on: ubuntu-16.04
+    timeout-minutes: 30
     name: External Typespecs
     env:
       OTP: "22.3"

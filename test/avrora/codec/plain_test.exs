@@ -115,6 +115,29 @@ defmodule Avrora.Codec.PlainTest do
       assert Codec.Plain.decode(<<0, 1, 2>>, schema: payment_schema()) ==
                {:error, :schema_mismatch}
     end
+
+    test "when payload is valid binary and union type must be decoded without decoding hook" do
+      {:ok, decoded_int} = Codec.Plain.decode(<<2, 84>>, schema: union_schema())
+      {:ok, decoded_str} = Codec.Plain.decode(<<0, 4, 52, 50>>, schema: union_schema())
+
+      assert decoded_int == %{"union_field" => %{"value" => 42}}
+      assert decoded_str == %{"union_field" => %{"value" => "42"}}
+    end
+
+    test "when decoding message with union and with tagged union hook" do
+      stub(Avrora.ConfigMock, :decode_hook, fn ->
+        fn type, sub_name_or_index, data, decode_fun ->
+          hook = :avro_decoder_hooks.tag_unions()
+          hook.(type, sub_name_or_index, data, decode_fun)
+        end
+      end)
+
+      {:ok, decoded_int} = Codec.Plain.decode(<<2, 84>>, schema: union_schema())
+      {:ok, decoded_str} = Codec.Plain.decode(<<0, 4, 52, 50>>, schema: union_schema())
+
+      assert decoded_int == %{"union_field" => {"io.confluent.as_int", %{"value" => 42}}}
+      assert decoded_str == %{"union_field" => {"io.confluent.as_str", %{"value" => "42"}}}
+    end
   end
 
   describe "encode/2" do
@@ -254,6 +277,13 @@ defmodule Avrora.Codec.PlainTest do
     }
   end
 
+  defp payment_message do
+    <<72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48,
+      48, 45, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64>>
+  end
+
+  defp null_value_message, do: <<12, 117, 115, 101, 114, 45, 49, 0>>
+  defp map_message, do: <<1, 20, 6, 107, 101, 121, 10, 118, 97, 108, 117, 101, 0>>
   defp payment_payload, do: %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
 
   defp payment_schema do
@@ -281,6 +311,11 @@ defmodule Avrora.Codec.PlainTest do
     %{schema | id: nil, version: nil}
   end
 
+  defp union_schema do
+    {:ok, schema} = Schema.Encoder.from_json(union_json_schema())
+    %{schema | id: nil, version: nil}
+  end
+
   defp payment_json_schema do
     ~s({"namespace":"io.confluent","name":"Payment","type":"record","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
   end
@@ -301,12 +336,7 @@ defmodule Avrora.Codec.PlainTest do
     ~s({"namespace":"io.confluent","name":"CRC32","type":"fixed","size":8})
   end
 
-  defp payment_message do
-    <<72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48,
-      48, 45, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64>>
+  defp union_json_schema do
+    ~s({"namespace":"io.confluent","name":"Union_Value","type":"record","fields":[{"name":"union_field","type":[{"type":"record","name":"as_str","fields":[{"name":"value","type":"string"}]},{"type":"record","name":"as_int","fields":[{"name":"value","type":"int"}]}]}]})
   end
-
-  defp null_value_message, do: <<12, 117, 115, 101, 114, 45, 49, 0>>
-
-  defp map_message, do: <<1, 20, 6, 107, 101, 121, 10, 118, 97, 108, 117, 101, 0>>
 end

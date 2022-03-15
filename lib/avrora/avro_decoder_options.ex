@@ -24,16 +24,18 @@ defmodule Avrora.AvroDecoderOptions do
 
   # NOTE: This is internal module function and should never be used directly
   @doc false
-  def __hook__(type, _sub_name_or_id, data, decode_fun) do
+  def __hook__(type, sub_name_or_idx, data, decode_fun) do
     convert = convert_null_values()
+    decode_hook = decode_hook()
 
-    cond do
-      convert == false -> decode_fun.(data)
-      convert == true && :avro.get_type_name(type) == @null_type_name -> {nil, data}
-      true -> decode_fun.(data)
-    end
+    result = decode_hook.(type, sub_name_or_idx, data, decode_fun)
+
+    if convert == true && :avro.get_type_name(type) == @null_type_name,
+      do: {nil, data},
+      else: result
   end
 
   defp convert_null_values, do: Config.self().convert_null_values()
   defp convert_map_to_proplist, do: Config.self().convert_map_to_proplist()
+  defp decode_hook, do: Config.self().decode_hook()
 end
