@@ -21,6 +21,7 @@
 [v0.18]: https://github.com/Strech/avrora/releases/tag/v0.18.0
 [v0.22]: https://github.com/Strech/avrora/releases/tag/v0.22.0
 [v0.23]: https://github.com/Strech/avrora/releases/tag/v0.23.0
+[v0.24]: https://github.com/Strech/avrora/releases/tag/v0.24.0
 [1]: https://avro.apache.org/
 [2]: https://www.confluent.io/confluent-schema-registry
 [3]: https://docs.confluent.io/current/schema-registry/serializer-formatter.html#wire-format
@@ -31,6 +32,7 @@
 [8]: https://www.confluent.io/blog/multiple-event-types-in-the-same-kafka-topic/#avro-unions-with-schema-references
 [9]: https://github.com/Strech/avrora/wiki/Schema-name-resolution
 [10]: https://github.com/Strech/avrora/pull/70
+[11]: https://github.com/klarna/erlavro#decoder-hooks
 
 # Getting Started
 
@@ -86,7 +88,8 @@ defmodule MyClient do
     registry_schemas_autoreg: false,
     convert_null_values: false,
     convert_map_to_proplist: false,
-    names_cache_ttl: :timer.minutes(5)
+    names_cache_ttl: :timer.minutes(5),
+    decode_hook: &MyClient.decode_hook/4
 end
 ```
 
@@ -105,7 +108,8 @@ config :avrora,
   registry_schemas_autoreg: false, # optional: if you want manually register schemas
   convert_null_values: false, # optional: if you want to keep decoded `:null` values as is
   convert_map_to_proplist: false, # optional: if you want to restore the old behavior for decoding map-type
-  names_cache_ttl: :timer.minutes(5) # optional: if you want periodic disk reads
+  names_cache_ttl: :timer.minutes(5), # optional: if you want periodic disk reads
+  decode_hook: &MyClient.decode_hook/4 # optional: if you want to amend the data/result
 ```
 
 - `otp_app`<sup>[v0.22]</sup> - Name of the OTP application to use for runtime configuration via env, default `nil`
@@ -116,6 +120,7 @@ config :avrora,
 - `convert_null_values`<sup>[v0.14]</sup> - Flag for automatic conversion of decoded `:null` values into `nil`, default `true`
 - `convert_map_to_proplist`<sup>[v0.15]</sup> restore old behaviour and confiugre decoding map-type to proplist, default `false`
 - `names_cache_ttl`<sup>[v0.10]</sup> - Time in ms to cache schemas by name in memory, default `:infinity`
+- `decode_hook`<sup>[v0.24]</sup> - Function with arity 4 to amend data or result, default `fn _, _, data, fun -> fun.(data) end`
 
 Set `names_cache_ttl` to `:infinity` will cache forever (no more disk reads will
 happen). This is safe when schemas resolved in the Schema Registry by
@@ -124,6 +129,9 @@ from the disk periodically, TTL different from `:infinity` ensures that.
 
 If the schema resolved by name it will be always overwritten with the latest
 schema received from Schema Registry.<sup>[v0.10]</sup>
+
+Custom [decoder hook][11] will be first in the call-chain, after it's done Avrora
+will use the result in its own decoder hook.<sup>[v0.24]</sup>
 
 :bulb: Disable schemas auto-registration if you want to avoid storing schemas
 and manually control registration process. Also it's recommended to turn off auto-registration
