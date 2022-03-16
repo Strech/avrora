@@ -1,6 +1,6 @@
 # [0.24.0] - 2022-03-16 [:book:][0.24.0-n]
 
-- Add new Avrora.Config option decode_hook (#94, @strech)
+- Add new Avrora.Config option decoder_hook (#94, @strech)
 
 # [0.23.0] - 2021-07-06 [:book:][0.23.0-n]
 

@@ -125,7 +125,7 @@ defmodule Avrora.Codec.PlainTest do
     end
 
     test "when decoding message with union and with tagged union hook" do
-      stub(Avrora.ConfigMock, :decode_hook, fn ->
+      stub(Avrora.ConfigMock, :decoder_hook, fn ->
         fn type, sub_name_or_index, data, decode_fun ->
           hook = :avro_decoder_hooks.tag_unions()
           hook.(type, sub_name_or_index, data, decode_fun)

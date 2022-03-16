@@ -46,7 +46,7 @@ defmodule Support.Config do
   @impl true
   def names_cache_ttl, do: :infinity
   @impl true
-  def decode_hook, do: fn _, _, data, fun -> fun.(data) end
+  def decoder_hook, do: fn _, _, data, fun -> fun.(data) end
   @impl true
   def convert_map_to_proplist, do: false
   @impl true
