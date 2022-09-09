@@ -10,7 +10,7 @@ defmodule Avrora.HTTPClient do
   @spec get(String.t(), keyword(String.t())) :: {:ok, map()} | {:error, term()}
   def get(url, options \\ []) do
     with {:ok, headers} <- extract_headers(options),
-         {:ok, {{_, status, _}, _, body}} <- :httpc.request(:get, {'#{url}', headers}, [], []) do
+         {:ok, {{_, status, _}, _, body}} <- :httpc.request(:get, {'#{url}', headers}, [ssl: ssl_options()], []) do
       handle(status, body)
     end
   end
@@ -22,7 +22,7 @@ defmodule Avrora.HTTPClient do
          {:ok, content_type} <- Keyword.fetch(options, :content_type),
          {:ok, headers} <- extract_headers(options),
          {:ok, {{_, status, _}, _, body}} <-
-           :httpc.request(:post, {'#{url}', headers, [content_type], body}, [], []) do
+           :httpc.request(:post, {'#{url}', headers, [content_type], body}, [ssl: ssl_options()], []) do
       handle(status, body)
     end
   end
@@ -41,5 +41,11 @@ defmodule Avrora.HTTPClient do
       {:ok, reason} -> {:error, reason}
       {:error, _} -> {:error, {status, body}}
     end
+  end
+
+  if String.to_integer(System.otp_release) >= 25 do
+    defp ssl_options, do: [verify: :verify_peer, cacerts: :public_key.cacerts_get()]
+  else
+    defp ssl_options, do: []
   end
 end
