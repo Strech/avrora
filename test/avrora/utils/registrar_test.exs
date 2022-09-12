@@ -83,8 +83,7 @@ defmodule Avrora.Utils.RegistrarTest do
         {:ok, schema_with_id}
       end)
 
-      {:ok, schema} =
-        Registrar.register_schema(schema_without_id_and_version(), as: "MyCustomName")
+      {:ok, schema} = Registrar.register_schema(schema_without_id_and_version(), as: "MyCustomName")
 
       assert schema.id == 1
       assert is_nil(schema.version)
@@ -298,8 +297,7 @@ defmodule Avrora.Utils.RegistrarTest do
         {:ok, schema_without_id_and_version()}
       end)
 
-      {:ok, schema} =
-        Registrar.register_schema_by_name("io.confluent.Payment", as: "MyCustomName")
+      {:ok, schema} = Registrar.register_schema_by_name("io.confluent.Payment", as: "MyCustomName")
 
       assert schema.id == 1
       assert is_nil(schema.version)

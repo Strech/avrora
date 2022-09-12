@@ -72,8 +72,7 @@ defmodule Avrora.Codec.PlainTest do
         {:ok, payment_schema}
       end)
 
-      {:ok, decoded} =
-        Codec.Plain.decode(payment_message(), schema: %Schema{full_name: "io.confluent.Payment"})
+      {:ok, decoded} = Codec.Plain.decode(payment_message(), schema: %Schema{full_name: "io.confluent.Payment"})
 
       assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
     end
@@ -188,8 +187,7 @@ defmodule Avrora.Codec.PlainTest do
         {:ok, payment_schema}
       end)
 
-      {:ok, encoded} =
-        Codec.Plain.encode(payment_payload(), schema: %Schema{full_name: "io.confluent.Payment"})
+      {:ok, encoded} = Codec.Plain.encode(payment_payload(), schema: %Schema{full_name: "io.confluent.Payment"})
 
       assert encoded == payment_message()
     end
@@ -225,8 +223,7 @@ defmodule Avrora.Codec.PlainTest do
         {:ok, enum_schema}
       end)
 
-      {:ok, encoded} =
-        Codec.Plain.encode("VISA", schema: %Schema{full_name: "io.confluent.CardType"})
+      {:ok, encoded} = Codec.Plain.encode("VISA", schema: %Schema{full_name: "io.confluent.CardType"})
 
       assert encoded == <<2>>
     end
@@ -262,8 +259,7 @@ defmodule Avrora.Codec.PlainTest do
         {:ok, fixed_schema}
       end)
 
-      {:ok, encoded} =
-        Codec.Plain.encode("59B02128", schema: %Schema{full_name: "io.confluent.CRC32"})
+      {:ok, encoded} = Codec.Plain.encode("59B02128", schema: %Schema{full_name: "io.confluent.CRC32"})
 
       assert encoded == "59B02128"
     end
@@ -271,15 +267,13 @@ defmodule Avrora.Codec.PlainTest do
 
   defp missing_field_error do
     %ErlangError{
-      original:
-        {:"$avro_encode_error", :required_field_missed,
-         [record: "io.confluent.Payment", field: "id"]}
+      original: {:"$avro_encode_error", :required_field_missed, [record: "io.confluent.Payment", field: "id"]}
     }
   end
 
   defp payment_message do
-    <<72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48,
-      48, 45, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64>>
+    <<72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48,
+      48, 48, 48, 48, 48, 48, 48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64>>
   end
 
   defp null_value_message, do: <<12, 117, 115, 101, 114, 45, 49, 0>>

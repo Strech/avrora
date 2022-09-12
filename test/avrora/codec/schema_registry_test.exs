@@ -160,8 +160,7 @@ defmodule Avrora.Codec.SchemaRegistryTest do
     test "when usable schema with id is given" do
       output =
         capture_log(fn ->
-          {:ok, decoded} =
-            Codec.SchemaRegistry.decode(payment_message(), schema: payment_schema_with_id())
+          {:ok, decoded} = Codec.SchemaRegistry.decode(payment_message(), schema: payment_schema_with_id())
 
           assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
         end)
@@ -384,9 +383,7 @@ defmodule Avrora.Codec.SchemaRegistryTest do
 
   defp missing_field_error do
     %ErlangError{
-      original:
-        {:"$avro_encode_error", :required_field_missed,
-         [record: "io.confluent.Payment", field: "id"]}
+      original: {:"$avro_encode_error", :required_field_missed, [record: "io.confluent.Payment", field: "id"]}
     }
   end
 
@@ -407,8 +404,7 @@ defmodule Avrora.Codec.SchemaRegistryTest do
   defp payment_payload, do: %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
 
   defp payment_message do
-    <<0, 0, 0, 0, 42, 72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48,
-      45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 123, 20, 174, 71,
-      225, 250, 47, 64>>
+    <<0, 0, 0, 0, 42, 72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48,
+      45, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64>>
   end
 end

@@ -156,10 +156,8 @@ defmodule Avrora.Schema.EncoderTest do
   defp payment_erlavro do
     {:avro_record_type, "Payment", "io.confluent", "", [],
      [
-       {:avro_record_field, "id", "", {:avro_primitive_type, "string", []}, :undefined,
-        :ascending, []},
-       {:avro_record_field, "amount", "", {:avro_primitive_type, "double", []}, :undefined,
-        :ascending, []}
+       {:avro_record_field, "id", "", {:avro_primitive_type, "string", []}, :undefined, :ascending, []},
+       {:avro_record_field, "amount", "", {:avro_primitive_type, "double", []}, :undefined, :ascending, []}
      ], "io.confluent.Payment", []}
   end
 
