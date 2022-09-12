@@ -45,11 +45,17 @@ defmodule Avrora.ClientTest do
 
       assert Gamma.Config.names_cache_ttl() == 1_000
       assert Gamma.Config.schemas_path() =~ "avrora/test/fixtures/area-52/./path/to/schemas"
+      assert Gamma.Config.registry_schemas_autoreg()
 
-      Application.put_env(:area, Gamma, schemas_path: "./my/scms", names_cache_ttl: 42)
+      Application.put_env(:area, Gamma,
+        schemas_path: "./my/scms",
+        names_cache_ttl: 42,
+        registry_schemas_autoreg: false
+      )
 
       assert Gamma.Config.names_cache_ttl() == 42
       assert Gamma.Config.schemas_path() =~ "avrora/test/fixtures/area-52/./my/scms"
+      refute Gamma.Config.registry_schemas_autoreg()
     end
 
     test "when otp_app is not set" do
