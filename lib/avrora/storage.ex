@@ -6,8 +6,7 @@ defmodule Avrora.Storage do
   @typedoc "Schema indentifier."
   @type schema_id :: String.t() | integer()
 
-  @callback get(key :: schema_id) ::
-              {:ok, result :: nil | Avrora.Schema.t()} | {:error, reason :: term()}
+  @callback get(key :: schema_id) :: {:ok, result :: nil | Avrora.Schema.t()} | {:error, reason :: term()}
 
   @callback put(key :: schema_id, value :: Avrora.Schema.t()) ::
               {:ok, result :: Avrora.Schema.t()} | {:error, reason :: term()}
@@ -22,8 +21,7 @@ defmodule Avrora.Storage do
     @typedoc "Naive timestamp with second precision."
     @type timestamp :: timeout()
 
-    @callback delete(key :: Storage.schema_id()) ::
-                {:ok, result :: boolean()} | {:error, reason :: term()}
+    @callback delete(key :: Storage.schema_id()) :: {:ok, result :: boolean()} | {:error, reason :: term()}
 
     @callback expire(key :: Storage.schema_id(), ttl :: timeout()) ::
                 {:ok, timestamp :: timestamp()} | {:error, reason :: term()}

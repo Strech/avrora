@@ -31,8 +31,7 @@ defmodule Avrora.Codec do
       ...> schema.full_name
       "io.confluent.Payment"
   """
-  @callback extract_schema(payload :: binary()) ::
-              {:ok, result :: Avrora.Schema.t()} | {:error, reason :: term()}
+  @callback extract_schema(payload :: binary()) :: {:ok, result :: Avrora.Schema.t()} | {:error, reason :: term()}
 
   @doc """
   Decode a binary Avro message into the Elixir data.
@@ -46,8 +45,7 @@ defmodule Avrora.Codec do
       {:ok, %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}}
 
   """
-  @callback decode(payloadd :: binary()) ::
-              {:ok, result :: map() | list(map())} | {:error, reason :: term()}
+  @callback decode(payloadd :: binary()) :: {:ok, result :: map() | list(map())} | {:error, reason :: term()}
 
   @doc """
   Decode a binary Avro message into the Elixir data with given schema.

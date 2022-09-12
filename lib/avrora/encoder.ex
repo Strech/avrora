@@ -66,9 +66,7 @@ defmodule Avrora.Encoder do
   def decode(payload, schema_name: schema_name) when is_binary(payload) do
     with {:ok, schema_name} <- Name.parse(schema_name) do
       unless is_nil(schema_name.version) do
-        Logger.warn(
-          "decoding with schema version is not supported, `#{schema_name.name}` used instead"
-        )
+        Logger.warn("decoding with schema version is not supported, `#{schema_name.name}` used instead")
       end
 
       schema = %Schema{full_name: schema_name.name}
@@ -100,9 +98,7 @@ defmodule Avrora.Encoder do
   def decode_plain(payload, schema_name: schema_name) when is_binary(payload) do
     with {:ok, schema_name} <- Name.parse(schema_name) do
       unless is_nil(schema_name.version) do
-        Logger.warn(
-          "decoding with schema version is not supported, `#{schema_name.name}` used instead"
-        )
+        Logger.warn("decoding with schema version is not supported, `#{schema_name.name}` used instead")
       end
 
       Codec.Plain.decode(payload, schema: %Schema{full_name: schema_name.name})
@@ -144,9 +140,7 @@ defmodule Avrora.Encoder do
       end
 
       unless is_nil(schema_name.version) do
-        Logger.warn(
-          "encoding with schema version is not supported yet, `#{schema_name.name}` used instead"
-        )
+        Logger.warn("encoding with schema version is not supported yet, `#{schema_name.name}` used instead")
       end
 
       schema = %Schema{full_name: schema_name.name}

@@ -44,8 +44,7 @@ defmodule Avrora.Utils.Registrar do
       ...> schema.full_name
       "io.confluent.Payment"
   """
-  @spec register_schema_by_name(String.t(), as: String.t(), force: boolean) ::
-          {:ok, Schema.t()} | {:error, term()}
+  @spec register_schema_by_name(String.t(), as: String.t(), force: boolean) :: {:ok, Schema.t()} | {:error, term()}
   def register_schema_by_name(name, opts \\ []) do
     if Keyword.get(opts, :force, false) do
       with {:ok, schema} <- file_storage().get(name), do: register_schema(schema, opts)
@@ -77,8 +76,7 @@ defmodule Avrora.Utils.Registrar do
       ...> schema.full_name
       "io.confluent.Payment"
   """
-  @spec register_schema(Schema.t(), as: String.t(), force: boolean) ::
-          {:ok, Schema.t()} | {:error, term()}
+  @spec register_schema(Schema.t(), as: String.t(), force: boolean) :: {:ok, Schema.t()} | {:error, term()}
   def register_schema(schema, opts \\ []) do
     full_name =
       if is_nil(schema.version),

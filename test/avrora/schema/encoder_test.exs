@@ -102,8 +102,7 @@ defmodule Avrora.Schema.EncoderTest do
     end
 
     test "when payload is a valid json schema with external reference and no callback is given" do
-      assert {:error, {:not_found, "type"}} ==
-               Schema.Encoder.from_json(message_with_reference_json())
+      assert {:error, {:not_found, "type"}} == Schema.Encoder.from_json(message_with_reference_json())
     end
 
     test "when payload is not a named type schema" do
@@ -156,10 +155,8 @@ defmodule Avrora.Schema.EncoderTest do
   defp payment_erlavro do
     {:avro_record_type, "Payment", "io.confluent", "", [],
      [
-       {:avro_record_field, "id", "", {:avro_primitive_type, "string", []}, :undefined,
-        :ascending, []},
-       {:avro_record_field, "amount", "", {:avro_primitive_type, "double", []}, :undefined,
-        :ascending, []}
+       {:avro_record_field, "id", "", {:avro_primitive_type, "string", []}, :undefined, :ascending, []},
+       {:avro_record_field, "amount", "", {:avro_primitive_type, "double", []}, :undefined, :ascending, []}
      ], "io.confluent.Payment", []}
   end
 
