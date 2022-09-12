@@ -13,8 +13,8 @@ jobs:
     timeout-minutes: 30
     name: Internal Typespecs
     env:
-      OTP: "22.3"
-      ELIXIR: "1.9"
+      OTP: "23.3"
+      ELIXIR: "1.11"
     steps:
       - uses: actions/checkout@v2
       - uses: erlef/setup-beam@v1
@@ -50,8 +50,8 @@ jobs:
     runs-on: ubuntu-20.04
     name: Code Style
     env:
-      OTP: "22.3"
-      ELIXIR: "1.9"
+      OTP: "23.3"
+      ELIXIR: "1.11"
     steps:
       - uses: actions/checkout@v2
       - uses: erlef/setup-beam@v1
