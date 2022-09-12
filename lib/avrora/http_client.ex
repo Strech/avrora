@@ -43,9 +43,5 @@ defmodule Avrora.HTTPClient do
     end
   end
 
-  if String.to_integer(System.otp_release) >= 25 do
-    defp ssl_options, do: [verify: :verify_peer, cacerts: :public_key.cacerts_get()]
-  else
-    defp ssl_options, do: []
-  end
+  defp ssl_options, do: [verify: :verify_none]
 end
