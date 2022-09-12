@@ -16,8 +16,7 @@ defmodule Avrora.Resolver do
       ...> schema.full_name
       "io.confluent.Payment"
   """
-  @spec resolve_any(nonempty_list(integer() | String.t())) ::
-          {:ok, Avrora.Schema.t()} | {:error, term()}
+  @spec resolve_any(nonempty_list(integer() | String.t())) :: {:ok, Avrora.Schema.t()} | {:error, term()}
   def resolve_any(ids) do
     ids = List.wrap(ids)
     total = Enum.count(ids)
@@ -100,8 +99,7 @@ defmodule Avrora.Resolver do
   defp resolve_with_registry(schema_name) do
     if Config.self().registry_schemas_autoreg() && is_nil(schema_name.version) do
       with {:ok, schema} <- file_storage().get(schema_name.origin),
-           {:error, :unconfigured_registry_url} <-
-             registry_storage().put(schema_name.name, schema.json),
+           {:error, :unconfigured_registry_url} <- registry_storage().put(schema_name.name, schema.json),
            do: {:reclaim, schema}
     else
       with {:error, :unconfigured_registry_url} <- registry_storage().get(schema_name.origin),

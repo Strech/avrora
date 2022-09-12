@@ -328,8 +328,7 @@ defmodule Avrora.Storage.RegistryTest do
     test "when registry url is unconfigured" do
       stub(Avrora.ConfigMock, :registry_url, fn -> nil end)
 
-      assert Registry.put("anything", ~s({"type":"string"})) ==
-               {:error, :unconfigured_registry_url}
+      assert Registry.put("anything", ~s({"type":"string"})) == {:error, :unconfigured_registry_url}
     end
   end
 

@@ -28,8 +28,7 @@ defmodule Avrora.Utils.RegistrarTest do
         {:error, :unconfigured_registry_url}
       end)
 
-      assert {:error, :unconfigured_registry_url} ==
-               Registrar.register_schema(schema_without_id_and_version())
+      assert {:error, :unconfigured_registry_url} == Registrar.register_schema(schema_without_id_and_version())
     end
 
     test "when schema was found in memory" do

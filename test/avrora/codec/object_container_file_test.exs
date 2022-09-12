@@ -65,8 +65,7 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
     end
 
     test "when payload is invalid" do
-      assert Codec.ObjectContainerFile.extract_schema(<<79, 98, 106, 1, 0, 1, 2>>) ==
-               {:error, :schema_mismatch}
+      assert Codec.ObjectContainerFile.extract_schema(<<79, 98, 106, 1, 0, 1, 2>>) == {:error, :schema_mismatch}
     end
   end
 
@@ -106,8 +105,7 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
     end
 
     test "when payload is not a valid binary and schema is not given" do
-      assert Codec.ObjectContainerFile.decode(<<79, 98, 106, 1, 0, 1, 2>>) ==
-               {:error, :schema_mismatch}
+      assert Codec.ObjectContainerFile.decode(<<79, 98, 106, 1, 0, 1, 2>>) == {:error, :schema_mismatch}
     end
 
     test "when payload is a valid binary and schema is given" do
@@ -129,8 +127,7 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
     end
 
     test "when payload is matching the schema and schema is unusable" do
-      assert Codec.ObjectContainerFile.encode(payment_payload(), schema: %Schema{}) ==
-               {:error, :unusable_schema}
+      assert Codec.ObjectContainerFile.encode(payment_payload(), schema: %Schema{}) == {:error, :unusable_schema}
     end
 
     test "when payload is matching the schema and schema is usable" do

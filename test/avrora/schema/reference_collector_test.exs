@@ -14,8 +14,7 @@ defmodule Avrora.Schema.ReferenceCollectorTest do
     test "when schema contains primitive and reference types" do
       {:ok, references} = ReferenceCollector.collect(record_with_reference())
 
-      assert Enum.sort(references) ==
-               Enum.sort(~w(io.confluent.PaymentHistory io.confluent.Message))
+      assert Enum.sort(references) == Enum.sort(~w(io.confluent.PaymentHistory io.confluent.Message))
     end
 
     test "when schema contains primitive, sub-type and alias reference" do

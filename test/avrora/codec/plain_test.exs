@@ -106,13 +106,11 @@ defmodule Avrora.Codec.PlainTest do
     end
 
     test "when payload is a valid binary and schema is unusable" do
-      assert Codec.Plain.decode(payment_message(), schema: %Schema{}) ==
-               {:error, :unusable_schema}
+      assert Codec.Plain.decode(payment_message(), schema: %Schema{}) == {:error, :unusable_schema}
     end
 
     test "when payload is not a valid binary and schema is usable" do
-      assert Codec.Plain.decode(<<0, 1, 2>>, schema: payment_schema()) ==
-               {:error, :schema_mismatch}
+      assert Codec.Plain.decode(<<0, 1, 2>>, schema: payment_schema()) == {:error, :schema_mismatch}
     end
 
     test "when payload is valid binary and union type must be decoded without decoding hook" do
@@ -141,13 +139,11 @@ defmodule Avrora.Codec.PlainTest do
 
   describe "encode/2" do
     test "when payload is not matching the schema" do
-      assert Codec.Plain.encode(%{"hello" => "world"}, schema: payment_schema()) ==
-               {:error, missing_field_error()}
+      assert Codec.Plain.encode(%{"hello" => "world"}, schema: payment_schema()) == {:error, missing_field_error()}
     end
 
     test "when payload is matching the schema and schema is unusable" do
-      assert Codec.Plain.encode(payment_payload(), schema: %Schema{}) ==
-               {:error, :unusable_schema}
+      assert Codec.Plain.encode(payment_payload(), schema: %Schema{}) == {:error, :unusable_schema}
     end
 
     test "when payload is matching the schema and schema is usable" do

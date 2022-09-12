@@ -109,8 +109,7 @@ defmodule Avrora.Storage.Memory do
   def put(key, value), do: put(__MODULE__, key, value)
 
   @doc false
-  @spec put(pid() | atom(), Storage.schema_id(), Schema.t()) ::
-          {:ok, Avrora.Schema.t()} | {:error, term()}
+  @spec put(pid() | atom(), Storage.schema_id(), Schema.t()) :: {:ok, Avrora.Schema.t()} | {:error, term()}
   def put(pid, key, value), do: {GenServer.cast(pid, {:put, key, value}), value}
 
   @doc """

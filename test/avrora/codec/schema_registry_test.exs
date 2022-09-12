@@ -37,8 +37,7 @@ defmodule Avrora.Codec.SchemaRegistryTest do
         {:error, :unconfigured_registry_url}
       end)
 
-      assert Codec.SchemaRegistry.extract_schema(payment_message()) ==
-               {:error, :unconfigured_registry_url}
+      assert Codec.SchemaRegistry.extract_schema(payment_message()) == {:error, :unconfigured_registry_url}
     end
 
     test "when payload is valid and registry is configured" do
@@ -72,8 +71,7 @@ defmodule Avrora.Codec.SchemaRegistryTest do
     end
 
     test "when payload is invalid" do
-      assert Codec.SchemaRegistry.extract_schema(<<79, 98, 106, 1, 0, 1, 2>>) ==
-               {:error, :schema_not_found}
+      assert Codec.SchemaRegistry.extract_schema(<<79, 98, 106, 1, 0, 1, 2>>) == {:error, :schema_not_found}
     end
   end
 
@@ -120,8 +118,7 @@ defmodule Avrora.Codec.SchemaRegistryTest do
         {:error, :unconfigured_registry_url}
       end)
 
-      assert Codec.SchemaRegistry.decode(payment_message()) ==
-               {:error, :unconfigured_registry_url}
+      assert Codec.SchemaRegistry.decode(payment_message()) == {:error, :unconfigured_registry_url}
     end
 
     test "when payload is not a valid binary" do
@@ -151,8 +148,7 @@ defmodule Avrora.Codec.SchemaRegistryTest do
         {:ok, payment_schema_with_id}
       end)
 
-      assert Codec.SchemaRegistry.decode(<<0, 0, 0, 0, 42, 72, 48, 48, 48, 48, 48>>) ==
-               {:error, :schema_mismatch}
+      assert Codec.SchemaRegistry.decode(<<0, 0, 0, 0, 42, 72, 48, 48, 48, 48, 48>>) == {:error, :schema_mismatch}
     end
   end
 
@@ -165,8 +161,7 @@ defmodule Avrora.Codec.SchemaRegistryTest do
           assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
         end)
 
-      assert output =~
-               "message already contains embeded schema id, given schema id will be ignored"
+      assert output =~ "message already contains embeded schema id, given schema id will be ignored"
     end
 
     test "when resolvable schema with id is given" do
@@ -203,8 +198,7 @@ defmodule Avrora.Codec.SchemaRegistryTest do
           assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
         end)
 
-      assert output =~
-               "message already contains embeded schema id, given schema id will be ignored"
+      assert output =~ "message already contains embeded schema id, given schema id will be ignored"
     end
 
     test "when resolvable schema without id is given" do
@@ -271,13 +265,11 @@ defmodule Avrora.Codec.SchemaRegistryTest do
           assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
         end)
 
-      assert output =~
-               "message embeded schema id is different from the resolved and used schema id"
+      assert output =~ "message embeded schema id is different from the resolved and used schema id"
     end
 
     test "when payload is not a valid binary" do
-      assert Codec.SchemaRegistry.decode(<<0, 1, 2>>, schema: payment_schema_with_id()) ==
-               {:error, :schema_not_found}
+      assert Codec.SchemaRegistry.decode(<<0, 1, 2>>, schema: payment_schema_with_id()) == {:error, :schema_not_found}
     end
 
     test "when payload is not a valid binary and contains schema id" do
@@ -323,8 +315,7 @@ defmodule Avrora.Codec.SchemaRegistryTest do
         {:ok, payment_schema}
       end)
 
-      assert Codec.SchemaRegistry.encode(payment_payload(), schema: payment_schema) ==
-               {:error, :invalid_schema_id}
+      assert Codec.SchemaRegistry.encode(payment_payload(), schema: payment_schema) == {:error, :invalid_schema_id}
     end
 
     test "when resolvable schema without id is given" do
@@ -371,8 +362,7 @@ defmodule Avrora.Codec.SchemaRegistryTest do
         {:ok, payment_schema}
       end)
 
-      assert Codec.SchemaRegistry.encode(payment_payload(), schema: payment_schema) ==
-               {:ok, payment_message()}
+      assert Codec.SchemaRegistry.encode(payment_payload(), schema: payment_schema) == {:ok, payment_message()}
     end
 
     test "when usable schema with id is given" do
