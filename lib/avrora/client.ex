@@ -132,7 +132,9 @@ defmodule Avrora.Client do
             defp get(opts, key, default) do
               app_opts = Application.get_env(@otp_app, unquote(:"Elixir.#{module}"), [])
 
-              Keyword.get(app_opts, key) || Keyword.get(opts, key, default)
+              Keyword.get_lazy(app_opts, key, fn ->
+                Keyword.get(opts, key, default)
+              end)
             end
           end
         end
