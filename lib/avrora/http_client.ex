@@ -28,10 +28,15 @@ defmodule Avrora.HTTPClient do
   end
 
   defp extract_headers(options) do
-    case Keyword.get(options, :authorization) do
-      nil -> {:ok, []}
-      credentials -> {:ok, [{'Authorization', '#{credentials}'}]}
-    end
+    credentials =
+      case Keyword.get(options, :authorization) do
+        nil -> []
+        credentials -> [{'Authorization', '#{credentials}'}]
+      end
+
+    user_agent = [{'User-Agent', '#{Keyword.get(options, :user_agent)}'}]
+
+    {:ok, credentials ++ user_agent}
   end
 
   defp handle(200 = _status, body), do: Jason.decode(body)

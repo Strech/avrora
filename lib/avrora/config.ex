@@ -12,6 +12,7 @@ defmodule Avrora.Config do
       * `convert_null_values` convert `:null` values in the decoded message into `nil`, default `true`
       * `convert_map_to_proplist` bring back old behavior and configure decoding AVRO map-type as proplist, default `false`
       * `names_cache_ttl` duration to cache global schema names millisecods, default `:infinity`
+      * `user_agent_header` adding user-agent to the request, default `@strech/avrora`
       * `decoder_hook` function to amend decoded payload, default `fn _, _, data, fun -> fun.(data) end`
 
   ## Internal use interface:
@@ -30,6 +31,7 @@ defmodule Avrora.Config do
   @callback convert_null_values :: boolean()
   @callback convert_map_to_proplist :: boolean()
   @callback names_cache_ttl :: integer() | atom()
+  @callback user_agent_header :: String.t() | nil
   @callback decoder_hook :: (any(), any(), any(), any() -> any())
   @callback file_storage :: module()
   @callback memory_storage :: module()
@@ -62,6 +64,9 @@ defmodule Avrora.Config do
 
   @doc false
   def names_cache_ttl, do: get_env(:names_cache_ttl, :infinity)
+
+  @doc false
+  def user_agent_header, do: get_env(:user_agent_header, nil)
 
   @doc false
   def decoder_hook, do: get_env(:decoder_hook, fn _, _, data, fun -> fun.(data) end)

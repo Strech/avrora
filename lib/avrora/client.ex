@@ -115,6 +115,7 @@ defmodule Avrora.Client do
           def convert_null_values, do: get(@opts, :convert_null_values, true)
           def convert_map_to_proplist, do: get(@opts, :convert_map_to_proplist, false)
           def names_cache_ttl, do: get(@opts, :names_cache_ttl, :infinity)
+          def user_agent_header, do: get(@opts, :user_agent_header, nil)
           def decoder_hook, do: get(@opts, :decoder_hook, fn _, _, data, fun -> fun.(data) end)
           def file_storage, do: unquote(:"Elixir.#{module}.Storage.File")
           def memory_storage, do: unquote(:"Elixir.#{module}.Storage.Memory")

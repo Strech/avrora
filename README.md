@@ -89,6 +89,7 @@ defmodule MyClient do
     convert_null_values: false,
     convert_map_to_proplist: false,
     names_cache_ttl: :timer.minutes(5),
+    user_agent_header: "@strech/avrora",
     decoder_hook: &MyClient.decoder_hook/4
 end
 ```
@@ -109,6 +110,7 @@ config :avrora,
   convert_null_values: false, # optional: if you want to keep decoded `:null` values as is
   convert_map_to_proplist: false, # optional: if you want to restore the old behavior for decoding map-type
   names_cache_ttl: :timer.minutes(5), # optional: if you want periodic disk reads
+  user_agent_header: "@strech/avrora", # optional
   decoder_hook: &MyClient.decoder_hook/4 # optional: if you want to amend the data/result
 ```
 
@@ -120,6 +122,7 @@ config :avrora,
 - `convert_null_values`<sup>[v0.14]</sup> - Flag for automatic conversion of decoded `:null` values into `nil`, default `true`
 - `convert_map_to_proplist`<sup>[v0.15]</sup> restore old behaviour and confiugre decoding map-type to proplist, default `false`
 - `names_cache_ttl`<sup>[v0.10]</sup> - Time in ms to cache schemas by name in memory, default `:infinity`
+- `user_agent_header` - Adding user-agent to the request, default `@strech/avrora`
 - `decoder_hook`<sup>[v0.24]</sup> - Function with arity 4 to amend data or result, default `fn _, _, data, fun -> fun.(data) end`
 
 Set `names_cache_ttl` to `:infinity` will cache forever (no more disk reads will
