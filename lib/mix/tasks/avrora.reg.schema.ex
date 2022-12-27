@@ -53,13 +53,22 @@ defmodule Mix.Tasks.Avrora.Reg.Schema do
     Tasks.Loadpaths.run(["--no-elixir-version-check", "--no-archives-check"])
 
     {opts, _, _} = OptionParser.parse(argv, @cli_options)
-    {module_name, opts} = Keyword.pop(opts, :module, "Avrora")
+
+    {module_name, opts} =
+      case Keyword.pop(opts, :module) do
+        {nil, opts} ->
+          {:ok, _} = Application.ensure_all_started(:avrora)
+          {"Avrora", opts}
+
+        res ->
+          :ok = Mix.Task.run("app.config")
+          res
+      end
 
     module = Module.concat(Elixir, String.trim(module_name))
     config = Module.concat(module, Config)
     registrar = Module.concat(module, Utils.Registrar)
 
-    {:ok, _} = Application.ensure_all_started(:avrora)
     {:ok, _} = module.start_link()
 
     case opts |> Keyword.keys() |> Enum.sort() do
