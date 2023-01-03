@@ -111,17 +111,19 @@ defmodule Avrora.Client do
 
           def registry_url, do: get(@opts, :registry_url, nil)
           def registry_auth, do: get(@opts, :registry_auth, nil)
+          def registry_user_agent, do: get(@opts, :registry_user_agent, "Avrora/#{version()} Elixir")
           def registry_schemas_autoreg, do: get(@opts, :registry_schemas_autoreg, true)
           def convert_null_values, do: get(@opts, :convert_null_values, true)
           def convert_map_to_proplist, do: get(@opts, :convert_map_to_proplist, false)
           def names_cache_ttl, do: get(@opts, :names_cache_ttl, :infinity)
-          def user_agent_header, do: get(@opts, :user_agent_header, nil)
           def decoder_hook, do: get(@opts, :decoder_hook, fn _, _, data, fun -> fun.(data) end)
           def file_storage, do: unquote(:"Elixir.#{module}.Storage.File")
           def memory_storage, do: unquote(:"Elixir.#{module}.Storage.Memory")
           def registry_storage, do: unquote(:"Elixir.#{module}.Storage.Registry")
           def http_client, do: Avrora.HTTPClient
           def ets_lib, do: :"Elixir.#{unquote(module)}.AvroSchemaStore"
+
+          defp version, do: Application.spec(:avrora, :vsn)
 
           if is_nil(@otp_app) do
             def self, do: __MODULE__

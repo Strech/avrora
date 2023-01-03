@@ -15,7 +15,6 @@ defmodule Avrora.Storage.Registry do
 
   @behaviour Avrora.Storage
   @content_type "application/vnd.schemaregistry.v1+json"
-  @user_agent "@strech/avrora"
 
   @doc """
   Get schema by integer ID or by the subject name.
@@ -132,7 +131,7 @@ defmodule Avrora.Storage.Registry do
 
   # NOTE: Maybe move to compile-time?
   defp headers do
-    auth =
+    authorization =
       case registry_auth() do
         {:basic, [username, password]} ->
           credentials = :base64.encode("#{username}:#{password}")
@@ -142,9 +141,10 @@ defmodule Avrora.Storage.Registry do
           []
       end
 
-    user_agent = [user_agent: user_agent_header() || @user_agent]
-
-    auth ++ user_agent
+    case registry_user_agent() do
+      nil -> authorization
+      user_agent -> authorization |> Keyword.put(:user_agent, user_agent)
+    end
   end
 
   defp to_url(path), do: "#{registry_url()}/#{path}"
@@ -168,5 +168,5 @@ defmodule Avrora.Storage.Registry do
   defp http_client, do: Config.self().http_client()
   defp registry_url, do: Config.self().registry_url()
   defp registry_auth, do: Config.self().registry_auth()
-  defp user_agent_header, do: Config.self().user_agent_header()
+  defp registry_user_agent, do: Config.self().registry_user_agent()
 end

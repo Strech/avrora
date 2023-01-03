@@ -8,11 +8,11 @@ defmodule Avrora.Config do
       * `schemas_path` path to local schema files, default `./priv/schemas`
       * `registry_url` URL for Schema Registry, default `nil`
       * `registry_auth` authentication settings for Schema Registry, default `nil`
+      * `registry_user_agent` HTTP `User-Agent` header for Schema Registry requests, default `Avrora/<version> Elixir`
       * `registry_schemas_autoreg` automatically register schemas in Schema Registry, default `true`
       * `convert_null_values` convert `:null` values in the decoded message into `nil`, default `true`
       * `convert_map_to_proplist` bring back old behavior and configure decoding AVRO map-type as proplist, default `false`
       * `names_cache_ttl` duration to cache global schema names millisecods, default `:infinity`
-      * `user_agent_header` adding user-agent to the request, default `@strech/avrora`
       * `decoder_hook` function to amend decoded payload, default `fn _, _, data, fun -> fun.(data) end`
 
   ## Internal use interface:
@@ -27,11 +27,11 @@ defmodule Avrora.Config do
   @callback schemas_path :: String.t()
   @callback registry_url :: String.t() | nil
   @callback registry_auth :: tuple() | nil
+  @callback registry_user_agent :: String.t() | nil
   @callback registry_schemas_autoreg :: boolean()
   @callback convert_null_values :: boolean()
   @callback convert_map_to_proplist :: boolean()
   @callback names_cache_ttl :: integer() | atom()
-  @callback user_agent_header :: String.t() | nil
   @callback decoder_hook :: (any(), any(), any(), any() -> any())
   @callback file_storage :: module()
   @callback memory_storage :: module()
@@ -54,6 +54,9 @@ defmodule Avrora.Config do
   def registry_auth, do: get_env(:registry_auth, nil)
 
   @doc false
+  def registry_user_agent, do: get_env(:registry_user_agent, "Avrora/#{version()} Elixir")
+
+  @doc false
   def registry_schemas_autoreg, do: get_env(:registry_schemas_autoreg, true)
 
   @doc false
@@ -64,9 +67,6 @@ defmodule Avrora.Config do
 
   @doc false
   def names_cache_ttl, do: get_env(:names_cache_ttl, :infinity)
-
-  @doc false
-  def user_agent_header, do: get_env(:user_agent_header, nil)
 
   @doc false
   def decoder_hook, do: get_env(:decoder_hook, fn _, _, data, fun -> fun.(data) end)
@@ -90,4 +90,5 @@ defmodule Avrora.Config do
   def self, do: get_env(:config, Avrora.Config)
 
   defp get_env(name, default), do: Application.get_env(:avrora, name, default)
+  defp version, do: Application.spec(:avrora, :vsn)
 end

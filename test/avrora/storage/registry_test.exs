@@ -20,7 +20,7 @@ defmodule Avrora.Storage.RegistryTest do
       Avrora.HTTPClientMock
       |> expect(:get, fn url, options ->
         assert url == "http://reg.loc/subjects/io.confluent.Account/versions/latest"
-        assert options == [{:user_agent, "@strech/avrora"}]
+        assert options == []
 
         {
           :ok,
@@ -39,7 +39,7 @@ defmodule Avrora.Storage.RegistryTest do
       Avrora.HTTPClientMock
       |> expect(:get, fn url, options ->
         assert url == "http://reg.loc/subjects/io.confluent.User/versions/1"
-        assert options == [{:user_agent, "@strech/avrora"}]
+        assert options == []
 
         {
           :ok,
@@ -64,7 +64,7 @@ defmodule Avrora.Storage.RegistryTest do
       Avrora.HTTPClientMock
       |> expect(:get, fn url, options ->
         assert url == "http://reg.loc/subjects/io.confluent.Account/versions/latest"
-        assert options == [{:user_agent, "@strech/avrora"}]
+        assert options == []
 
         {
           :ok,
@@ -86,7 +86,7 @@ defmodule Avrora.Storage.RegistryTest do
       Avrora.HTTPClientMock
       |> expect(:get, fn url, options ->
         assert url == "http://reg.loc/subjects/io.confluent.Unexisting/versions/latest"
-        assert options == [{:user_agent, "@strech/avrora"}]
+        assert options == []
 
         {:error, subject_not_found_parsed_error()}
       end)
@@ -98,7 +98,7 @@ defmodule Avrora.Storage.RegistryTest do
       Avrora.HTTPClientMock
       |> expect(:get, fn url, options ->
         assert url == "http://reg.loc/subjects/io.confluent.Payment/versions/latest"
-        assert options == [{:user_agent, "@strech/avrora"}]
+        assert options == []
 
         {
           :ok,
@@ -122,7 +122,7 @@ defmodule Avrora.Storage.RegistryTest do
       Avrora.HTTPClientMock
       |> expect(:get, fn url, options ->
         assert url == "http://reg.loc/subjects/io.confluent.Payment/versions/10"
-        assert options == [{:user_agent, "@strech/avrora"}]
+        assert options == []
 
         {
           :ok,
@@ -146,7 +146,7 @@ defmodule Avrora.Storage.RegistryTest do
       Avrora.HTTPClientMock
       |> expect(:get, fn url, options ->
         assert url == "http://reg.loc/subjects/io.confluent.Payment/versions/latest"
-        assert options == [{:user_agent, "@strech/avrora"}]
+        assert options == []
 
         {:error, subject_not_found_parsed_error()}
       end)
@@ -158,7 +158,7 @@ defmodule Avrora.Storage.RegistryTest do
       Avrora.HTTPClientMock
       |> expect(:get, fn url, options ->
         assert url == "http://reg.loc/schemas/ids/1"
-        assert options == [{:user_agent, "@strech/avrora"}]
+        assert options == []
 
         {:ok, %{"schema" => json_schema()}}
       end)
@@ -176,7 +176,7 @@ defmodule Avrora.Storage.RegistryTest do
       Avrora.HTTPClientMock
       |> expect(:get, fn url, options ->
         assert url == "http://reg.loc/schemas/ids/1"
-        assert options == [authorization: "Basic bG9naW46cGFzc3dvcmQ=", user_agent: "@strech/avrora"]
+        assert options == [authorization: "Basic bG9naW46cGFzc3dvcmQ="]
 
         {:ok, %{"schema" => json_schema()}}
       end)
@@ -192,7 +192,7 @@ defmodule Avrora.Storage.RegistryTest do
       Avrora.HTTPClientMock
       |> expect(:get, fn url, options ->
         assert url == "http://reg.loc/schemas/ids/1"
-        assert options == [{:user_agent, "@strech/avrora"}]
+        assert options == []
 
         {:error, version_not_found_parsed_error()}
       end)
@@ -204,7 +204,7 @@ defmodule Avrora.Storage.RegistryTest do
       Avrora.HTTPClientMock
       |> expect(:get, fn url, options ->
         assert url == "http://reg.loc/schemas/ids/43"
-        assert options == [{:user_agent, "@strech/avrora"}]
+        assert options == []
 
         {
           :ok,
@@ -223,7 +223,7 @@ defmodule Avrora.Storage.RegistryTest do
       Avrora.HTTPClientMock
       |> expect(:get, fn url, options ->
         assert url == "http://reg.loc/subjects/io.confluent.User/versions/1"
-        assert options == [{:user_agent, "@strech/avrora"}]
+        assert options == []
 
         {
           :ok,
@@ -257,7 +257,7 @@ defmodule Avrora.Storage.RegistryTest do
       |> expect(:post, fn url, payload, options ->
         assert url == "http://reg.loc/subjects/io.confluent.Payment/versions"
         assert payload == json_schema()
-        assert options == [content_type: "application/vnd.schemaregistry.v1+json", user_agent: "@strech/avrora"]
+        assert options == [content_type: "application/vnd.schemaregistry.v1+json"]
 
         {:ok, %{"id" => 1}}
       end)
@@ -279,8 +279,30 @@ defmodule Avrora.Storage.RegistryTest do
 
         assert options == [
                  content_type: "application/vnd.schemaregistry.v1+json",
-                 authorization: "Basic bG9naW46cGFzc3dvcmQ=",
-                 user_agent: "@strech/avrora"
+                 authorization: "Basic bG9naW46cGFzc3dvcmQ="
+               ]
+
+        {:ok, %{"id" => 1}}
+      end)
+
+      {:ok, schema} = Registry.put("io.confluent.Payment", json_schema())
+
+      assert schema.id == 1
+      assert is_nil(schema.version)
+      assert schema.full_name == "io.confluent.Payment"
+    end
+
+    test "when request with user agent was successful" do
+      stub(Avrora.ConfigMock, :registry_user_agent, fn -> "Avrora/0.0.1 Elixir" end)
+
+      Avrora.HTTPClientMock
+      |> expect(:post, fn url, payload, options ->
+        assert url == "http://reg.loc/subjects/io.confluent.Payment/versions"
+        assert payload == json_schema()
+
+        assert options == [
+                 content_type: "application/vnd.schemaregistry.v1+json",
+                 user_agent: "Avrora/0.0.1 Elixir"
                ]
 
         {:ok, %{"id" => 1}}
