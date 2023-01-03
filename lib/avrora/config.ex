@@ -8,6 +8,7 @@ defmodule Avrora.Config do
       * `schemas_path` path to local schema files, default `./priv/schemas`
       * `registry_url` URL for Schema Registry, default `nil`
       * `registry_auth` authentication settings for Schema Registry, default `nil`
+      * `registry_user_agent` HTTP `User-Agent` header for Schema Registry requests, default `Avrora/<version> Elixir`
       * `registry_schemas_autoreg` automatically register schemas in Schema Registry, default `true`
       * `convert_null_values` convert `:null` values in the decoded message into `nil`, default `true`
       * `convert_map_to_proplist` bring back old behavior and configure decoding AVRO map-type as proplist, default `false`
@@ -26,6 +27,7 @@ defmodule Avrora.Config do
   @callback schemas_path :: String.t()
   @callback registry_url :: String.t() | nil
   @callback registry_auth :: tuple() | nil
+  @callback registry_user_agent :: String.t() | nil
   @callback registry_schemas_autoreg :: boolean()
   @callback convert_null_values :: boolean()
   @callback convert_map_to_proplist :: boolean()
@@ -50,6 +52,9 @@ defmodule Avrora.Config do
 
   @doc false
   def registry_auth, do: get_env(:registry_auth, nil)
+
+  @doc false
+  def registry_user_agent, do: get_env(:registry_user_agent, "Avrora/#{version()} Elixir")
 
   @doc false
   def registry_schemas_autoreg, do: get_env(:registry_schemas_autoreg, true)
@@ -85,4 +90,5 @@ defmodule Avrora.Config do
   def self, do: get_env(:config, Avrora.Config)
 
   defp get_env(name, default), do: Application.get_env(:avrora, name, default)
+  defp version, do: Application.spec(:avrora, :vsn)
 end

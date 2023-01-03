@@ -22,6 +22,7 @@
 [v0.22]: https://github.com/Strech/avrora/releases/tag/v0.22.0
 [v0.23]: https://github.com/Strech/avrora/releases/tag/v0.23.0
 [v0.24]: https://github.com/Strech/avrora/releases/tag/v0.24.0
+[v0.25]: https://github.com/Strech/avrora/releases/tag/v0.25.0
 [1]: https://avro.apache.org/
 [2]: https://www.confluent.io/confluent-schema-registry
 [3]: https://docs.confluent.io/current/schema-registry/serializer-formatter.html#wire-format
@@ -84,6 +85,7 @@ defmodule MyClient do
     otp_app: :my_application,
     registry_url: "http://localhost:8081",
     registry_auth: {:basic, ["username", "password"]},
+    registry_user_agent: "Avrora/0.25.0 Elixir",
     schemas_path: "./priv/schemas",
     registry_schemas_autoreg: false,
     convert_null_values: false,
@@ -104,6 +106,7 @@ config :avrora,
   otp_app: :my_application, # optional, if you want to use it as a root folder for `schemas_path`
   registry_url: "http://localhost:8081",
   registry_auth: {:basic, ["username", "password"]}, # optional
+  registry_user_agent: "Avrora/0.24.2 Elixir", # optional: if you want to return previous behaviour, set it to `nil`
   schemas_path: "./priv/schemas",
   registry_schemas_autoreg: false, # optional: if you want manually register schemas
   convert_null_values: false, # optional: if you want to keep decoded `:null` values as is
@@ -115,6 +118,7 @@ config :avrora,
 - `otp_app`<sup>[v0.22]</sup> - Name of the OTP application to use for runtime configuration via env, default `nil`
 - `registry_url` - URL for the Schema Registry, default `nil`
 - `registry_auth` – Credentials to authenticate in the Schema Registry, default `nil`
+- `registry_user_agent`<sup>[v0.25]</sup> - HTTP `User-Agent` header for Schema Registry requests, default `Avrora/<version> Elixir`
 - `schemas_path` - Base path for locally stored schema files, default `./priv/schemas`
 - `registry_schemas_autoreg`<sup>[v0.13]</sup> - Flag for automatic schemas registration in the Schema Registry, default `true`
 - `convert_null_values`<sup>[v0.14]</sup> - Flag for automatic conversion of decoded `:null` values into `nil`, default `true`

@@ -40,6 +40,8 @@ defmodule Support.Config do
   @impl true
   def registry_auth, do: nil
   @impl true
+  def registry_user_agent, do: nil
+  @impl true
   def registry_schemas_autoreg, do: true
   @impl true
   def convert_null_values, do: true
