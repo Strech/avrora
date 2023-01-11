@@ -15,7 +15,8 @@ defmodule Mix.Tasks.Avrora.Reg.Schema do
     * `--name` - the full name of the schema to register (exclusive with `--all`)
     * `--as` - the name which will be used to register schema (i.e subject)
     * `--all` - register all found schemas
-    * `--module` - private Avrora client module (i.e MyClient)
+    * `--module` - the private Avrora client module (i.e MyClient)
+    * `--appconfig` - the app config file name to load from `config/` folder (i.e runtime)
 
   The `--module` option allows to use your private Avrora client module instead of
   the default `Avrora`.
@@ -25,6 +26,9 @@ defmodule Mix.Tasks.Avrora.Reg.Schema do
   The `--name` option expects that given schema name will comply to
   `Avrora.Storage.File` module rules.
 
+  The `--appconfig` option expects just application config file name without an extension
+  and will load it additionally to default. Note: runtime config doesn't support imports!
+
   For example, if the schema name is `io.confluent.Payment` it should be stored
   as `<schemas path>/io/confluent/Payment.avsc`
 
@@ -32,6 +36,7 @@ defmodule Mix.Tasks.Avrora.Reg.Schema do
 
       mix avrora.reg.schema --name io.confluent.Payment
       mix avrora.reg.schema --name io.confluent.Payment --as MyCustomName
+      mix avrora.reg.schema --all --appconfig runtime
       mix avrora.reg.schema --all --module MyClient
       mix avrora.reg.schema --all
   """
@@ -44,7 +49,8 @@ defmodule Mix.Tasks.Avrora.Reg.Schema do
       as: :string,
       all: :boolean,
       name: :string,
-      module: :string
+      module: :string,
+      appconfig: :string
     ]
   ]
 
@@ -54,6 +60,7 @@ defmodule Mix.Tasks.Avrora.Reg.Schema do
 
     {opts, _, _} = OptionParser.parse(argv, @cli_options)
     {module_name, opts} = Keyword.pop(opts, :module, "Avrora")
+    {app_config, opts} = Keyword.pop(opts, :appconfig)
 
     module = Module.concat(Elixir, String.trim(module_name))
     config = Module.concat(module, Config)
@@ -61,6 +68,15 @@ defmodule Mix.Tasks.Avrora.Reg.Schema do
 
     {:ok, _} = Application.ensure_all_started(:avrora)
     {:ok, _} = module.start_link()
+
+    unless is_nil(app_config) do
+      Mix.Project.config()
+      |> Keyword.get(:config_path)
+      |> Path.dirname()
+      |> Path.join("#{app_config}.exs")
+      |> List.wrap()
+      |> Tasks.Loadconfig.run()
+    end
 
     case opts |> Keyword.keys() |> Enum.sort() do
       [:all] ->
