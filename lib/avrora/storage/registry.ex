@@ -131,13 +131,19 @@ defmodule Avrora.Storage.Registry do
 
   # NOTE: Maybe move to compile-time?
   defp headers do
-    case registry_auth() do
-      {:basic, [username, password]} ->
-        credentials = :base64.encode("#{username}:#{password}")
-        [authorization: "Basic #{credentials}"]
+    authorization =
+      case registry_auth() do
+        {:basic, [username, password]} ->
+          credentials = :base64.encode("#{username}:#{password}")
+          [authorization: "Basic #{credentials}"]
 
-      nil ->
-        []
+        nil ->
+          []
+      end
+
+    case registry_user_agent() do
+      nil -> authorization
+      user_agent -> authorization |> Keyword.put(:user_agent, user_agent)
     end
   end
 
@@ -162,4 +168,5 @@ defmodule Avrora.Storage.Registry do
   defp http_client, do: Config.self().http_client()
   defp registry_url, do: Config.self().registry_url()
   defp registry_auth, do: Config.self().registry_auth()
+  defp registry_user_agent, do: Config.self().registry_user_agent()
 end

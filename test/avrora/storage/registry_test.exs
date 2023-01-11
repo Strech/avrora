@@ -292,6 +292,29 @@ defmodule Avrora.Storage.RegistryTest do
       assert schema.full_name == "io.confluent.Payment"
     end
 
+    test "when request with user agent was successful" do
+      stub(Avrora.ConfigMock, :registry_user_agent, fn -> "Avrora/0.0.1 Elixir" end)
+
+      Avrora.HTTPClientMock
+      |> expect(:post, fn url, payload, options ->
+        assert url == "http://reg.loc/subjects/io.confluent.Payment/versions"
+        assert payload == json_schema()
+
+        assert options == [
+                 content_type: "application/vnd.schemaregistry.v1+json",
+                 user_agent: "Avrora/0.0.1 Elixir"
+               ]
+
+        {:ok, %{"id" => 1}}
+      end)
+
+      {:ok, schema} = Registry.put("io.confluent.Payment", json_schema())
+
+      assert schema.id == 1
+      assert is_nil(schema.version)
+      assert schema.full_name == "io.confluent.Payment"
+    end
+
     test "when key contains version and request was successful" do
       Avrora.HTTPClientMock
       |> expect(:post, fn url, payload, _ ->
