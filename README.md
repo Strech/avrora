@@ -23,6 +23,7 @@
 [v0.23]: https://github.com/Strech/avrora/releases/tag/v0.23.0
 [v0.24]: https://github.com/Strech/avrora/releases/tag/v0.24.0
 [v0.25]: https://github.com/Strech/avrora/releases/tag/v0.25.0
+[v0.26]: https://github.com/Strech/avrora/releases/tag/v0.26.0
 [1]: https://avro.apache.org/
 [2]: https://www.confluent.io/confluent-schema-registry
 [3]: https://docs.confluent.io/current/schema-registry/serializer-formatter.html#wire-format
@@ -435,4 +436,11 @@ can simply execute this command
 $ mix avrora.reg.schema --all
 schema `io.confluent.Payment' will be registered
 schema `io.confluent.Wrong' will be skipped due to an error `argument error'
+```
+
+Additional application config to load additional can be set via `--appconfig` option<sup>[v0.26]</sup>
+
+```console
+$ mix avrora.reg.schema --name io.confluent.Payment --appconfig runtime
+schema `io.confluent.Payment' will be registered
 ```

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.26.0] - 2023-01-11 <sup>([notes][0.26.0-n])</sup>
+
+- Add `--appconfig` argument to schema registration mix task (#102 @emilianobovetti, @strech)
+
 ## [0.25.0] - 2023-01-03 <sup>([notes][0.25.0-n])</sup>
 
 - Add User-Agent header when communicating with Schema Registry (#100 @azeemchauhan, @strech)
@@ -20,6 +24,8 @@
 
 - Add runtime config resolution for Avrora.Client (#92, @strech)
 
+[0.26.0]: https://github.com/Strech/avrora/compare/v0.25.0...v0.26.0
+[0.26.0-n]: https://github.com/Strech/avrora/releases/tag/v0.26.0
 [0.25.0]: https://github.com/Strech/avrora/compare/v0.24.2...v0.25.0
 [0.25.0-n]: https://github.com/Strech/avrora/releases/tag/v0.25.0
 [0.24.2]: https://github.com/Strech/avrora/compare/v0.24.1...v0.24.2
