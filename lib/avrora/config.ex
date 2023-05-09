@@ -10,7 +10,6 @@ defmodule Avrora.Config do
       * `registry_auth` authentication settings for Schema Registry, default `nil`
       * `registry_user_agent` HTTP `User-Agent` header for Schema Registry requests, default `Avrora/<version> Elixir`
       * `registry_schemas_autoreg` automatically register schemas in Schema Registry, default `true`
-      * `convert_map_to_proplist` bring back old behavior and configure decoding AVRO map-type as proplist, default `false`
       * `names_cache_ttl` duration to cache global schema names millisecods, default `:infinity`
       * `decoder_hook` function to amend decoded payload, default `fn _, _, data, fun -> fun.(data) end`
 
@@ -28,7 +27,6 @@ defmodule Avrora.Config do
   @callback registry_auth :: tuple() | nil
   @callback registry_user_agent :: String.t() | nil
   @callback registry_schemas_autoreg :: boolean()
-  @callback convert_map_to_proplist :: boolean()
   @callback names_cache_ttl :: integer() | atom()
   @callback decoder_hook :: (any(), any(), any(), any() -> any())
   @callback file_storage :: module()
@@ -56,9 +54,6 @@ defmodule Avrora.Config do
 
   @doc false
   def registry_schemas_autoreg, do: get_env(:registry_schemas_autoreg, true)
-
-  @doc false
-  def convert_map_to_proplist, do: get_env(:convert_map_to_proplist, false)
 
   @doc false
   def names_cache_ttl, do: get_env(:names_cache_ttl, :infinity)

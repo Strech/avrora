@@ -48,8 +48,6 @@ defmodule Support.Config do
   @impl true
   def decoder_hook, do: fn _, _, data, fun -> fun.(data) end
   @impl true
-  def convert_map_to_proplist, do: false
-  @impl true
   def file_storage, do: Avrora.Storage.FileMock
   @impl true
   def memory_storage, do: Avrora.Storage.MemoryMock

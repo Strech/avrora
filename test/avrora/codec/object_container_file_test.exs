@@ -88,14 +88,6 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
       assert decoded == [%{"key" => "user-1", "value" => nil}]
     end
 
-    test "when payload is a valid binary and map type must be decoded as proplist" do
-      stub(Avrora.ConfigMock, :convert_map_to_proplist, fn -> true end)
-
-      {:ok, decoded} = Codec.ObjectContainerFile.decode(map_message())
-
-      assert decoded == [%{"map_field" => [{"key", "value"}]}]
-    end
-
     test "when payload is a valid binary and map type must be decoded as map" do
       {:ok, decoded} = Codec.ObjectContainerFile.decode(map_message())
 

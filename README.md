@@ -89,7 +89,6 @@ defmodule MyClient do
     registry_user_agent: "Avrora/0.25.0 Elixir",
     schemas_path: "./priv/schemas",
     registry_schemas_autoreg: false,
-    convert_map_to_proplist: false,
     names_cache_ttl: :timer.minutes(5),
     decoder_hook: &MyClient.decoder_hook/4
 end
@@ -109,7 +108,6 @@ config :avrora,
   registry_user_agent: "Avrora/0.24.2 Elixir", # optional: if you want to return previous behaviour, set it to `nil`
   schemas_path: "./priv/schemas",
   registry_schemas_autoreg: false, # optional: if you want manually register schemas
-  convert_map_to_proplist: false, # optional: if you want to restore the old behavior for decoding map-type
   names_cache_ttl: :timer.minutes(5), # optional: if you want periodic disk reads
   decoder_hook: &MyClient.decoder_hook/4 # optional: if you want to amend the data/result
 ```
@@ -120,7 +118,6 @@ config :avrora,
 - `registry_user_agent`<sup>[v0.25]</sup> - HTTP `User-Agent` header for Schema Registry requests, default `Avrora/<version> Elixir`
 - `schemas_path` - Base path for locally stored schema files, default `./priv/schemas`
 - `registry_schemas_autoreg`<sup>[v0.13]</sup> - Flag for automatic schemas registration in the Schema Registry, default `true`
-- `convert_map_to_proplist`<sup>[v0.15]</sup> restore old behaviour and confiugre decoding map-type to proplist, default `false`
 - `names_cache_ttl`<sup>[v0.10]</sup> - Time in ms to cache schemas by name in memory, default `:infinity`
 - `decoder_hook`<sup>[v0.24]</sup> - Function with arity 4 to amend data or result, default `fn _, _, data, fun -> fun.(data) end`
 
