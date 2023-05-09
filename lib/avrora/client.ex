@@ -113,7 +113,6 @@ defmodule Avrora.Client do
           def registry_auth, do: get(@opts, :registry_auth, nil)
           def registry_user_agent, do: get(@opts, :registry_user_agent, "Avrora/#{version()} Elixir")
           def registry_schemas_autoreg, do: get(@opts, :registry_schemas_autoreg, true)
-          def convert_null_values, do: get(@opts, :convert_null_values, true)
           def convert_map_to_proplist, do: get(@opts, :convert_map_to_proplist, false)
           def names_cache_ttl, do: get(@opts, :names_cache_ttl, :infinity)
           def decoder_hook, do: get(@opts, :decoder_hook, fn _, _, data, fun -> fun.(data) end)

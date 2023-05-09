@@ -77,11 +77,9 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
     end
 
     test "when payload is a valid binary and null values must be as is" do
-      stub(Avrora.ConfigMock, :convert_null_values, fn -> false end)
-
       {:ok, decoded} = Codec.ObjectContainerFile.decode(null_value_message(), schema: null_value_schema())
 
-      assert decoded == [%{"key" => "user-1", "value" => :null}]
+      assert decoded == [%{"key" => "user-1", "value" => nil}]
     end
 
     test "when payload is a valid binary and null values must be converted" do
