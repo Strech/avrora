@@ -1,10 +1,12 @@
 defmodule Avrora.MixProject do
   use Mix.Project
 
+  @version "0.26.0"
+
   def project do
     [
       app: :avrora,
-      version: "0.26.0",
+      version: @version,
       elixir: "~> 1.6",
       description: description(),
       package: package(),
@@ -66,6 +68,7 @@ defmodule Avrora.MixProject do
       main: "readme",
       logo: "assets/logo.png",
       source_url: "https://github.com/Strech/avrora",
+      source_ref: "v#{@version}",
       formatters: ~w(html),
       before_closing_body_tag: fn _format ->
         """
