@@ -379,9 +379,7 @@ defmodule Avrora.Storage.RegistryTest do
     nested_schema =
       ~s({"name":"User","type":"record","fields":[{"name":"id","type":"string"},{"name":"username","type":"string"}]})
 
-    ~s({"namespace":"io.confluent","name":"Account","type":"record","fields":[{"name":"id","type":"string"},{"name":"user","type":#{
-      nested_schema
-    }}]})
+    ~s({"namespace":"io.confluent","name":"Account","type":"record","fields":[{"name":"id","type":"string"},{"name":"user","type":#{nested_schema}}]})
   end
 
   defp json_schema_referenced do
