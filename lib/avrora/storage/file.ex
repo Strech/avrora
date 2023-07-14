@@ -48,7 +48,7 @@ defmodule Avrora.Storage.File do
     with {:ok, schema_name} <- Name.parse(name),
          filepath <- name_to_filepath(schema_name.name) do
       unless is_nil(schema_name.version) do
-        Logger.warn("reading schema file with version is not allowed, `#{schema_name.name}` used instead")
+        Logger.warning("reading schema file with version is not allowed, `#{schema_name.name}` used instead")
       end
 
       Logger.debug("reading schema `#{schema_name.name}` from the file #{filepath}")

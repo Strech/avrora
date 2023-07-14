@@ -1,13 +1,13 @@
 defmodule Avrora.MixProject do
   use Mix.Project
 
-  @version "0.26.0"
+  @version "0.27.0"
 
   def project do
     [
       app: :avrora,
       version: @version,
-      elixir: "~> 1.6",
+      elixir: "~> 1.12",
       description: description(),
       package: package(),
       docs: docs(),

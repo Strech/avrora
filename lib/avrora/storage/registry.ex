@@ -73,7 +73,7 @@ defmodule Avrora.Storage.Registry do
          {:ok, id} <- Map.fetch(response, "id"),
          {:ok, schema} <- SchemaEncoder.from_json(value) do
       unless is_nil(schema_name.version) do
-        Logger.warn("storing schema with version is not allowed, `#{schema_name.name}` used instead")
+        Logger.warning("storing schema with version is not allowed, `#{schema_name.name}` used instead")
       end
 
       Logger.debug("new schema `#{schema_name.name}` stored with global id `#{id}`")

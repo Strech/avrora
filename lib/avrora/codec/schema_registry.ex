@@ -47,14 +47,14 @@ defmodule Avrora.Codec.SchemaRegistry do
     case payload do
       <<@magic_bytes, <<id::size(32)>>, body::binary>> ->
         unless is_nil(schema.id) do
-          Logger.warn("message already contains embeded schema id, given schema id will be ignored")
+          Logger.warning("message already contains embeded schema id, given schema id will be ignored")
         end
 
         schema = %Schema{schema | id: id}
 
         with {:ok, schema} <- resolve(schema) do
           if id != schema.id do
-            Logger.warn("message embeded schema id is different from the resolved and used schema id")
+            Logger.warning("message embeded schema id is different from the resolved and used schema id")
           end
 
           Codec.Plain.decode(body, schema: schema)
