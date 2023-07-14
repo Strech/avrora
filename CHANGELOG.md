@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.27.0] - 2023-07-14 <sup>([notes][0.27.0-n])</sup>
+
+- Replace `Logger.warn/1` with `Logger.warning/2` (#107 @trbngr, @strech)
+- Drop support for Elixir lower than 1.12 (#107 @strech)
+
 ## [0.26.0] - 2023-01-11 <sup>([notes][0.26.0-n])</sup>
 
 - Add `--appconfig` argument to schema registration mix task (#102 @emilianobovetti, @strech)
@@ -24,6 +29,8 @@
 
 - Add runtime config resolution for Avrora.Client (#92, @strech)
 
+[0.27.0]: https://github.com/Strech/avrora/compare/v0.26.0...v0.27.0
+[0.27.0-n]: https://github.com/Strech/avrora/releases/tag/v0.27.0
 [0.26.0]: https://github.com/Strech/avrora/compare/v0.25.0...v0.26.0
 [0.26.0-n]: https://github.com/Strech/avrora/releases/tag/v0.26.0
 [0.25.0]: https://github.com/Strech/avrora/compare/v0.24.2...v0.25.0
