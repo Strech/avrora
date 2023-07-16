@@ -7,7 +7,6 @@
 
 [![Hex pm](https://img.shields.io/hexpm/v/avrora.svg?style=for-the-badge)](https://hex.pm/packages/avrora)
 [![Hex Docs](https://img.shields.io/badge/api-docs-blue.svg?style=for-the-badge)](https://hexdocs.pm/avrora)
-[![Build Status](https://img.shields.io/github/workflow/status/Strech/Avrora/CI?style=for-the-badge)](https://github.com/Strech/avrora/actions?query=workflow%3ACI)
 
 </span>
 
