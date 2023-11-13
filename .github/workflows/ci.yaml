@@ -147,6 +147,7 @@ jobs:
     runs-on: ubuntu-20.04
     name: OTP ${{ matrix.otp }} / Elixir ${{ matrix.elixir }}
     strategy:
+      fail-fast: true
       # NOTE: We are going to support 4 version from the official list of 5
       # https://hexdocs.pm/elixir/compatibility-and-deprecations.html
       matrix:
