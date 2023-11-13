@@ -135,6 +135,14 @@ defmodule Avrora.Codec.PlainTest do
       assert decoded_int == %{"union_field" => {"io.confluent.as_int", %{"value" => 42}}}
       assert decoded_str == %{"union_field" => {"io.confluent.as_str", %{"value" => "42"}}}
     end
+
+    test "when decoding message and logical types must be as is" do
+      stub(Avrora.ConfigMock, :convert_logical_types, fn -> false end)
+
+      {:ok, decoded} = Codec.Plain.decode(logical_type_message(), schema: logical_type_schema())
+
+      assert decoded == %{"birthday" => 17100}
+    end
   end
 
   describe "encode/2" do
@@ -273,6 +281,7 @@ defmodule Avrora.Codec.PlainTest do
   end
 
   defp null_value_message, do: <<12, 117, 115, 101, 114, 45, 49, 0>>
+  defp logical_type_message, do: <<152, 139, 2>>
   defp map_message, do: <<1, 20, 6, 107, 101, 121, 10, 118, 97, 108, 117, 101, 0>>
   defp payment_payload, do: %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
 
@@ -306,6 +315,11 @@ defmodule Avrora.Codec.PlainTest do
     %{schema | id: nil, version: nil}
   end
 
+  defp logical_type_schema do
+    {:ok, schema} = Schema.Encoder.from_json(logical_type_json_schema())
+    %{schema | id: nil, version: nil}
+  end
+
   defp payment_json_schema do
     ~s({"namespace":"io.confluent","name":"Payment","type":"record","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
   end
@@ -328,5 +342,9 @@ defmodule Avrora.Codec.PlainTest do
 
   defp union_json_schema do
     ~s({"namespace":"io.confluent","name":"Union_Value","type":"record","fields":[{"name":"union_field","type":[{"type":"record","name":"as_str","fields":[{"name":"value","type":"string"}]},{"type":"record","name":"as_int","fields":[{"name":"value","type":"int"}]}]}]})
+  end
+
+  defp logical_type_json_schema do
+    ~s({"namespace":"io.confluent","name":"Logical_Type","type":"record","fields":[{"name":"birthday","type":{"type":"int","logicalType":"date"}}]})
   end
 end

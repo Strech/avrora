@@ -12,6 +12,7 @@ defmodule Avrora.Config do
       * `registry_schemas_autoreg` automatically register schemas in Schema Registry, default `true`
       * `convert_null_values` convert `:null` values in the decoded message into `nil`, default `true`
       * `convert_map_to_proplist` bring back old behavior and configure decoding AVRO map-type as proplist, default `false`
+      * `convert_logical_types` convert AVRO primitive or complex type into correcponding Elixir representation, default `true`
       * `names_cache_ttl` duration to cache global schema names millisecods, default `:infinity`
       * `decoder_hook` function to amend decoded payload, default `fn _, _, data, fun -> fun.(data) end`
 
@@ -31,6 +32,7 @@ defmodule Avrora.Config do
   @callback registry_schemas_autoreg :: boolean()
   @callback convert_null_values :: boolean()
   @callback convert_map_to_proplist :: boolean()
+  @callback convert_logical_types :: boolean()
   @callback names_cache_ttl :: integer() | atom()
   @callback decoder_hook :: (any(), any(), any(), any() -> any())
   @callback file_storage :: module()
@@ -64,6 +66,9 @@ defmodule Avrora.Config do
 
   @doc false
   def convert_map_to_proplist, do: get_env(:convert_map_to_proplist, false)
+
+  @doc false
+  def convert_logical_types, do: get_env(:convert_logical_types, true)
 
   @doc false
   def names_cache_ttl, do: get_env(:names_cache_ttl, :infinity)
