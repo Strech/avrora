@@ -14,7 +14,7 @@ defmodule Avrora.AvroDecoderOptions do
     map_type: :map,
     record_type: :map
   }
-  @hooks [Hook.NullValueConversion]
+  @hooks [Hook.NullValuesConversion, Hook.LogicalTypesConversion]
 
   @doc """
   A unified erlavro decoder options compatible for both binary and OCF decoders.

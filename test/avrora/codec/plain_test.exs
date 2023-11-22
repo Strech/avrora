@@ -345,6 +345,6 @@ defmodule Avrora.Codec.PlainTest do
   end
 
   defp logical_type_json_schema do
-    ~s({"namespace":"io.confluent","name":"Logical_Type","type":"record","fields":[{"name":"birthday","type":{"type":"int","logicalType":"date"}}]})
+    ~s({"namespace":"io.confluent","name":"Logical_Type","type":"record","fields":[{"name":"birthday","type":{"type":"int","logicalType":"Date"}}]})
   end
 end
