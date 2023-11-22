@@ -1,6 +1,6 @@
-defmodule Avrora.Hook.NullValueConversionTest do
+defmodule Avrora.Hook.NullValuesConversionTest do
   use ExUnit.Case, async: true
-  doctest Avrora.Hook.NullValueConversion
+  doctest Avrora.Hook.NullValuesConversion
 
   import Mox
   import Support.Config
