@@ -4,8 +4,8 @@ defmodule Avrora.AvroDecoderOptions do
   `:avro_ocf` decoder options.
   """
 
+  alias Avrora.AvroTypeConverter
   alias Avrora.Config
-  alias Avrora.Hook
 
   @options %{
     encoding: :avro_binary,
@@ -14,7 +14,7 @@ defmodule Avrora.AvroDecoderOptions do
     map_type: :map,
     record_type: :map
   }
-  @hooks [Hook.NullValuesConversion, Hook.LogicalTypesConversion]
+  @type_converters [AvroTypeConverter.NullIntoNil, AvroTypeConverter.PrimitiveIntoLogical]
 
   @doc """
   A unified erlavro decoder options compatible for both binary and OCF decoders.
@@ -28,10 +28,10 @@ defmodule Avrora.AvroDecoderOptions do
   def __hook__(type, sub_name_or_idx, data, decode_fun) do
     result = decoder_hook().(type, sub_name_or_idx, data, decode_fun)
 
-    @hooks
-    |> List.foldl(result, fn hook, result ->
-      case hook.process(result, type, sub_name_or_idx, data) do
-        {:ok, res} -> res
+    @type_converters
+    |> List.foldl(result, fn type_converter, value ->
+      case type_converter.convert(value, type) do
+        {:ok, result} -> result
         {:error, reason} -> raise(reason)
       end
     end)

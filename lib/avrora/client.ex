@@ -27,15 +27,20 @@ defmodule Avrora.Client do
        {:ok, pid} = MyClient.start_link()
   """
 
-  # NOTE: Modules below contain usage of some other modules which should be defined
-  #       under the private client module, for instance, `Avrora.Config` could be
-  #       defined as `MyClient.Config`. Hence they are listed together with some
-  #       aliases.
+  # NOTE: Modules below contain usage of other Avrora modules which will not be
+  #       able to resolve in private client module until we define them specificly
+  #       for the private client.
+  #
+  #       For instance, `Avrora.Config` could be defined as `MyClient.Config`
+  #       and because `Avrora.Resolver` as `MyClient.Resolver` in private client
+  #       is using it we list it here.
   @modules ~w(
     encoder
     resolver
     avro_schema_store
     avro_decoder_options
+    avro_type_converter/null_into_nil
+    avro_type_converter/primitive_into_logical
     schema/encoder
     codec/plain
     codec/schema_registry
@@ -46,12 +51,19 @@ defmodule Avrora.Client do
     utils/registrar
   )
 
+  # NOTE: Aliases used in Avrora modules should target correct private client
+  #       module when generated. Because of that we list every module which was
+  #       declared in `alias` statement.
+  #
+  #       As a tradeoff, we don't use grouping in alias declarations, in other
+  #       words you will not find constructions like `alias Avrora.{Codec, Config}`
   @aliases ~w(
     Codec
     Config
     Resolver
     Schema.Encoder
     AvroDecoderOptions
+    AvroTypeConverter
     Codec.Plain
     Codec.SchemaRegistry
     Codec.ObjectContainerFile
@@ -115,6 +127,7 @@ defmodule Avrora.Client do
           def registry_schemas_autoreg, do: get(@opts, :registry_schemas_autoreg, true)
           def convert_null_values, do: get(@opts, :convert_null_values, true)
           def convert_map_to_proplist, do: get(@opts, :convert_map_to_proplist, false)
+          def decode_logical_types, do: get(@opts, :decode_logical_types, true)
           def names_cache_ttl, do: get(@opts, :names_cache_ttl, :infinity)
           def decoder_hook, do: get(@opts, :decoder_hook, fn _, _, data, fun -> fun.(data) end)
           def file_storage, do: unquote(:"Elixir.#{module}.Storage.File")

@@ -1,6 +1,6 @@
-defmodule Avrora.Hook.LogicalTypesConversionTest do
+defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogicalTest do
   use ExUnit.Case, async: true
-  doctest Avrora.Hook.LogicalTypesConversion
+  doctest Avrora.AvroTypeConverter.PrimitiveIntoLogical
 
   import Mox
   import Support.Config
@@ -10,9 +10,9 @@ defmodule Avrora.Hook.LogicalTypesConversionTest do
   setup :verify_on_exit!
   setup :support_config
 
-  describe "process/4" do
+  describe "convert/2" do
     test "when logical types must be kept as is" do
-      stub(Avrora.ConfigMock, :convert_logical_types, fn -> false end)
+      stub(Avrora.ConfigMock, :decode_logical_types, fn -> false end)
 
       {:ok, decoded} = Codec.Plain.decode(message(), schema: schema())
 

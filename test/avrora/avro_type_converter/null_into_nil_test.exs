@@ -1,6 +1,6 @@
-defmodule Avrora.Hook.NullValuesConversionTest do
+defmodule Avrora.AvroTypeConverter.NullIntoNilTest do
   use ExUnit.Case, async: true
-  doctest Avrora.Hook.NullValuesConversion
+  doctest Avrora.AvroTypeConverter.NullIntoNil
 
   import Mox
   import Support.Config
@@ -10,7 +10,7 @@ defmodule Avrora.Hook.NullValuesConversionTest do
   setup :verify_on_exit!
   setup :support_config
 
-  describe "process/4" do
+  describe "convert/2" do
     test "when null values must be kept as is" do
       stub(Avrora.ConfigMock, :convert_null_values, fn -> false end)
 

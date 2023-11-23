@@ -137,7 +137,7 @@ defmodule Avrora.Codec.PlainTest do
     end
 
     test "when decoding message and logical types must be as is" do
-      stub(Avrora.ConfigMock, :convert_logical_types, fn -> false end)
+      stub(Avrora.ConfigMock, :decode_logical_types, fn -> false end)
 
       {:ok, decoded} = Codec.Plain.decode(logical_type_message(), schema: logical_type_schema())
 

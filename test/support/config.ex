@@ -52,7 +52,7 @@ defmodule Support.Config do
   @impl true
   def convert_map_to_proplist, do: false
   @impl true
-  def convert_logical_types, do: true
+  def decode_logical_types, do: true
   @impl true
   def file_storage, do: Avrora.Storage.FileMock
   @impl true

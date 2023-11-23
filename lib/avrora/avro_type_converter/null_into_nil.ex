@@ -1,15 +1,15 @@
-defmodule Avrora.Hook.NullValuesConversion do
+defmodule Avrora.AvroTypeConverter.NullIntoNil do
   @moduledoc """
   TODO
   """
 
-  @behaviour Avrora.Hook
+  @behaviour Avrora.AvroTypeConverter
   @null_type_name "null"
 
   alias Avrora.Config
 
   @impl true
-  def process(value, type, _sub_name_or_idx, data) do
+  def convert(value, type) do
     if enabled() && :avro.get_type_name(type) == @null_type_name do
       {:ok, {nil, elem(value, 1)}}
     else
