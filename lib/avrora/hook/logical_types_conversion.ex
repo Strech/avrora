@@ -10,27 +10,22 @@ defmodule Avrora.Hook.LogicalTypesConversion do
   alias Avrora.Config
 
   @impl true
-  def process(value, type, _sub_name_or_idx, data) do
-    if enabled() do
-      case :avro.get_custom_props(type) |> List.keyfind(@logical_type, 0) do
-        {@logical_type, logical_type} ->
-          with {:ok, val} <- convert(elem(value, 0), logical_type),
-               rest <- elem(value, 1) do
-            {:ok, {val, rest}}
-          end
-
-        _ ->
-          {:ok, value}
-      end
+  def process(value, type, _sub_name_or_idx, _data) do
+    with true <- enabled(),
+         {@logical_type, logical_type} <- :avro.get_custom_props(type) |> List.keyfind(@logical_type, 0),
+         {value, rest} <- value,
+         {:ok, converted} <- convert(value, logical_type) do
+      {:ok, {converted, rest}}
     else
-      {:ok, value}
+      {:error, reason} -> {:error, reason}
+      _ -> {:ok, value}
     end
   end
 
   # Supported logical types:
   #   1. Date
   #   2 ...
-  #   TODO: make conversion into some logical types with dates first
+  #   TODO: Introduce error class and wrap this message into it!
   defp convert(value, type) do
     case type do
       "Date" -> {:ok, to_date(value)}
