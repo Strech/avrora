@@ -8,6 +8,7 @@ defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogical do
   @logical_type "logicalType"
   @default_decimal_scale_prop {"scale", 0}
 
+  require Logger
   alias Avrora.Config
   alias Avrora.Utils
 
@@ -57,8 +58,9 @@ defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogical do
         {:ok, value}
 
       _ ->
-        # TODO: Maybe I should warn and return as is?
-        {:error, "unknown logical type `#{logical_type}'"}
+        Logger.warning("unsupported logical type `#{logical_type}' was not converted")
+
+        {:ok, value}
     end
   end
 
