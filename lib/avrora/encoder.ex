@@ -105,6 +105,9 @@ defmodule Avrora.Encoder do
     end
   end
 
+  @type encode_opt :: {:schema_name, String.t()} | {:format, :guess | :registry | :ocf | :plain}
+  @type encode_opts :: [encode_opt()]
+
   @doc """
   Encode message map in Avro format, loading schema from local file or Schema Registry.
 
@@ -126,8 +129,7 @@ defmodule Avrora.Encoder do
             48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 48, 48, 48, 48, 48,
             48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64>>}
   """
-  @spec encode(map(), schema_name: String.t(), format: :guess | :registry | :ocf | :plain) ::
-          {:ok, binary()} | {:error, term()}
+  @spec encode(map(), encode_opts()) :: {:ok, binary()} | {:error, term()}
   def encode(payload, opts) when is_map(payload) do
     schema_name = Keyword.fetch!(opts, :schema_name)
     format = Keyword.get(opts, :format, :guess)
