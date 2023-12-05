@@ -10,7 +10,6 @@ defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogical do
 
   require Logger
   alias Avrora.Config
-  alias Avrora.Utils
 
   @impl true
   def convert(value, type) do
@@ -25,20 +24,8 @@ defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogical do
     end
   end
 
-  # Supported logical types:
-  # Unsupported logical types: Decimal, Duration
-  #   1. Date
-  #   2 ...
-  #   TODO: Introduce error class and wrap this message into it!
-  #
-  #   Fixed = value * 10^-scale
-  #   https://hexdocs.pm/decimal/Decimal.html#new/3 = sign * coefficient * 10 ^ exponent
-  #
-  #   {:avro_fixed_type, "money", "", [], 5, "io.confluent.money",
-  #      [{"logicalType", "Decimal"}]}
-  #
-  #   {:avro_primitive_type, "bytes",
-  #      [{"precision", 3}, {"logicalType", "Decimal"}, {"scale", 2}]}
+  # TODO: Introduce error class and wrap this message into it!
+  # FIXME: Refactor this shit
   defp do_convert(value, type, logical_type) do
     case logical_type do
       "Date" ->
@@ -52,7 +39,7 @@ defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogical do
           |> List.keyfind("scale", 0, @default_decimal_scale_prop)
           |> elem(1)
 
-        Utils.Decimal.new(value, scale)
+        to_decimal(value, scale)
 
       "UUID" ->
         {:ok, value}
@@ -65,5 +52,14 @@ defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogical do
   end
 
   defp to_date(value), do: {:ok, Date.add(@unix_epoch, value)}
+
+  if Code.ensure_loaded?(Decimal) do
+    def to_decimal(value, 0), do: {:ok, Decimal.new(value)}
+    def to_decimal(value, scale) when is_integer(value) and value > 0, do: {:ok, Decimal.new(1, value, -scale)}
+    def to_decimal(value, scale) when is_integer(value) and value < 0, do: {:ok, Decimal.new(-1, -value, -scale)}
+  else
+    def to_decimal(_value, _scale), do: {:error, :missing_decimal_module}
+  end
+
   defp enabled, do: Config.self().decode_logical_types() == true
 end
