@@ -128,10 +128,10 @@ defmodule Avrora.Encoder do
   """
   @spec encode(map(), schema_name: String.t(), format: :guess | :registry | :ocf | :plain) ::
           {:ok, binary()} | {:error, term()}
-  def encode(payload, schema_name: schema_name) when is_map(payload),
-    do: encode(payload, schema_name: schema_name, format: :guess)
+  def encode(payload, opts) when is_map(payload) do
+    schema_name = Keyword.fetch!(opts, :schema_name)
+    format = Keyword.get(opts, :format, :guess)
 
-  def encode(payload, schema_name: schema_name, format: format) when is_map(payload) do
     with {:ok, schema_name} <- Name.parse(schema_name) do
       if format == :plain do
         Logger.warning(

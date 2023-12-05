@@ -625,6 +625,42 @@ defmodule Avrora.EncoderTest do
 
       assert encoded == messenger_plain_message()
     end
+
+    test "it accepts `format:` option before `schema_name:`" do
+      messenger_schema = messenger_schema()
+
+      Avrora.Storage.MemoryMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.Messenger"
+
+        {:ok, nil}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.Messenger"
+        assert value == messenger_schema
+
+        {:ok, value}
+      end)
+
+      Avrora.Storage.RegistryMock
+      |> expect(:put, fn key, value ->
+        assert key == "io.confluent.Messenger"
+        assert value == messenger_json_schema_with_local_reference()
+
+        {:error, :unconfigured_registry_url}
+      end)
+
+      Avrora.Storage.FileMock
+      |> expect(:get, fn key ->
+        assert key == "io.confluent.Messenger"
+
+        {:ok, messenger_schema}
+      end)
+
+      {:ok, encoded} = Encoder.encode(messenger_payload(), format: :plain, schema_name: "io.confluent.Messenger")
+
+      assert encoded == messenger_plain_message()
+    end
   end
 
   describe "encode_plain/2" do
