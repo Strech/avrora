@@ -58,7 +58,7 @@ defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogical do
     def to_decimal(value, scale) when is_integer(value) and value > 0, do: {:ok, Decimal.new(1, value, -scale)}
     def to_decimal(value, scale) when is_integer(value) and value < 0, do: {:ok, Decimal.new(-1, -value, -scale)}
   else
-    def to_decimal(_value, _scale), do: {:error, :missing_decimal_module}
+    def to_decimal(_value, _scale), do: {:error, %Avrora.Errors.ConfigurationError{code: :missing_decimal_lib}}
   end
 
   defp enabled, do: Config.self().decode_logical_types() == true

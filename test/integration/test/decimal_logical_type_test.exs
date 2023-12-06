@@ -31,7 +31,11 @@ defmodule Integration.DecimalLogicalTypeTest do
       schema = %{schema | id: nil, version: nil}
       message = <<16, 255, 255, 255, 255, 255, 254, 29, 192>>
 
-      assert {:error, :missing_decimal_module} == Codec.Plain.decode(message, schema: schema)
+      {status, result} = Codec.Plain.decode(message, schema: schema)
+
+      assert status == :error
+      assert result.code == :missing_decimal_lib
+      assert Exception.message(result) =~ "missing `Decimal' library"
     end
   end
 end
