@@ -127,6 +127,7 @@ defmodule Avrora.MixProject do
     [
       test: ["test --exclude integration --color"],
       testi: ["cmd --cd test/integration mix test --color"],
+      testall: ["do cmd mix test, testi"],
       showdocs: ["docs", "cmd open doc/index.html"],
       check: ["cmd mix coveralls", "dialyzer", "credo"],
       release: [
