@@ -626,7 +626,7 @@ defmodule Avrora.EncoderTest do
       assert encoded == messenger_plain_message()
     end
 
-    test "it accepts `format:` option before `schema_name:`" do
+    test "when `format` passed before `schema_name` option it accepts the order" do
       messenger_schema = messenger_schema()
 
       Avrora.Storage.MemoryMock

@@ -105,8 +105,11 @@ defmodule Avrora.Encoder do
     end
   end
 
-  @type encode_opt :: {:schema_name, String.t()} | {:format, :guess | :registry | :ocf | :plain}
-  @type encode_opts :: [encode_opt()]
+  def encode(payload, schema_name: schema_name) when is_map(payload),
+    do: encode(payload, schema_name: schema_name, format: :guess)
+
+  def encode(payload, format: format, schema_name: schema_name) when is_map(payload),
+    do: encode(payload, schema_name: schema_name, format: format)
 
   @doc """
   Encode message map in Avro format, loading schema from local file or Schema Registry.
@@ -129,11 +132,9 @@ defmodule Avrora.Encoder do
             48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 48, 48, 48, 48, 48,
             48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64>>}
   """
-  @spec encode(map(), encode_opts()) :: {:ok, binary()} | {:error, term()}
-  def encode(payload, opts) when is_map(payload) do
-    schema_name = Keyword.fetch!(opts, :schema_name)
-    format = Keyword.get(opts, :format, :guess)
-
+  @spec encode(map(), schema_name: String.t(), format: :guess | :registry | :ocf | :plain) ::
+          {:ok, binary()} | {:error, term()}
+  def encode(payload, schema_name: schema_name, format: format) when is_map(payload) do
     with {:ok, schema_name} <- Name.parse(schema_name) do
       if format == :plain do
         Logger.warning(
