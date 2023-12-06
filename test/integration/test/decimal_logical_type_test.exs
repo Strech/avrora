@@ -1,6 +1,7 @@
 defmodule Integration.DecimalLogicalTypeTest do
   use ExUnit.Case
 
+  @tag :integration
   describe "decimal logical type" do
     test "when decimal library is not installed" do
       json = ~s(

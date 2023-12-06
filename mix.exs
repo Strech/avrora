@@ -125,7 +125,9 @@ defmodule Avrora.MixProject do
 
   defp aliases do
     [
-      docso: ["docs", "cmd open doc/index.html"],
+      test: ["test --exclude integration"],
+      testi: ["cmd --cd test/integration mix test --color"],
+      showdocs: ["docs", "cmd open doc/index.html"],
       check: ["cmd mix coveralls", "dialyzer", "credo"],
       release: [
         "check",
