@@ -1,6 +1,8 @@
 defmodule Integration.DecimalLogicalTypeTest do
   use ExUnit.Case
 
+  alias Avrora.{Codec, Schema}
+
   @tag :integration
   describe "decimal logical type" do
     test "when decimal library is not installed" do
@@ -24,12 +26,12 @@ defmodule Integration.DecimalLogicalTypeTest do
       )
 
       {:ok, _} = Avrora.start_link()
-      {:ok, schema} = Avrora.Schema.Encoder.from_json(json)
+      {:ok, schema} = Schema.Encoder.from_json(json)
 
       schema = %{schema | id: nil, version: nil}
       message = <<16, 255, 255, 255, 255, 255, 254, 29, 192>>
 
-      assert {:error, :missing_decimal_module} == Avrora.Codec.Plain.decode(message, schema: schema)
+      assert {:error, :missing_decimal_module} == Codec.Plain.decode(message, schema: schema)
     end
   end
 end
