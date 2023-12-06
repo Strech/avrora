@@ -53,12 +53,26 @@ defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogicalTest do
 
       assert decoded == %{"decimal" => Decimal.new("-1234.56")}
     end
+
+    test "when logical type is time with millisecond precision" do
+      {:ok, decoded} = Codec.Plain.decode(time_millis_type_message(), schema: time_millis_type_schema())
+
+      assert decoded == %{"time" => ~T[04:28:07.123]}
+    end
+
+    test "when logical type is time with microsecond precision" do
+      {:ok, decoded} = Codec.Plain.decode(time_micros_type_message(), schema: time_micros_type_schema())
+
+      assert decoded == %{"time" => ~T[04:28:07.000000]}
+    end
   end
 
   defp date_type_message, do: <<152, 139, 2, 152, 139, 2>>
   defp uuid_type_message, do: "H016c25fd-70e0-56fe-9d1a-56e80fa20b82"
   defp decimal_fixed_type_message, do: <<0, 0, 0, 0, 0, 1, 226, 64>>
   defp decimal_bytes_type_message, do: <<16, 255, 255, 255, 255, 255, 254, 29, 192>>
+  defp time_millis_type_message, do: <<166, 225, 171, 15>>
+  defp time_micros_type_message, do: <<128, 143, 225, 237, 119>>
 
   defp date_type_schema do
     {:ok, schema} = Schema.Encoder.from_json(date_type_json_schema())
@@ -85,6 +99,16 @@ defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogicalTest do
     %{schema | id: nil, version: nil}
   end
 
+  defp time_millis_type_schema do
+    {:ok, schema} = Schema.Encoder.from_json(time_millis_type_json_schema())
+    %{schema | id: nil, version: nil}
+  end
+
+  defp time_micros_type_schema do
+    {:ok, schema} = Schema.Encoder.from_json(time_micros_type_json_schema())
+    %{schema | id: nil, version: nil}
+  end
+
   defp date_type_json_schema do
     ~s({"namespace":"io.confluent","name":"Date_Type","type":"record","fields":[{"name":"number","type":"int"},{"name":"birthday","type":{"type": "int","logicalType":"date"}}]})
   end
@@ -103,5 +127,13 @@ defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogicalTest do
 
   defp decimal_bytes_type_json_schema do
     ~s({"namespace":"io.confluent","name":"Decimal_With_Scale_Type","type":"record","fields":[{"name":"decimal","type":{"type":"bytes","precision":3,"logicalType":"decimal","scale":2}}]})
+  end
+
+  defp time_millis_type_json_schema do
+    ~s({"namespace":"io.confluent","name":"Time_Millis","type":"record","fields":[{"name":"time","type":{"type":"int","logicalType":"time-millis"}}]})
+  end
+
+  defp time_micros_type_json_schema do
+    ~s({"namespace":"io.confluent","name":"Time_Micros","type":"record","fields":[{"name":"time","type":{"type":"long","logicalType":"time-micros"}}]})
   end
 end
