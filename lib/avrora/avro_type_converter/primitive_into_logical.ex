@@ -28,10 +28,10 @@ defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogical do
   # FIXME: Refactor this shit
   defp do_convert(value, type, logical_type) do
     case logical_type do
-      "Date" ->
+      "date" ->
         to_date(value)
 
-      "Decimal" ->
+      "decimal" ->
         <<value::signed-integer-64-big>> = value
 
         scale =
@@ -41,7 +41,7 @@ defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogical do
 
         to_decimal(value, scale)
 
-      "UUID" ->
+      "uuid" ->
         {:ok, value}
 
       _ ->

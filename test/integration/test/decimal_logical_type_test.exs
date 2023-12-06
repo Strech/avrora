@@ -17,7 +17,7 @@ defmodule Integration.DecimalLogicalTypeTest do
               "type": {
                 "type": "bytes",
                 "precision": 3,
-                "logicalType": "Decimal",
+                "logicalType": "decimal",
                 "scale": 2
               }
             }

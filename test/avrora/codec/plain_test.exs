@@ -344,6 +344,6 @@ defmodule Avrora.Codec.PlainTest do
   end
 
   defp converterable_json_schema do
-    ~s({"namespace":"io.confluent","name":"Converter","type":"record","fields":[{"name":"birthday","type":{"type":"int","logicalType":"Date"}},{"name":"guests","type":["null","int"]}]})
+    ~s({"namespace":"io.confluent","name":"Converter","type":"record","fields":[{"name":"birthday","type":{"type":"int","logicalType":"date"}},{"name":"guests","type":["null","int"]}]})
   end
 end
