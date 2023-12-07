@@ -32,15 +32,6 @@ defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogical do
   # FIXME: Refactor this shit
   defp do_convert(value, type, logical_type) do
     case logical_type do
-      "date" ->
-        to_date(value)
-
-      "time-millis" ->
-        to_time_millis(value)
-
-      "time-micros" ->
-        to_time_micros(value)
-
       "decimal" ->
         <<value::signed-integer-64-big>> = value
 
@@ -53,6 +44,21 @@ defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogical do
 
       "uuid" ->
         {:ok, value}
+
+      "date" ->
+        to_date(value)
+
+      "time-millis" ->
+        to_time_millis(value)
+
+      "time-micros" ->
+        to_time_micros(value)
+
+      "timestamp-millis" ->
+        to_timestamp_millis(value)
+
+      "timestamp-micros" ->
+        to_timestamp_micros(value)
 
       _ ->
         Logger.warning("unsupported logical type `#{logical_type}' was not converted")
@@ -78,6 +84,16 @@ defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogical do
       |> Time.from_seconds_after_midnight({rem(value, @microsecond), @microsecond_precision})
 
     {:ok, time}
+  end
+
+  defp to_timestamp_millis(value) do
+    with {:error, reason} <- DateTime.from_unix(value, :millisecond),
+         do: {:error, %Avrora.Errors.LogicalTypeDecodingError{code: reason}}
+  end
+
+  defp to_timestamp_micros(value) do
+    with {:error, reason} <- DateTime.from_unix(value, :microsecond),
+         do: {:error, %Avrora.Errors.LogicalTypeDecodingError{code: reason}}
   end
 
   if Code.ensure_loaded?(Decimal) do

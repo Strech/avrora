@@ -65,6 +65,25 @@ defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogicalTest do
 
       assert decoded == %{"time" => ~T[04:28:07.000000]}
     end
+
+    test "when logical type is timestamp with millisecond precision" do
+      {:ok, decoded} = Codec.Plain.decode(timestamp_millis_type_message(), schema: timestamp_millis_type_schema())
+
+      assert decoded == %{"timestamp" => ~U[2016-10-26 04:28:07.123Z]}
+    end
+
+    test "when logical type is timestamp with microsecond precision" do
+      {:ok, decoded} = Codec.Plain.decode(timestamp_micros_type_message(), schema: timestamp_micros_type_schema())
+
+      assert decoded == %{"timestamp" => ~U[2016-10-26 04:28:07.000000Z]}
+    end
+
+    test "when logical type is timestamp and its value is incorrect" do
+      {:error, error} = Codec.Plain.decode(timestamp_incorrect_type_message(), schema: timestamp_millis_type_schema())
+
+      assert error.code == :invalid_unix_time
+      assert Exception.message(error) =~ "invalid Unix time"
+    end
   end
 
   defp date_type_message, do: <<152, 139, 2, 152, 139, 2>>
@@ -73,6 +92,9 @@ defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogicalTest do
   defp decimal_bytes_type_message, do: <<16, 255, 255, 255, 255, 255, 254, 29, 192>>
   defp time_millis_type_message, do: <<166, 225, 171, 15>>
   defp time_micros_type_message, do: <<128, 143, 225, 237, 119>>
+  defp timestamp_millis_type_message, do: <<166, 161, 246, 243, 255, 85>>
+  defp timestamp_micros_type_message, do: <<128, 143, 229, 211, 161, 239, 159, 5>>
+  defp timestamp_incorrect_type_message, do: <<128, 128, 155, 199, 153, 131, 162, 132, 7>>
 
   defp date_type_schema do
     {:ok, schema} = Schema.Encoder.from_json(date_type_json_schema())
@@ -109,6 +131,16 @@ defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogicalTest do
     %{schema | id: nil, version: nil}
   end
 
+  defp timestamp_millis_type_schema do
+    {:ok, schema} = Schema.Encoder.from_json(timestamp_millis_type_json_schema())
+    %{schema | id: nil, version: nil}
+  end
+
+  defp timestamp_micros_type_schema do
+    {:ok, schema} = Schema.Encoder.from_json(timestamp_micros_type_json_schema())
+    %{schema | id: nil, version: nil}
+  end
+
   defp date_type_json_schema do
     ~s({"namespace":"io.confluent","name":"Date_Type","type":"record","fields":[{"name":"number","type":"int"},{"name":"birthday","type":{"type": "int","logicalType":"date"}}]})
   end
@@ -135,5 +167,13 @@ defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogicalTest do
 
   defp time_micros_type_json_schema do
     ~s({"namespace":"io.confluent","name":"Time_Micros","type":"record","fields":[{"name":"time","type":{"type":"long","logicalType":"time-micros"}}]})
+  end
+
+  defp timestamp_millis_type_json_schema do
+    ~s({"namespace":"io.confluent","name":"Timestamp_Millis","type":"record","fields":[{"name":"timestamp","type":{"type":"long","logicalType":"timestamp-millis"}}]})
+  end
+
+  defp timestamp_micros_type_json_schema do
+    ~s({"namespace":"io.confluent","name":"Timestamp_Micros","type":"record","fields":[{"name":"timestamp","type":{"type":"long","logicalType":"timestamp-micros"}}]})
   end
 end
