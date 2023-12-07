@@ -7,8 +7,6 @@ defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogical do
   @behaviour Avrora.AvroTypeConverter
 
   @logical_type "logicalType"
-  @microsecond 1_000_000
-  @microsecond_precision 6
 
   alias Avrora.AvroLogicalTypeCaster
   alias Avrora.Config
@@ -46,35 +44,10 @@ defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogical do
   # FIXME: Refactor this shit
   defp do_convert(value, type, logical_type) do
     case logical_type do
-      "decimal" -> do_convert2(value, type, logical_type)
-      "uuid" -> do_convert2(value, type, logical_type)
-      "date" -> do_convert2(value, type, logical_type)
-      "time-millis" -> do_convert2(value, type, logical_type)
-      "time-micros" -> to_time_micros(value)
-      "timestamp-millis" -> to_timestamp_millis(value)
-      "timestamp-micros" -> to_timestamp_micros(value)
       "local-timestamp-millis" -> to_local_timestamp_millis(value)
       "local-timestamp-micros" -> to_local_timestamp_micros(value)
       _ -> do_convert2(value, type, logical_type)
     end
-  end
-
-  defp to_time_micros(value) do
-    time =
-      div(value, @microsecond)
-      |> Time.from_seconds_after_midnight({rem(value, @microsecond), @microsecond_precision})
-
-    {:ok, time}
-  end
-
-  defp to_timestamp_millis(value) do
-    with {:error, reason} <- DateTime.from_unix(value, :millisecond),
-         do: {:error, %Avrora.Errors.LogicalTypeDecodingError{code: reason}}
-  end
-
-  defp to_timestamp_micros(value) do
-    with {:error, reason} <- DateTime.from_unix(value, :microsecond),
-         do: {:error, %Avrora.Errors.LogicalTypeDecodingError{code: reason}}
   end
 
   defp to_local_timestamp_millis(value) do
