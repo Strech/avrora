@@ -5,6 +5,7 @@ defmodule Avrora.ResolverTest do
   import Mox
   import Support.Config
   import ExUnit.CaptureLog
+
   alias Avrora.{Resolver, Schema}
 
   setup :verify_on_exit!

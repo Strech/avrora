@@ -4,6 +4,7 @@ defmodule Avrora.AvroDecoderOptions do
   `:avro_ocf` decoder options.
   """
 
+  alias Avrora.AvroTypeConverter
   alias Avrora.Config
 
   @options %{
@@ -13,7 +14,8 @@ defmodule Avrora.AvroDecoderOptions do
     map_type: :map,
     record_type: :map
   }
-  @null_type_name "null"
+  # TODO Rename avro_type_converter into something better
+  @type_converters [AvroTypeConverter.NullIntoNil, AvroTypeConverter.PrimitiveIntoLogical]
 
   @doc """
   A unified erlavro decoder options compatible for both binary and OCF decoders.
@@ -25,17 +27,17 @@ defmodule Avrora.AvroDecoderOptions do
   # NOTE: This is internal module function and should never be used directly
   @doc false
   def __hook__(type, sub_name_or_idx, data, decode_fun) do
-    convert = convert_null_values()
-    decoder_hook = decoder_hook()
+    result = decoder_hook().(type, sub_name_or_idx, data, decode_fun)
 
-    result = decoder_hook.(type, sub_name_or_idx, data, decode_fun)
-
-    if convert == true && :avro.get_type_name(type) == @null_type_name,
-      do: {nil, data},
-      else: result
+    @type_converters
+    |> List.foldl(result, fn type_converter, value ->
+      case type_converter.convert(value, type) do
+        {:ok, result} -> result
+        {:error, reason} -> raise(reason)
+      end
+    end)
   end
 
-  defp convert_null_values, do: Config.self().convert_null_values()
   defp convert_map_to_proplist, do: Config.self().convert_map_to_proplist()
   defp decoder_hook, do: Config.self().decoder_hook()
 end

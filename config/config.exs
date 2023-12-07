@@ -10,3 +10,4 @@ config :avrora,
   names_cache_ttl: :infinity
 
 config :logger, :console, format: "$time $metadata[$level] $levelpad$message\n"
+config :elixir, :time_zone_database, Tz.TimeZoneDatabase
