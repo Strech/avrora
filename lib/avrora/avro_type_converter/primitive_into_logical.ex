@@ -7,9 +7,7 @@ defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogical do
   @behaviour Avrora.AvroTypeConverter
 
   @logical_type "logicalType"
-  @millisecond 1_000
   @microsecond 1_000_000
-  @millisecond_precision 3
   @microsecond_precision 6
 
   alias Avrora.AvroLogicalTypeCaster
@@ -29,9 +27,15 @@ defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogical do
   end
 
   @config %{
-    "decimal" => AvroLogicalTypeCaster.Decimal,
     "uuid" => AvroLogicalTypeCaster.Noop,
     "date" => AvroLogicalTypeCaster.Date,
+    "decimal" => AvroLogicalTypeCaster.Decimal,
+    "time-millis" => AvroLogicalTypeCaster.TimeMillis,
+    "time-micros" => AvroLogicalTypeCaster.TimeMicros,
+    "timestamp-millis" => AvroLogicalTypeCaster.TimestampMillis,
+    "timestamp-micros" => AvroLogicalTypeCaster.TimestampMicros,
+    "local-timestamp-millis" => AvroLogicalTypeCaster.LocalTimestampMillis,
+    "local-timestamp-micros" => AvroLogicalTypeCaster.LocalTimestampMicros,
     "_" => AvroLogicalTypeCaster.NoopWarning
   }
 
@@ -42,45 +46,17 @@ defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogical do
   # FIXME: Refactor this shit
   defp do_convert(value, type, logical_type) do
     case logical_type do
-      "decimal" ->
-        do_convert2(value, type, logical_type)
-
-      "uuid" ->
-        do_convert2(value, type, logical_type)
-
-      "date" ->
-        do_convert2(value, type, logical_type)
-
-      "time-millis" ->
-        to_time_millis(value)
-
-      "time-micros" ->
-        to_time_micros(value)
-
-      "timestamp-millis" ->
-        to_timestamp_millis(value)
-
-      "timestamp-micros" ->
-        to_timestamp_micros(value)
-
-      "local-timestamp-millis" ->
-        to_local_timestamp_millis(value)
-
-      "local-timestamp-micros" ->
-        to_local_timestamp_micros(value)
-
-      _ ->
-        do_convert2(value, type, logical_type)
+      "decimal" -> do_convert2(value, type, logical_type)
+      "uuid" -> do_convert2(value, type, logical_type)
+      "date" -> do_convert2(value, type, logical_type)
+      "time-millis" -> do_convert2(value, type, logical_type)
+      "time-micros" -> to_time_micros(value)
+      "timestamp-millis" -> to_timestamp_millis(value)
+      "timestamp-micros" -> to_timestamp_micros(value)
+      "local-timestamp-millis" -> to_local_timestamp_millis(value)
+      "local-timestamp-micros" -> to_local_timestamp_micros(value)
+      _ -> do_convert2(value, type, logical_type)
     end
-  end
-
-  defp to_time_millis(value) do
-    time =
-      div(value, @millisecond)
-      |> Time.from_seconds_after_midnight({rem(value, @millisecond) * 1_000, @millisecond_precision})
-      |> Time.truncate(:millisecond)
-
-    {:ok, time}
   end
 
   defp to_time_micros(value) do
