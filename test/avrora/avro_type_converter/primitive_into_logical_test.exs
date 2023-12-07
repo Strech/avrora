@@ -13,7 +13,7 @@ defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogicalTest do
 
   describe "convert/2" do
     test "when logical types must be kept as is" do
-      stub(Avrora.ConfigMock, :decode_logical_types, fn -> false end)
+      stub(Avrora.ConfigMock, :cast_logical_types, fn -> false end)
 
       {:ok, decoded} = Codec.Plain.decode(date_message(), schema: schema(date_json()))
 

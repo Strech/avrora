@@ -14,7 +14,7 @@ defmodule Avrora.Config do
       * `convert_map_to_proplist` bring back old behavior and configure decoding AVRO map-type as proplist, default `false`
       TODO Rename into cast_logical_types
       TODO Introduce configurable list of logical type casting
-      * `decode_logical_types` convert logical AVRO primitive or complex type into corresponding Elixir representation, default `true`
+      * `cast_logical_types` convert logical AVRO primitive or complex type into corresponding Elixir representation, default `true`
       * `names_cache_ttl` duration to cache global schema names millisecods, default `:infinity`
       * `decoder_hook` function to amend decoded payload, default `fn _, _, data, fun -> fun.(data) end`
 
@@ -34,7 +34,7 @@ defmodule Avrora.Config do
   @callback registry_schemas_autoreg :: boolean()
   @callback convert_null_values :: boolean()
   @callback convert_map_to_proplist :: boolean()
-  @callback decode_logical_types :: boolean()
+  @callback cast_logical_types :: boolean()
   @callback names_cache_ttl :: integer() | atom()
   @callback decoder_hook :: (any(), any(), any(), any() -> any())
   @callback file_storage :: module()
@@ -70,7 +70,7 @@ defmodule Avrora.Config do
   def convert_map_to_proplist, do: get_env(:convert_map_to_proplist, false)
 
   @doc false
-  def decode_logical_types, do: get_env(:decode_logical_types, true)
+  def cast_logical_types, do: get_env(:cast_logical_types, true)
 
   @doc false
   def names_cache_ttl, do: get_env(:names_cache_ttl, :infinity)

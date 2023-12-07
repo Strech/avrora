@@ -137,7 +137,7 @@ defmodule Avrora.Codec.PlainTest do
     end
 
     test "when decoding message and logical types must be as is" do
-      stub(Avrora.ConfigMock, :decode_logical_types, fn -> false end)
+      stub(Avrora.ConfigMock, :cast_logical_types, fn -> false end)
 
       {:ok, decoded} = Codec.Plain.decode(convertable_message(), schema: convertable_schema())
 
@@ -146,7 +146,7 @@ defmodule Avrora.Codec.PlainTest do
 
     test "when decoding message and all types must be as is" do
       stub(Avrora.ConfigMock, :convert_null_values, fn -> false end)
-      stub(Avrora.ConfigMock, :decode_logical_types, fn -> false end)
+      stub(Avrora.ConfigMock, :cast_logical_types, fn -> false end)
 
       {:ok, decoded} = Codec.Plain.decode(convertable_message(), schema: convertable_schema())
 

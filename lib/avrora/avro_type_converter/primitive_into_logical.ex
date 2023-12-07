@@ -132,5 +132,5 @@ defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogical do
       do: {:error, %Avrora.Errors.ConfigurationError{code: :missing_decimal_lib}}
   end
 
-  defp enabled, do: Config.self().decode_logical_types() == true
+  defp enabled, do: Config.self().cast_logical_types() == true
 end
