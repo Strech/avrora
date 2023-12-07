@@ -1,10 +1,10 @@
 defmodule Avrora.AvroTypeConverter do
   @moduledoc """
-  TODO
+  TODO Write AvroTypeConverter moduledoc
   """
 
   @doc """
-  TODO
+  TODO Write convert callback doc
 
   NOTE that type is an erlavro type
        and we are converting erlang/avro types into Elixir

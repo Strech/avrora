@@ -1,6 +1,6 @@
 defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogical do
   @moduledoc """
-  TODO
+  TODO Write PrimitiveIntoLogical moduledoc
   """
 
   @behaviour Avrora.AvroTypeConverter

@@ -1,11 +1,11 @@
 defmodule Avrora.Errors do
   @moduledoc """
-  TODO
+  TODO Write Errors moduledoc
   """
 
   defmodule ConfigurationError do
     @moduledoc """
-    TODO
+    TODO Write ConfigurationError moduledoc
     """
 
     defexception [:code]
@@ -28,7 +28,7 @@ defmodule Avrora.Errors do
 
   defmodule LogicalTypeDecodingError do
     @moduledoc """
-    TODO
+    TODO Write LogicalTypeDecodingError moduledoc
     """
 
     defexception [:code]

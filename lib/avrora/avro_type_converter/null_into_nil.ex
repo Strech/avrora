@@ -1,6 +1,6 @@
 defmodule Avrora.AvroTypeConverter.NullIntoNil do
   @moduledoc """
-  TODO
+  TODO Write NullIntoNil moduledoc
   """
 
   @behaviour Avrora.AvroTypeConverter

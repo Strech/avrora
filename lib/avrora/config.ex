@@ -13,6 +13,7 @@ defmodule Avrora.Config do
       * `convert_null_values` convert `:null` values in the decoded message into `nil`, default `true`
       * `convert_map_to_proplist` bring back old behavior and configure decoding AVRO map-type as proplist, default `false`
       TODO Rename into cast_logical_types
+      TODO Introduce configurable list of logical type casting
       * `decode_logical_types` convert logical AVRO primitive or complex type into corresponding Elixir representation, default `true`
       * `names_cache_ttl` duration to cache global schema names millisecods, default `:infinity`
       * `decoder_hook` function to amend decoded payload, default `fn _, _, data, fun -> fun.(data) end`
