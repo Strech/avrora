@@ -35,7 +35,9 @@ defmodule Avrora.Errors do
 
     @type t :: %__MODULE__{code: atom()}
     @messages %{
-      invalid_unix_time: "given value is an invalid Unix time"
+      invalid_unix_time: "given value is an invalid UNIX time",
+      time_zone_not_found: "configured local timezone not found in timezone database",
+      utc_only_time_zone_database: "default timezone database does not support configured local timezone"
     }
 
     @impl true

@@ -115,6 +115,7 @@ defmodule Avrora.MixProject do
       {:jason, "~> 1.0"},
       {:erlavro, "~> 2.9.3"},
       {:credo, "~> 1.5", only: :dev, runtime: false},
+      {:tz, "~> 0.26.2", only: [:dev, :test], runtime: false},
       {:decimal, "~> 2.0", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.24", only: :dev, runtime: false},
       {:dialyxir, "~> 1.1", only: :dev, runtime: false},

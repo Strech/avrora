@@ -28,7 +28,6 @@ defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogical do
     end
   end
 
-  # TODO: Introduce error class and wrap this message into it!
   # FIXME: Refactor this shit
   defp do_convert(value, type, logical_type) do
     case logical_type do
@@ -59,6 +58,12 @@ defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogical do
 
       "timestamp-micros" ->
         to_timestamp_micros(value)
+
+      "local-timestamp-millis" ->
+        to_local_timestamp_millis(value)
+
+      "local-timestamp-micros" ->
+        to_local_timestamp_micros(value)
 
       _ ->
         Logger.warning("unsupported logical type `#{logical_type}' was not converted")
@@ -94,6 +99,24 @@ defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogical do
   defp to_timestamp_micros(value) do
     with {:error, reason} <- DateTime.from_unix(value, :microsecond),
          do: {:error, %Avrora.Errors.LogicalTypeDecodingError{code: reason}}
+  end
+
+  defp to_local_timestamp_millis(value) do
+    with {:ok, date_time} <- DateTime.from_unix(value, :millisecond),
+         {:ok, local_date_time} <- DateTime.shift_zone(date_time, "Japan") do
+      {:ok, local_date_time}
+    else
+      {:error, reason} -> {:error, %Avrora.Errors.LogicalTypeDecodingError{code: reason}}
+    end
+  end
+
+  defp to_local_timestamp_micros(value) do
+    with {:ok, date_time} <- DateTime.from_unix(value, :microsecond),
+         {:ok, local_date_time} <- DateTime.shift_zone(date_time, "Japan") do
+      {:ok, local_date_time}
+    else
+      {:error, reason} -> {:error, %Avrora.Errors.LogicalTypeDecodingError{code: reason}}
+    end
   end
 
   if Code.ensure_loaded?(Decimal) do

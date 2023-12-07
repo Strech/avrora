@@ -61,7 +61,7 @@ defmodule Avrora.Codec do
 
   """
   @callback decode(payload :: binary(), options :: keyword(Avrora.Schema.t())) ::
-              {:ok, result :: map() | list(map())} | {:error, reason :: term()}
+              {:ok, result :: map() | list(map())} | {:error, reason :: Exception.t() | term()}
 
   @doc """
   Encode the Elixir data into a binary Avro message.
