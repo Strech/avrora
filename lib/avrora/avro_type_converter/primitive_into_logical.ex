@@ -37,35 +37,8 @@ defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogical do
     "_" => AvroLogicalTypeCaster.NoopWarning
   }
 
-  defp do_convert2(value, type, logical_type) do
-    Map.get(@config, logical_type, Map.fetch!(@config, "_")).cast(value, type)
-  end
-
-  # FIXME: Refactor this shit
   defp do_convert(value, type, logical_type) do
-    case logical_type do
-      "local-timestamp-millis" -> to_local_timestamp_millis(value)
-      "local-timestamp-micros" -> to_local_timestamp_micros(value)
-      _ -> do_convert2(value, type, logical_type)
-    end
-  end
-
-  defp to_local_timestamp_millis(value) do
-    with {:ok, date_time} <- DateTime.from_unix(value, :millisecond),
-         {:ok, local_date_time} <- DateTime.shift_zone(date_time, "Japan") do
-      {:ok, local_date_time}
-    else
-      {:error, reason} -> {:error, %Avrora.Errors.LogicalTypeDecodingError{code: reason}}
-    end
-  end
-
-  defp to_local_timestamp_micros(value) do
-    with {:ok, date_time} <- DateTime.from_unix(value, :microsecond),
-         {:ok, local_date_time} <- DateTime.shift_zone(date_time, "Japan") do
-      {:ok, local_date_time}
-    else
-      {:error, reason} -> {:error, %Avrora.Errors.LogicalTypeDecodingError{code: reason}}
-    end
+    Map.get(@config, logical_type, Map.fetch!(@config, "_")).cast(value, type)
   end
 
   defp enabled, do: Config.self().cast_logical_types() == true
