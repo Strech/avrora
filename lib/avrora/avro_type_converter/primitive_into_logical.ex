@@ -24,6 +24,8 @@ defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogical do
     end
   end
 
+  # TODO Remove and replace with config
+  # TODO Add support module to test Japan timezone in local timestamp
   @config %{
     "uuid" => AvroLogicalTypeCaster.Noop,
     "date" => AvroLogicalTypeCaster.Date,
@@ -37,6 +39,7 @@ defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogical do
     "_" => AvroLogicalTypeCaster.NoopWarning
   }
 
+  # TODO Replace fetch! with fetch and raise generic error of Avrora
   defp do_convert(value, type, logical_type) do
     Map.get(@config, logical_type, Map.fetch!(@config, "_")).cast(value, type)
   end

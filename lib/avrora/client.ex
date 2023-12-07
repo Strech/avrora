@@ -114,6 +114,16 @@ defmodule Avrora.Client do
 
           @opts unquote(opts)
           @otp_app Keyword.get(@opts, :otp_app)
+          # TODO Add tests to check logical types resolution
+          @logical_types_casting %{
+            "_" => Avrora.AvroLogicalTypeCaster.NoopWarning,
+            "uuid" => Avrora.AvroLogicalTypeCaster.Noop,
+            "date" => Avrora.AvroLogicalTypeCaster.Date,
+            "time-millis" => Avrora.AvroLogicalTypeCaster.TimeMillis,
+            "time-micros" => Avrora.AvroLogicalTypeCaster.TimeMicros,
+            "timestamp-millis" => Avrora.AvroLogicalTypeCaster.TimestampMillis,
+            "timestamp-micros" => Avrora.AvroLogicalTypeCaster.TimestampMicros
+          }
 
           def schemas_path do
             path = get(@opts, :schemas_path, "./priv/schemas")
@@ -130,6 +140,7 @@ defmodule Avrora.Client do
           def cast_logical_types, do: get(@opts, :cast_logical_types, true)
           def names_cache_ttl, do: get(@opts, :names_cache_ttl, :infinity)
           def decoder_hook, do: get(@opts, :decoder_hook, fn _, _, data, fun -> fun.(data) end)
+          def logical_types_casting, do: get(@opts, :logical_types_casting, @logical_types_casting)
           def file_storage, do: unquote(:"Elixir.#{module}.Storage.File")
           def memory_storage, do: unquote(:"Elixir.#{module}.Storage.Memory")
           def registry_storage, do: unquote(:"Elixir.#{module}.Storage.Registry")

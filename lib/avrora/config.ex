@@ -12,11 +12,10 @@ defmodule Avrora.Config do
       * `registry_schemas_autoreg` automatically register schemas in Schema Registry, default `true`
       * `convert_null_values` convert `:null` values in the decoded message into `nil`, default `true`
       * `convert_map_to_proplist` bring back old behavior and configure decoding AVRO map-type as proplist, default `false`
-      TODO Rename into cast_logical_types
-      TODO Introduce configurable list of logical type casting
       * `cast_logical_types` convert logical AVRO primitive or complex type into corresponding Elixir representation, default `true`
       * `names_cache_ttl` duration to cache global schema names millisecods, default `:infinity`
       * `decoder_hook` function to amend decoded payload, default `fn _, _, data, fun -> fun.(data) end`
+      * `logical_types_casting` mapping between logical type and casting logic, default `uuid, date, time-millis, time-micros, timestamp-millis, timestamp-micros`
 
   ## Internal use interface:
 
@@ -42,6 +41,16 @@ defmodule Avrora.Config do
   @callback registry_storage :: module()
   @callback http_client :: module()
   @callback ets_lib :: module() | atom()
+
+  @logical_types_casting %{
+    "_" => Avrora.AvroLogicalTypeCaster.NoopWarning,
+    "uuid" => Avrora.AvroLogicalTypeCaster.Noop,
+    "date" => Avrora.AvroLogicalTypeCaster.Date,
+    "time-millis" => Avrora.AvroLogicalTypeCaster.TimeMillis,
+    "time-micros" => Avrora.AvroLogicalTypeCaster.TimeMicros,
+    "timestamp-millis" => Avrora.AvroLogicalTypeCaster.TimestampMillis,
+    "timestamp-micros" => Avrora.AvroLogicalTypeCaster.TimestampMicros
+  }
 
   @doc false
   def schemas_path do
@@ -77,6 +86,9 @@ defmodule Avrora.Config do
 
   @doc false
   def decoder_hook, do: get_env(:decoder_hook, fn _, _, data, fun -> fun.(data) end)
+
+  @doc false
+  def logical_types_casting, do: get_env(:logical_types_casting, @logical_types_casting)
 
   @doc false
   def file_storage, do: Avrora.Storage.File
