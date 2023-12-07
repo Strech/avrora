@@ -14,6 +14,7 @@ defmodule Avrora.AvroDecoderOptions do
     map_type: :map,
     record_type: :map
   }
+  # TODO Rename avro_type_converter into something better
   @type_converters [AvroTypeConverter.NullIntoNil, AvroTypeConverter.PrimitiveIntoLogical]
 
   @doc """

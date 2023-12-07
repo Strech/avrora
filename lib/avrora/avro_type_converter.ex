@@ -9,5 +9,6 @@ defmodule Avrora.AvroTypeConverter do
   NOTE that type is an erlavro type
        and we are converting erlang/avro types into Elixir
   """
-  @callback convert(value :: term(), type :: term()) :: {:ok, result :: {term(), binary()}} | {:error, reason :: term()}
+  @callback convert(value :: term(), type :: term()) ::
+              {:ok, result :: {term(), binary()}} | {:error, reason :: Exception.t() | term()}
 end

@@ -1,18 +1,18 @@
+# TODO Merge into type caster and remove list handling in decoder options
 defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogical do
   @moduledoc """
   TODO Write PrimitiveIntoLogical moduledoc
   """
 
   @behaviour Avrora.AvroTypeConverter
-  @unix_epoch ~D[1970-01-01]
+
   @logical_type "logicalType"
-  @default_decimal_scale_prop {"scale", 0}
   @millisecond 1_000
   @microsecond 1_000_000
   @millisecond_precision 3
   @microsecond_precision 6
 
-  require Logger
+  alias Avrora.AvroLogicalTypeCaster
   alias Avrora.Config
 
   @impl true
@@ -28,24 +28,28 @@ defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogical do
     end
   end
 
+  @config %{
+    "decimal" => AvroLogicalTypeCaster.Decimal,
+    "uuid" => AvroLogicalTypeCaster.Noop,
+    "date" => AvroLogicalTypeCaster.Date,
+    "_" => AvroLogicalTypeCaster.NoopWarning
+  }
+
+  defp do_convert2(value, type, logical_type) do
+    Map.get(@config, logical_type, Map.fetch!(@config, "_")).cast(value, type)
+  end
+
   # FIXME: Refactor this shit
   defp do_convert(value, type, logical_type) do
     case logical_type do
       "decimal" ->
-        <<value::signed-integer-64-big>> = value
-
-        scale =
-          :avro.get_custom_props(type)
-          |> List.keyfind("scale", 0, @default_decimal_scale_prop)
-          |> elem(1)
-
-        to_decimal(value, scale)
+        do_convert2(value, type, logical_type)
 
       "uuid" ->
-        {:ok, value}
+        do_convert2(value, type, logical_type)
 
       "date" ->
-        to_date(value)
+        do_convert2(value, type, logical_type)
 
       "time-millis" ->
         to_time_millis(value)
@@ -66,13 +70,9 @@ defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogical do
         to_local_timestamp_micros(value)
 
       _ ->
-        Logger.warning("unsupported logical type `#{logical_type}' was not converted")
-
-        {:ok, value}
+        do_convert2(value, type, logical_type)
     end
   end
-
-  defp to_date(value), do: {:ok, Date.add(@unix_epoch, value)}
 
   defp to_time_millis(value) do
     time =
@@ -117,19 +117,6 @@ defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogical do
     else
       {:error, reason} -> {:error, %Avrora.Errors.LogicalTypeDecodingError{code: reason}}
     end
-  end
-
-  if Code.ensure_loaded?(Decimal) do
-    def to_decimal(value, 0), do: {:ok, Decimal.new(value)}
-
-    def to_decimal(value, scale) when is_integer(value) and value > 0,
-      do: {:ok, Decimal.new(1, value, -scale)}
-
-    def to_decimal(value, scale) when is_integer(value) and value < 0,
-      do: {:ok, Decimal.new(-1, -value, -scale)}
-  else
-    def to_decimal(_value, _scale),
-      do: {:error, %Avrora.Errors.ConfigurationError{code: :missing_decimal_lib}}
   end
 
   defp enabled, do: Config.self().cast_logical_types() == true

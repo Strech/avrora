@@ -33,7 +33,7 @@ defmodule Avrora.AvroTypeConverter.PrimitiveIntoLogicalTest do
           assert {:ok, decoded} == Codec.Plain.decode(date_message(), schema: schema(unknown_json()))
         end)
 
-      assert output =~ "unsupported logical type `unknown' was not converted"
+      assert output =~ "unsupported logical type `unknown', its value was not type casted"
     end
 
     test "when logical type is uuid" do

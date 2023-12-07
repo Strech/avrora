@@ -33,8 +33,7 @@ defmodule Integration.DecimalLogicalTypeTest do
 
       {:error, error} = Codec.Plain.decode(message, schema: schema)
 
-      assert error.code == :missing_decimal_lib
-      assert Exception.message(error) =~ "missing `Decimal' library"
+      assert error == %UndefinedFunctionError{module: Decimal, function: :new, arity: 3}
     end
   end
 end
