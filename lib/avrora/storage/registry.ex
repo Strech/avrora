@@ -116,20 +116,31 @@ defmodule Avrora.Storage.Registry do
 
   defp http_client_get(path) do
     if configured?(),
-      do: path |> to_url() |> http_client().get(headers()) |> handle(),
+      do: path |> to_url() |> http_client().get(options()) |> handle(),
       else: {:error, :unconfigured_registry_url}
   end
 
   defp http_client_post(path, payload) do
     if configured?() do
-      headers = headers() |> Keyword.put(:content_type, @content_type)
-      path |> to_url() |> http_client().post(payload, headers) |> handle()
+      options = [{:content_type, @content_type} | options()]
+      path |> to_url() |> http_client().post(payload, options) |> handle()
     else
       {:error, :unconfigured_registry_url}
     end
   end
 
-  # NOTE: Maybe move to compile-time?
+  # NOTE: Maybe move to compile-time somehow?
+  defp options do
+    ssl_options =
+      cond do
+        !is_nil(registry_ssl_cacerts()) -> [verify: :verify_peer, cacerts: [registry_ssl_cacerts()]]
+        !is_nil(registry_ssl_cacertfile()) -> [verify: :verify_peer, cacertfile: registry_ssl_cacertfile()]
+        true -> [verify: :verify_none]
+      end
+
+    [{:ssl_options, ssl_options} | headers()]
+  end
+
   defp headers do
     authorization =
       case registry_auth() do
@@ -143,7 +154,7 @@ defmodule Avrora.Storage.Registry do
 
     case registry_user_agent() do
       nil -> authorization
-      user_agent -> authorization |> Keyword.put(:user_agent, user_agent)
+      user_agent -> [{:user_agent, user_agent} | authorization]
     end
   end
 
@@ -169,4 +180,6 @@ defmodule Avrora.Storage.Registry do
   defp registry_url, do: Config.self().registry_url()
   defp registry_auth, do: Config.self().registry_auth()
   defp registry_user_agent, do: Config.self().registry_user_agent()
+  defp registry_ssl_cacerts, do: Config.self().registry_ssl_cacerts()
+  defp registry_ssl_cacertfile, do: Config.self().registry_ssl_cacertfile()
 end

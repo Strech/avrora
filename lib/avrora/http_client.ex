@@ -5,12 +5,14 @@ defmodule Avrora.HTTPClient do
 
   @callback get(String.t(), keyword(String.t())) :: {:ok, map()} | {:error, term()}
   @callback post(String.t(), String.t(), keyword(String.t())) :: {:ok, map()} | {:error, term()}
+  @default_ssl_options [verify: :verify_none]
 
   @doc false
   @spec get(String.t(), keyword(String.t())) :: {:ok, map()} | {:error, term()}
   def get(url, options \\ []) do
     with {:ok, headers} <- extract_headers(options),
-         {:ok, {{_, status, _}, _, body}} <- :httpc.request(:get, {'#{url}', headers}, [ssl: ssl_options()], []) do
+         {:ok, ssl_options} <- extract_ssl(options),
+         {:ok, {{_, status, _}, _, body}} <- :httpc.request(:get, {'#{url}', headers}, [ssl: ssl_options], []) do
       handle(status, body)
     end
   end
@@ -21,8 +23,9 @@ defmodule Avrora.HTTPClient do
     with {:ok, body} <- Jason.encode(%{"schema" => payload}),
          {:ok, content_type} <- Keyword.fetch(options, :content_type),
          {:ok, headers} <- extract_headers(options),
+         {:ok, ssl_options} <- extract_ssl(options),
          {:ok, {{_, status, _}, _, body}} <-
-           :httpc.request(:post, {'#{url}', headers, [content_type], body}, [ssl: ssl_options()], []) do
+           :httpc.request(:post, {'#{url}', headers, [content_type], body}, [ssl: ssl_options], []) do
       handle(status, body)
     end
   end
@@ -40,6 +43,7 @@ defmodule Avrora.HTTPClient do
     end
   end
 
+  defp extract_ssl(options), do: {:ok, Keyword.get(options, :ssl_options, @default_ssl_options)}
   defp handle(200 = _status, body), do: Jason.decode(body)
 
   defp handle(status, body) do
@@ -48,6 +52,4 @@ defmodule Avrora.HTTPClient do
       {:error, _} -> {:error, {status, body}}
     end
   end
-
-  defp ssl_options, do: [verify: :verify_none]
 end
