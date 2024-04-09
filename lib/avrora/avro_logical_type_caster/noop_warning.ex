@@ -1,6 +1,7 @@
 defmodule Avrora.AvroLogicalTypeCaster.NoopWarning do
   @moduledoc """
-  TODO Write AvroLogicalTypeCaster.NoopWarning moduledoc
+  This is no-op module used for unsupported logical types.
+  It keeps the original value untouched, but generated the warning.
   """
 
   @behaviour Avrora.AvroLogicalTypeCaster

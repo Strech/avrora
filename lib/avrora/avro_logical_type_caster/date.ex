@@ -1,6 +1,10 @@
 defmodule Avrora.AvroLogicalTypeCaster.Date do
   @moduledoc """
-  TODO Write AvroLogicalTypeCaster.Date moduledoc
+  The `date` logical type represents a date within the calendar,
+  with no reference to a particular time zone or time of day.
+
+  The `date` logical type annotates an Avro `int`, where the `int` stores
+  the number of days from the unix epoch, 1 January 1970 (ISO calendar).
   """
 
   @behaviour Avrora.AvroLogicalTypeCaster
