@@ -109,10 +109,10 @@ defmodule Avrora.Client do
             if is_nil(@otp_app), do: Path.expand(path), else: Application.app_dir(@otp_app, path)
           end
 
-          def registry_ssl_cacertfile do
-            filepath = get(@opts, :registry_ssl_cacertfile, nil)
+          def registry_ssl_cacert_path do
+            path = get(@opts, :registry_ssl_cacert_path, nil)
 
-            if is_nil(filepath), do: nil, else: Path.expand(filepath)
+            if is_nil(path), do: nil, else: Path.expand(path)
           end
 
           def registry_url, do: get(@opts, :registry_url, nil)

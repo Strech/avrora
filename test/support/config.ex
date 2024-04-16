@@ -44,7 +44,7 @@ defmodule Support.Config do
   @impl true
   def registry_ssl_cacerts, do: nil
   @impl true
-  def registry_ssl_cacertfile, do: nil
+  def registry_ssl_cacert_path, do: nil
   @impl true
   def registry_schemas_autoreg, do: true
   @impl true

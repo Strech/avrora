@@ -9,8 +9,8 @@ defmodule Avrora.Config do
       * `registry_url` URL for Schema Registry, default `nil`
       * `registry_auth` authentication settings for Schema Registry, default `nil`
       * `registry_user_agent` HTTP `User-Agent` header for Schema Registry requests, default `Avrora/<version> Elixir`
-      * `registry_ssl_cacerts` DER-encoded trusted certificates without combined (see https://www.erlang.org/docs/26/man/ssl#type-client_cacerts), default `nil`
-      * `registry_ssl_cacertfile` path to a file containing PEM-encoded CA certificates, default `nil`
+      * `registry_ssl_cacerts` DER-encoded trusted certificate (not combined) (see https://www.erlang.org/docs/26/man/ssl#type-client_cacerts), default `nil`
+      * `registry_ssl_cacert_path` path to a file containing PEM-encoded CA certificates, default `nil`
       * `registry_schemas_autoreg` automatically register schemas in Schema Registry, default `true`
       * `convert_null_values` convert `:null` values in the decoded message into `nil`, default `true`
       * `convert_map_to_proplist` bring back old behavior and configure decoding AVRO map-type as proplist, default `false`
@@ -31,7 +31,7 @@ defmodule Avrora.Config do
   @callback registry_auth :: tuple() | nil
   @callback registry_user_agent :: String.t() | nil
   @callback registry_ssl_cacerts :: binary() | nil
-  @callback registry_ssl_cacertfile :: String.t() | nil
+  @callback registry_ssl_cacert_path :: String.t() | nil
   @callback registry_schemas_autoreg :: boolean()
   @callback convert_null_values :: boolean()
   @callback convert_map_to_proplist :: boolean()
@@ -66,10 +66,10 @@ defmodule Avrora.Config do
   def registry_ssl_cacerts, do: get_env(:registry_ssl_cacerts, nil)
 
   @doc false
-  def registry_ssl_cacertfile do
-    filepath = get_env(:registry_ssl_cacertfile, nil)
+  def registry_ssl_cacert_path do
+    path = get_env(:registry_ssl_cacert_path, nil)
 
-    if is_nil(filepath), do: nil, else: Path.expand(filepath)
+    if is_nil(path), do: nil, else: Path.expand(path)
   end
 
   @doc false

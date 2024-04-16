@@ -251,7 +251,7 @@ defmodule Avrora.Storage.RegistryTest do
 
     test "when request should not perform SSL verification based on given cert" do
       stub(Avrora.ConfigMock, :registry_ssl_cacerts, fn -> <<48, 130, 3, 201>> end)
-      stub(Avrora.ConfigMock, :registry_ssl_cacertfile, fn -> "path/to/file" end)
+      stub(Avrora.ConfigMock, :registry_ssl_cacert_path, fn -> "path/to/file" end)
 
       Avrora.HTTPClientMock
       |> expect(:get, fn url, options ->
@@ -265,7 +265,7 @@ defmodule Avrora.Storage.RegistryTest do
     end
 
     test "when request should not perform SSL verification based on given cert file" do
-      stub(Avrora.ConfigMock, :registry_ssl_cacertfile, fn -> "path/to/file" end)
+      stub(Avrora.ConfigMock, :registry_ssl_cacert_path, fn -> "path/to/file" end)
 
       Avrora.HTTPClientMock
       |> expect(:get, fn url, options ->
@@ -369,7 +369,7 @@ defmodule Avrora.Storage.RegistryTest do
 
     test "when request should not perform SSL verification based on given cert" do
       stub(Avrora.ConfigMock, :registry_ssl_cacerts, fn -> <<48, 130, 3, 201>> end)
-      stub(Avrora.ConfigMock, :registry_ssl_cacertfile, fn -> "path/to/file" end)
+      stub(Avrora.ConfigMock, :registry_ssl_cacert_path, fn -> "path/to/file" end)
 
       Avrora.HTTPClientMock
       |> expect(:post, fn url, payload, options ->
@@ -384,7 +384,7 @@ defmodule Avrora.Storage.RegistryTest do
     end
 
     test "when request should not perform SSL verification based on given cert file" do
-      stub(Avrora.ConfigMock, :registry_ssl_cacertfile, fn -> "path/to/file" end)
+      stub(Avrora.ConfigMock, :registry_ssl_cacert_path, fn -> "path/to/file" end)
 
       Avrora.HTTPClientMock
       |> expect(:post, fn url, payload, options ->

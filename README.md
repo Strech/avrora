@@ -90,7 +90,7 @@ defmodule MyClient do
     registry_auth: {:basic, ["username", "password"]},
     registry_user_agent: "Avrora/0.25.0 Elixir",
     registry_ssl_cacerts: File.read!("./priv/trusted.der"),
-    registry_ssl_cacertfile: "./priv/trusted.crt",
+    registry_ssl_cacert_path: "./priv/trusted.crt",
     registry_schemas_autoreg: false,
     convert_null_values: false,
     convert_map_to_proplist: false,
@@ -113,7 +113,7 @@ config :avrora,
   registry_auth: {:basic, ["username", "password"]}, # optional
   registry_user_agent: "Avrora/0.24.2 Elixir", # optional: if you want to return previous behaviour, set it to `nil`
   registry_ssl_cacerts: File.read!("./priv/trusted.der"), # optional: if you have DER-encoded certificate
-  registry_ssl_cacertfile: "./priv/trusted.crt", # optional: if you have PEM-encoded certificate file
+  registry_ssl_cacert_path: "./priv/trusted.crt", # optional: if you have PEM-encoded certificate file
   registry_schemas_autoreg: false, # optional: if you want manually register schemas
   convert_null_values: false, # optional: if you want to keep decoded `:null` values as is
   convert_map_to_proplist: false, # optional: if you want to restore the old behavior for decoding map-type
@@ -127,7 +127,7 @@ config :avrora,
 - `registry_auth` – Credentials to authenticate in the Schema Registry, default `nil`
 - `registry_user_agent`<sup>[v0.25]</sup> - HTTP `User-Agent` header for Schema Registry requests, default `Avrora/<version> Elixir`
 - `registry_ssl_cacerts`<sup>[v0.27]</sup> - DER-encoded certificates, but [without combined support][12], default `nil`
-- `registry_ssl_cacertfile`<sup>[v0.27]</sup> - path to a file containing PEM-encoded CA certificates, default `nil`
+- `registry_ssl_cacert_path`<sup>[v0.27]</sup> - path to a file containing PEM-encoded CA certificates, default `nil`
 - `registry_schemas_autoreg`<sup>[v0.13]</sup> - Flag for automatic schemas registration in the Schema Registry, default `true`
 - `convert_null_values`<sup>[v0.14]</sup> - Flag for automatic conversion of decoded `:null` values into `nil`, default `true`
 - `convert_map_to_proplist`<sup>[v0.15]</sup> restore old behaviour and confiugre decoding map-type to proplist, default `false`
@@ -154,7 +154,7 @@ recommended to set `otp_app` which will point to your OTP applications. This wil
 to have a per-client runtime resolution for all configuration options (i.e. `schemas_path`)
 with a fallback to staticly defined in a client itself.<sup>[v0.23]</sup>
 
-:bulb: If both `registry_ssl_cacerts` and `registry_ssl_cacertfile` given, then
+:bulb: If both `registry_ssl_cacerts` and `registry_ssl_cacert_path` given, then
 `registry_ssl_cacerts` has a priority.
 
 ## Start cache process
