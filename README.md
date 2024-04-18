@@ -23,7 +23,7 @@
 [v0.24]: https://github.com/Strech/avrora/releases/tag/v0.24.0
 [v0.25]: https://github.com/Strech/avrora/releases/tag/v0.25.0
 [v0.26]: https://github.com/Strech/avrora/releases/tag/v0.26.0
-[v0.27]: https://github.com/Strech/avrora/releases/tag/v0.27.0
+[v0.28]: https://github.com/Strech/avrora/releases/tag/v0.28.0
 [1]: https://avro.apache.org/
 [2]: https://www.confluent.io/confluent-schema-registry
 [3]: https://docs.confluent.io/current/schema-registry/serializer-formatter.html#wire-format
@@ -126,8 +126,8 @@ config :avrora,
 - `registry_url` - URL for the Schema Registry, default `nil`
 - `registry_auth` – Credentials to authenticate in the Schema Registry, default `nil`
 - `registry_user_agent`<sup>[v0.25]</sup> - HTTP `User-Agent` header for Schema Registry requests, default `Avrora/<version> Elixir`
-- `registry_ssl_cacerts`<sup>[v0.27]</sup> - DER-encoded certificates, but [without combined support][12], default `nil`
-- `registry_ssl_cacert_path`<sup>[v0.27]</sup> - Path to a file containing PEM-encoded CA certificates, default `nil`
+- `registry_ssl_cacerts`<sup>[v0.28]</sup> - DER-encoded certificates, but [without combined support][12], default `nil`
+- `registry_ssl_cacert_path`<sup>[v0.28]</sup> - Path to a file containing PEM-encoded CA certificates, default `nil`
 - `registry_schemas_autoreg`<sup>[v0.13]</sup> - Flag for automatic schemas registration in the Schema Registry, default `true`
 - `convert_null_values`<sup>[v0.14]</sup> - Flag for automatic conversion of decoded `:null` values into `nil`, default `true`
 - `convert_map_to_proplist`<sup>[v0.15]</sup> restore old behaviour and confiugre decoding map-type to proplist, default `false`
