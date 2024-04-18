@@ -127,7 +127,7 @@ config :avrora,
 - `registry_auth` – Credentials to authenticate in the Schema Registry, default `nil`
 - `registry_user_agent`<sup>[v0.25]</sup> - HTTP `User-Agent` header for Schema Registry requests, default `Avrora/<version> Elixir`
 - `registry_ssl_cacerts`<sup>[v0.27]</sup> - DER-encoded certificates, but [without combined support][12], default `nil`
-- `registry_ssl_cacert_path`<sup>[v0.27]</sup> - path to a file containing PEM-encoded CA certificates, default `nil`
+- `registry_ssl_cacert_path`<sup>[v0.27]</sup> - Path to a file containing PEM-encoded CA certificates, default `nil`
 - `registry_schemas_autoreg`<sup>[v0.13]</sup> - Flag for automatic schemas registration in the Schema Registry, default `true`
 - `convert_null_values`<sup>[v0.14]</sup> - Flag for automatic conversion of decoded `:null` values into `nil`, default `true`
 - `convert_map_to_proplist`<sup>[v0.15]</sup> restore old behaviour and confiugre decoding map-type to proplist, default `false`
