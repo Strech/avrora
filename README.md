@@ -23,6 +23,7 @@
 [v0.24]: https://github.com/Strech/avrora/releases/tag/v0.24.0
 [v0.25]: https://github.com/Strech/avrora/releases/tag/v0.25.0
 [v0.26]: https://github.com/Strech/avrora/releases/tag/v0.26.0
+[v0.28]: https://github.com/Strech/avrora/releases/tag/v0.28.0
 [1]: https://avro.apache.org/
 [2]: https://www.confluent.io/confluent-schema-registry
 [3]: https://docs.confluent.io/current/schema-registry/serializer-formatter.html#wire-format
@@ -34,6 +35,7 @@
 [9]: https://github.com/Strech/avrora/wiki/Schema-name-resolution
 [10]: https://github.com/Strech/avrora/pull/70
 [11]: https://github.com/klarna/erlavro#decoder-hooks
+[12]: https://www.erlang.org/docs/26/man/ssl#type-client_cacerts
 
 # Getting Started
 
@@ -62,7 +64,7 @@ Add Avrora to `mix.exs` as a dependency
 ```elixir
 def deps do
   [
-    {:avrora, "~> 0.21"}
+    {:avrora, "~> 0.27"}
   ]
 end
 ```
@@ -83,10 +85,12 @@ Create your private Avrora client module
 defmodule MyClient do
   use Avrora.Client,
     otp_app: :my_application,
+    schemas_path: "./priv/schemas",
     registry_url: "http://localhost:8081",
     registry_auth: {:basic, ["username", "password"]},
     registry_user_agent: "Avrora/0.25.0 Elixir",
-    schemas_path: "./priv/schemas",
+    registry_ssl_cacerts: File.read!("./priv/trusted.der"),
+    registry_ssl_cacert_path: "./priv/trusted.crt",
     registry_schemas_autoreg: false,
     convert_null_values: false,
     convert_map_to_proplist: false,
@@ -104,10 +108,12 @@ Configure the `Avrora` shared client in `config/config.exs`
 ```elixir
 config :avrora,
   otp_app: :my_application, # optional, if you want to use it as a root folder for `schemas_path`
+  schemas_path: "./priv/schemas",
   registry_url: "http://localhost:8081",
   registry_auth: {:basic, ["username", "password"]}, # optional
   registry_user_agent: "Avrora/0.24.2 Elixir", # optional: if you want to return previous behaviour, set it to `nil`
-  schemas_path: "./priv/schemas",
+  registry_ssl_cacerts: File.read!("./priv/trusted.der"), # optional: if you have DER-encoded certificate
+  registry_ssl_cacert_path: "./priv/trusted.crt", # optional: if you have PEM-encoded certificate file
   registry_schemas_autoreg: false, # optional: if you want manually register schemas
   convert_null_values: false, # optional: if you want to keep decoded `:null` values as is
   convert_map_to_proplist: false, # optional: if you want to restore the old behavior for decoding map-type
@@ -116,10 +122,12 @@ config :avrora,
 ```
 
 - `otp_app`<sup>[v0.22]</sup> - Name of the OTP application to use for runtime configuration via env, default `nil`
+- `schemas_path` - Base path for locally stored schema files, default `./priv/schemas`
 - `registry_url` - URL for the Schema Registry, default `nil`
 - `registry_auth` – Credentials to authenticate in the Schema Registry, default `nil`
 - `registry_user_agent`<sup>[v0.25]</sup> - HTTP `User-Agent` header for Schema Registry requests, default `Avrora/<version> Elixir`
-- `schemas_path` - Base path for locally stored schema files, default `./priv/schemas`
+- `registry_ssl_cacerts`<sup>[v0.28]</sup> - DER-encoded certificates, but [without combined support][12], default `nil`
+- `registry_ssl_cacert_path`<sup>[v0.28]</sup> - Path to a file containing PEM-encoded CA certificates, default `nil`
 - `registry_schemas_autoreg`<sup>[v0.13]</sup> - Flag for automatic schemas registration in the Schema Registry, default `true`
 - `convert_null_values`<sup>[v0.14]</sup> - Flag for automatic conversion of decoded `:null` values into `nil`, default `true`
 - `convert_map_to_proplist`<sup>[v0.15]</sup> restore old behaviour and confiugre decoding map-type to proplist, default `false`
@@ -145,6 +153,9 @@ when schemas containing [Confluent Schema References][8].<sup>[v0.14]</sup>
 recommended to set `otp_app` which will point to your OTP applications. This will allow you
 to have a per-client runtime resolution for all configuration options (i.e. `schemas_path`)
 with a fallback to staticly defined in a client itself.<sup>[v0.23]</sup>
+
+:bulb: If both `registry_ssl_cacerts` and `registry_ssl_cacert_path` given, then
+`registry_ssl_cacerts` has a priority.
 
 ## Start cache process
 
