@@ -331,10 +331,10 @@ defmodule Avrora.Storage.RegistryTest do
         assert url == "http://reg.loc/subjects/io.confluent.Payment/versions"
         assert payload == %{schema: ~s({"type":"unknown"})}
 
-        {:error, schema_incompatible_parsed_error()}
+        {:error, schema_invalid_parsed_error()}
       end)
 
-      assert Registry.put("io.confluent.Payment", ~s({"type":"unknown"})) == {:error, :conflict}
+      assert Registry.put("io.confluent.Payment", ~s({"type":"unknown"})) == {:error, :invalid_schema}
     end
 
     test "when request should send Authorization header" do
@@ -413,8 +413,8 @@ defmodule Avrora.Storage.RegistryTest do
     %{"error_code" => 40402, "message" => "Subject version not found!"}
   end
 
-  defp schema_incompatible_parsed_error do
-    %{"error_code" => 409, "message" => "Schema is incompatible!"}
+  defp schema_invalid_parsed_error do
+    %{"error_code" => 42201, "message" => "Invalid schema!"}
   end
 
   defp json_schema do
