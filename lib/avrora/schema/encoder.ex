@@ -11,6 +11,62 @@ defmodule Avrora.Schema.Encoder do
   @reference_lookup_fun &__MODULE__.reference_lookup/1
 
   @doc """
+  TODO: Write docs
+  """
+  # TODO: Rename, expand doesn't make it clear that it's only for schemas which
+  #       must be parsed and don't have any lookup table yet
+  # TODO: Write @spec
+  def xxx(%Schema{full_name: full_name, source: source} = schema, reference_lookup_fun \\ @reference_lookup_fun)
+      when is_binary(full_name) and is_binary(source) do
+    # TODO: Add guards around full_name and possibly new field representing original JSON schema
+    #       Let's name it `source` for now
+    #
+    # id: nil | integer(),
+    # version: nil | integer(),
+    # full_name: String.t(),
+    # json: String.t()
+
+    # 1. Parse recurcively to extract all the references
+    # 2. After it's done we have lookup table full of schemas
+    # 3. Now we can call expand on the lookup table to retrieve fully resolved schema
+    #    which we can use to parse the payload
+
+    lookup_table = ets().new()
+
+    with :ok <- register_recursive(schema, lookup_table, reference_lookup_fun),
+         {:ok, erlavro} <- do_compile(schema.full_name, lookup_table) do
+      # It could be that json field will be moved to be a method because of
+      # schema registry support of references. OR we should care about how
+      # to calculate it
+      {:ok, %{schema | lookup_table: lookup_table, json: to_json(erlavro)}}
+    else
+      {:error, reason} ->
+        true = :ets.delete(lookup_table)
+        {:error, reason}
+    end
+  end
+
+  # NOTE: register and resolve are the words
+  defp register_recursive(schema, lookup_table, reference_lookup_fun) do
+    with {:ok, erlavro} <- do_parse(schema.source),
+         {:ok, references} <- ReferenceCollector.collect(erlavro),
+         full_name <- if(:avro.is_named_type(erlavro), do: :undefined, else: schema.full_name),
+         lookup_table <- :avro_schema_store.add_type(full_name, erlavro, lookup_table) do
+      references
+      |> Enum.reject(&:avro_schema_store.lookup_type(&1, lookup_table))
+      |> Enum.map(fn reference -> reference_lookup_fun.(reference) |> unwrap!() end)
+      |> Enum.each(fn schema ->
+        register_recursive(schema, lookup_table, reference_lookup_fun) |> unwrap!()
+      end)
+
+      :ok
+    end
+  catch
+    # TODO: Improve error handling
+    error -> {:error, error}
+  end
+
+  @doc """
   Parse Avro schema JSON and convert to the Schema struct.
 
   ## Examples
@@ -48,7 +104,7 @@ defmodule Avrora.Schema.Encoder do
   An example of a reference lookup which returns empty JSON body
   """
   @spec reference_lookup(String.t()) :: {:ok, String.t()} | {:error, term()}
-  def reference_lookup(_), do: {:ok, ~s({})}
+  def reference_lookup(_), do: {:ok, %Schema{source: ~s({})}}
 
   @doc """
   Convert `erlavro` format to the Schema struct.
@@ -135,6 +191,7 @@ defmodule Avrora.Schema.Encoder do
     error -> {:error, error}
   end
 
+  defp unwrap!(:ok), do: :ok
   defp unwrap!({:ok, result}), do: result
   defp unwrap!({:error, error}), do: throw(error)
 
@@ -147,6 +204,7 @@ defmodule Avrora.Schema.Encoder do
     end
   end
 
+  # TODO: Rename to do_expand because it makes more sense
   # Compile complete version of the `erlavro` format with all references
   # being resolved, converting errors to error return
   defp do_compile(full_name, lookup_table) do
