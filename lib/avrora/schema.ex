@@ -11,7 +11,6 @@ defmodule Avrora.Schema do
           full_name: String.t(),
           lookup_table: reference(),
           json: String.t(),
-          # TODO: Remove nil, maybe call it `source_json`
-          source: nil | String.t()
+          source: String.t()
         }
 end

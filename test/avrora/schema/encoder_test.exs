@@ -7,9 +7,9 @@ defmodule Avrora.Schema.EncoderTest do
 
   setup :support_config
 
-  describe "xxx/2" do
+  describe "from_schema/2" do
     test "when schema is primitive type" do
-      {:ok, schema} = Schema.Encoder.xxx(string_schema())
+      {:ok, schema} = Schema.Encoder.from_schema(string_schema())
       {:ok, {type, type_name, _}} = Schema.Encoder.to_erlavro(schema)
 
       assert type == :avro_primitive_type
@@ -17,7 +17,7 @@ defmodule Avrora.Schema.EncoderTest do
     end
 
     test "when schema is Array type" do
-      {:ok, schema} = Schema.Encoder.xxx(array_schema())
+      {:ok, schema} = Schema.Encoder.from_schema(array_schema())
       {:ok, {type, {item_type, item_type_name, _}, _}} = Schema.Encoder.to_erlavro(schema)
 
       assert type == :avro_array_type
@@ -26,7 +26,7 @@ defmodule Avrora.Schema.EncoderTest do
     end
 
     test "when schema is Union type with primitives" do
-      {:ok, schema} = Schema.Encoder.xxx(union_schema())
+      {:ok, schema} = Schema.Encoder.from_schema(union_schema())
       {:ok, {type, {2, fields}, _}} = Schema.Encoder.to_erlavro(schema)
       {1, field1, {0, field2, _, _}, _} = fields
 
@@ -43,7 +43,7 @@ defmodule Avrora.Schema.EncoderTest do
 
     test "when schema is Union type with nested type ref" do
       {:ok, schema} =
-        Schema.Encoder.xxx(union_with_reference_schema(), fn name ->
+        Schema.Encoder.from_schema(union_with_reference_schema(), fn name ->
           case name do
             "io.confluent.Message" -> {:ok, message_with_reference_schema()}
             "io.confluent.Attachment" -> {:ok, attachment_schema()}
@@ -68,7 +68,7 @@ defmodule Avrora.Schema.EncoderTest do
     end
 
     test "when schema is Enum type" do
-      {:ok, schema} = Schema.Encoder.xxx(card_type_schema())
+      {:ok, schema} = Schema.Encoder.from_schema(card_type_schema())
       {:ok, {type, _, _, _, _, fields, full_name, _}} = Schema.Encoder.to_erlavro(schema)
 
       assert type == :avro_enum_type
@@ -80,7 +80,7 @@ defmodule Avrora.Schema.EncoderTest do
     end
 
     test "when payload is Fixed type" do
-      {:ok, schema} = Schema.Encoder.xxx(crc32_schema())
+      {:ok, schema} = Schema.Encoder.from_schema(crc32_schema())
       {:ok, {type, _, _, _, value, full_name, _}} = Schema.Encoder.to_erlavro(schema)
 
       assert type == :avro_fixed_type
@@ -92,7 +92,7 @@ defmodule Avrora.Schema.EncoderTest do
     end
 
     test "when schema is Record type with primitive fields types" do
-      {:ok, schema} = Schema.Encoder.xxx(payment_schema())
+      {:ok, schema} = Schema.Encoder.from_schema(payment_schema())
       {:ok, {type, _, _, _, _, fields, full_name, _}} = Schema.Encoder.to_erlavro(schema)
 
       assert type == :avro_record_type
@@ -105,7 +105,7 @@ defmodule Avrora.Schema.EncoderTest do
 
     test "when schema is Record type with nested type ref" do
       {:ok, schema} =
-        Schema.Encoder.xxx(message_with_reference_schema(), fn name ->
+        Schema.Encoder.from_schema(message_with_reference_schema(), fn name ->
           case name do
             "io.confluent.Attachment" -> {:ok, attachment_schema()}
             "io.confluent.Signature" -> {:ok, signature_schema()}
@@ -142,7 +142,7 @@ defmodule Avrora.Schema.EncoderTest do
 
     test "when schema is Record type with type ref of invalid schema" do
       result =
-        Schema.Encoder.xxx(message_with_reference_schema(), fn name ->
+        Schema.Encoder.from_schema(message_with_reference_schema(), fn name ->
           assert name == "io.confluent.Attachment"
           {:ok, %Schema{full_name: "io.confluent.Attachment", source: "{}"}}
         end)
@@ -152,7 +152,7 @@ defmodule Avrora.Schema.EncoderTest do
 
     test "when schema is Record type with type ref and resolution failed" do
       result =
-        Schema.Encoder.xxx(message_with_reference_schema(), fn name ->
+        Schema.Encoder.from_schema(message_with_reference_schema(), fn name ->
           assert name == "io.confluent.Attachment"
           {:error, :bad_thing_happen}
         end)
@@ -161,12 +161,12 @@ defmodule Avrora.Schema.EncoderTest do
     end
 
     test "when schema is Record type with type ref and lookup function given" do
-      assert {:error, {:not_found, "type"}} == Schema.Encoder.xxx(message_with_reference_schema())
+      assert {:error, {:not_found, "type"}} == Schema.Encoder.from_schema(message_with_reference_schema())
     end
 
     test "when schema is an invalid" do
-      assert Schema.Encoder.xxx(%Schema{full_name: "", source: "a:b"}) == {:error, "argument error"}
-      assert Schema.Encoder.xxx(%Schema{full_name: "", source: "{}"}) == {:error, {:not_found, "type"}}
+      assert Schema.Encoder.from_schema(%Schema{full_name: "", source: "a:b"}) == {:error, "argument error"}
+      assert Schema.Encoder.from_schema(%Schema{full_name: "", source: "{}"}) == {:error, {:not_found, "type"}}
     end
   end
 
