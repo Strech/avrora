@@ -8,6 +8,65 @@ defmodule Avrora.Schema.EncoderTest do
   setup :support_config
 
   describe "xxx/2" do
+    test "when schema is primitive type" do
+      {:ok, schema} = Schema.Encoder.xxx(string_schema())
+      {:ok, {type, type_name, _}} = Schema.Encoder.to_erlavro(schema)
+
+      assert type == :avro_primitive_type
+      assert type_name == "string"
+    end
+
+    test "when schema is Array type" do
+      {:ok, schema} = Schema.Encoder.xxx(array_schema())
+      {:ok, {type, {item_type, item_type_name, _}, _}} = Schema.Encoder.to_erlavro(schema)
+
+      assert type == :avro_array_type
+      assert item_type == :avro_primitive_type
+      assert item_type_name == "string"
+    end
+
+    test "when schema is Union type with primitives" do
+      {:ok, schema} = Schema.Encoder.xxx(union_schema())
+      {:ok, {type, {2, fields}, _}} = Schema.Encoder.to_erlavro(schema)
+      {1, field1, {0, field2, _, _}, _} = fields
+
+      assert type == :avro_union_type
+
+      {type, type_name, _} = field1
+      assert type == :avro_primitive_type
+      assert type_name == "int"
+
+      {type, type_name, _} = field2
+      assert type == :avro_primitive_type
+      assert type_name == "string"
+    end
+
+    test "when schema is Union type with nested type ref" do
+      {:ok, schema} =
+        Schema.Encoder.xxx(union_with_reference_schema(), fn name ->
+          case name do
+            "io.confluent.Message" -> {:ok, message_with_reference_schema()}
+            "io.confluent.Attachment" -> {:ok, attachment_schema()}
+            "io.confluent.Signature" -> {:ok, signature_schema()}
+            _ -> raise "unknown reference name!"
+          end
+        end)
+
+      {:ok, {type, {2, fields}, _}} = Schema.Encoder.to_erlavro(schema)
+      {1, field1, {0, field2, _, _}, _} = fields
+
+      assert type == :avro_union_type
+
+      {type, _, _, _, _, fields, full_name, _} = field1
+      assert type == :avro_record_type
+      assert full_name == "io.confluent.Message"
+      assert length(fields) == 2
+
+      {type, type_name, _} = field2
+      assert type == :avro_primitive_type
+      assert type_name == "string"
+    end
+
     test "when schema is Enum type" do
       {:ok, schema} = Schema.Encoder.xxx(card_type_schema())
       {:ok, {type, _, _, _, _, fields, full_name, _}} = Schema.Encoder.to_erlavro(schema)
@@ -151,10 +210,12 @@ defmodule Avrora.Schema.EncoderTest do
       assert schema.json == crc32_json()
     end
 
+    @tag :skip
     test "when payload is a valid Union schema of primitives" do
       assert 1 == "2"
     end
 
+    @tag :skip
     test "when payload is a valid Union scehma with external reference and callback returns valid schema" do
       assert 1 == "2"
     end
@@ -296,6 +357,22 @@ defmodule Avrora.Schema.EncoderTest do
     %Schema{full_name: "io.confluent.CRC32", source: crc32_json()}
   end
 
+  defp union_schema do
+    %Schema{full_name: "io.confluent.Union", source: union_json()}
+  end
+
+  defp union_with_reference_schema do
+    %Schema{full_name: "io.confluent.Union", source: union_with_reference_json()}
+  end
+
+  defp array_schema do
+    %Schema{full_name: "io.confluent.Array", source: array_json()}
+  end
+
+  defp string_schema do
+    %Schema{full_name: "io.confluent.String", source: string_json()}
+  end
+
   defp payment_erlavro do
     {:avro_record_type, "Payment", "io.confluent", "", [],
      [
@@ -306,6 +383,10 @@ defmodule Avrora.Schema.EncoderTest do
 
   defp unnamed_erlavro, do: {:avro_array_type, {:avro_primitive_type, "string", []}, []}
   defp unnamed_json, do: ~s({"type":"array","items":"string","default":[]})
+  defp union_json, do: ~s(["string", "int"])
+  defp union_with_reference_json, do: ~s(["string", "io.confluent.Message"])
+  defp string_json, do: ~s({"type": "string"})
+  defp array_json, do: ~s({"type":"array","items":"string","default":[]})
   defp crc32_json, do: ~s({"namespace":"io.confluent","name":"CRC32","type":"fixed","size":8})
 
   defp signature_json do
