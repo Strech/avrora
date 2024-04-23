@@ -169,6 +169,10 @@ defmodule Avrora.Schema.EncoderTest do
       assert {:error, :bad_thing_happen} == result
     end
 
+    test "when schema is primitive type without name" do
+      {:error, {:unnamed_type, _}} = Schema.Encoder.from_json(string_json())
+    end
+
     test "when schema is Record type with type ref and lookup function given" do
       assert {:error, :undefined_reference_lookup_function} ==
                Schema.Encoder.from_json(message_with_reference_json())
@@ -352,7 +356,6 @@ defmodule Avrora.Schema.EncoderTest do
   end
 
   defp unnamed_erlavro, do: {:avro_array_type, {:avro_primitive_type, "string", []}, []}
-  defp unnamed_json, do: ~s({"type":"array","items":"string","default":[]})
   defp union_json, do: ~s(["string", "int"])
   defp union_with_reference_json, do: ~s(["string", "io.acme.Message"])
   defp string_json, do: ~s({"type": "string"})
