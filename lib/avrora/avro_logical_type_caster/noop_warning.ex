@@ -1,0 +1,18 @@
+defmodule Avrora.AvroLogicalTypeCaster.NoopWarning do
+  @moduledoc """
+  This is no-op module used for unsupported logical types.
+  It keeps the original value untouched, but generated the warning.
+  """
+
+  @behaviour Avrora.AvroLogicalTypeCaster
+
+  require Logger
+
+  @impl true
+  def cast(value, type) do
+    {_, logical_type} = :avro.get_custom_props(type) |> List.keyfind("logicalType", 0)
+    Logger.warning("unsupported logical type `#{logical_type}', its value was not type casted")
+
+    {:ok, value}
+  end
+end

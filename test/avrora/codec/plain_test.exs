@@ -80,15 +80,15 @@ defmodule Avrora.Codec.PlainTest do
     test "when payload is a valid binary and null values must be as is" do
       stub(Avrora.ConfigMock, :convert_null_values, fn -> false end)
 
-      {:ok, decoded} = Codec.Plain.decode(null_value_message(), schema: null_value_schema())
+      {:ok, decoded} = Codec.Plain.decode(convertable_message(), schema: convertable_schema())
 
-      assert decoded == %{"key" => "user-1", "value" => :null}
+      assert decoded == %{"birthday" => ~D[2016-10-26], "guests" => :null}
     end
 
     test "when payload is a valid binary and null values must be converted" do
-      {:ok, decoded} = Codec.Plain.decode(null_value_message(), schema: null_value_schema())
+      {:ok, decoded} = Codec.Plain.decode(convertable_message(), schema: convertable_schema())
 
-      assert decoded == %{"key" => "user-1", "value" => nil}
+      assert decoded == %{"birthday" => ~D[2016-10-26], "guests" => nil}
     end
 
     test "when payload is a valid binary and map type must be decoded as proplist" do
@@ -134,6 +134,23 @@ defmodule Avrora.Codec.PlainTest do
 
       assert decoded_int == %{"union_field" => {"io.confluent.as_int", %{"value" => 42}}}
       assert decoded_str == %{"union_field" => {"io.confluent.as_str", %{"value" => "42"}}}
+    end
+
+    test "when decoding message and logical types must be as is" do
+      stub(Avrora.ConfigMock, :cast_logical_types, fn -> false end)
+
+      {:ok, decoded} = Codec.Plain.decode(convertable_message(), schema: convertable_schema())
+
+      assert decoded == %{"birthday" => 17100, "guests" => nil}
+    end
+
+    test "when decoding message and all types must be as is" do
+      stub(Avrora.ConfigMock, :convert_null_values, fn -> false end)
+      stub(Avrora.ConfigMock, :cast_logical_types, fn -> false end)
+
+      {:ok, decoded} = Codec.Plain.decode(convertable_message(), schema: convertable_schema())
+
+      assert decoded == %{"birthday" => 17100, "guests" => :null}
     end
   end
 
@@ -272,17 +289,12 @@ defmodule Avrora.Codec.PlainTest do
       48, 48, 48, 48, 48, 48, 48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64>>
   end
 
-  defp null_value_message, do: <<12, 117, 115, 101, 114, 45, 49, 0>>
+  defp convertable_message, do: <<152, 139, 2, 0>>
   defp map_message, do: <<1, 20, 6, 107, 101, 121, 10, 118, 97, 108, 117, 101, 0>>
   defp payment_payload, do: %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
 
   defp payment_schema do
     {:ok, schema} = Schema.Encoder.from_json(payment_json_schema())
-    %{schema | id: nil, version: nil}
-  end
-
-  defp null_value_schema do
-    {:ok, schema} = Schema.Encoder.from_json(null_value_json_schema())
     %{schema | id: nil, version: nil}
   end
 
@@ -306,12 +318,13 @@ defmodule Avrora.Codec.PlainTest do
     %{schema | id: nil, version: nil}
   end
 
-  defp payment_json_schema do
-    ~s({"namespace":"io.confluent","name":"Payment","type":"record","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
+  defp convertable_schema do
+    {:ok, schema} = Schema.Encoder.from_json(converterable_json_schema())
+    %{schema | id: nil, version: nil}
   end
 
-  defp null_value_json_schema do
-    ~s({"namespace":"io.confluent","name":"Null_Value","type":"record","fields":[{"name":"key","type":"string"},{"name":"value","type":["null","int"]}]})
+  defp payment_json_schema do
+    ~s({"namespace":"io.confluent","name":"Payment","type":"record","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
   end
 
   defp map_json_schema do
@@ -328,5 +341,9 @@ defmodule Avrora.Codec.PlainTest do
 
   defp union_json_schema do
     ~s({"namespace":"io.confluent","name":"Union_Value","type":"record","fields":[{"name":"union_field","type":[{"type":"record","name":"as_str","fields":[{"name":"value","type":"string"}]},{"type":"record","name":"as_int","fields":[{"name":"value","type":"int"}]}]}]})
+  end
+
+  defp converterable_json_schema do
+    ~s({"namespace":"io.confluent","name":"Converter","type":"record","fields":[{"name":"birthday","type":{"type":"int","logicalType":"date"}},{"name":"guests","type":["null","int"]}]})
   end
 end
