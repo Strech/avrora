@@ -36,9 +36,11 @@ defmodule Avrora.Storage.File do
       iex> schema.full_name
       "io.acme.Payment"
   """
+  # FIXME: change encoder from_json call with new arguments
+  #        don't forget to set the `name` of the schema!
   def get(key) when is_binary(key) do
     with {:ok, body} <- read_schema_file_by_name(key),
-         do: SchemaEncoder.from_json(body, &read_schema_file_by_name/1)
+         do: SchemaEncoder.from_json(body, reference_lookup_fun: &read_schema_file_by_name/1)
   end
 
   def get(key) when is_integer(key), do: {:error, :unsupported}
