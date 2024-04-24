@@ -22,7 +22,7 @@ defmodule Avrora.Storage.FileTest do
       assert schema.full_name == "io.confluent.Primitive"
     end
 
-    test "when schema file contains nested references with two io.confluent.Payment references" do
+    test "when schema file contains named type with nested references" do
       output =
         capture_log(fn ->
           {:ok, schema} = File.get("io.acme.Account")

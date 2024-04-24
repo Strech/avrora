@@ -39,7 +39,8 @@ defmodule Avrora.Storage.Registry do
          {:ok, version} <- Map.fetch(response, "version"),
          {:ok, schema} <- Map.fetch(response, "schema"),
          {:ok, references} <- extract_references(response),
-         {:ok, schema} <- SchemaEncoder.from_json(schema, make_reference_lookup_fun(references)) do
+         {:ok, schema} <-
+           SchemaEncoder.from_json(schema, name: name, reference_lookup_fun: make_reference_lookup_fun(references)) do
       Logger.debug("obtaining schema `#{schema_name.name}` with version `#{version}`")
 
       {:ok, %{schema | id: id, version: version}}
@@ -50,8 +51,12 @@ defmodule Avrora.Storage.Registry do
     with {:ok, response} <- http_client_get("schemas/ids/#{key}"),
          {:ok, schema} <- Map.fetch(response, "schema"),
          {:ok, references} <- extract_references(response),
-         {:ok, schema} <- SchemaEncoder.from_json(schema, make_reference_lookup_fun(references)) do
+         # TODO: Make it work !!! There is no such endpoint ONLY starting 5.4.0
+         # {:ok, response} <- http_client_get("schemas/ids/#{key}/versions"),
+         {:ok, schema} <- SchemaEncoder.from_json(schema, reference_lookup_fun: make_reference_lookup_fun(references)) do
       Logger.debug("obtaining schema with global id `#{key}`")
+      # TODO: Write logs
+      # Logger.debug("obtaining schema and subject with global id `#{key}`")
 
       {:ok, %{schema | id: key}}
     end
