@@ -7,8 +7,8 @@ defmodule Avrora.Schema.Encoder do
   alias Avrora.Schema
   alias Avrora.Schema.ReferenceCollector
 
-  @type reference_lookup_fun :: (String.t() -> {:ok, String.t()} | {:error, term()})
-  @default_name :undefined
+  @type reference_lookup_fun_t :: (String.t() -> {:ok, String.t()} | {:error, term()})
+  @undefined_name :undefined
   @reference_lookup_fun &__MODULE__.reference_lookup/1
 
   @doc """
@@ -21,29 +21,26 @@ defmodule Avrora.Schema.Encoder do
       iex> schema.full_name
       "io.acme.Payment"
   """
-  @spec from_json(String.t(), name: String.t(), reference_lookup_fun: reference_lookup_fun) ::
+  @spec from_json(String.t(), name: String.t(), reference_lookup_fun: reference_lookup_fun_t) ::
           {:ok, Schema.t()} | {:error, term()}
-  def from_json(definition, options \\ []) do
-    lookup_table = ets().new()
+  def from_json(definition, []),
+    do: from_json(definition, name: @undefined_name, reference_lookup_fun: @reference_lookup_fun)
 
-    name = Keyword.get(options, :name, @default_name)
-    reference_lookup_fun = Keyword.get(options, :reference_lookup_fun, @reference_lookup_fun)
+  def from_json(definition, name: name) when is_binary(name),
+    do: from_json(definition, name: name, reference_lookup_fun: @reference_lookup_fun)
+
+  def from_json(definition, reference_lookup_fun: reference_lookup_fun),
+    do: from_json(definition, name: @undefined_name, reference_lookup_fun: reference_lookup_fun)
+
+  def from_json(definition, name: name, reference_lookup_fun: reference_lookup_fun) do
+    lookup_table = ets().new()
 
     with {:ok, full_name} <- parse_recursive(definition, name, lookup_table, reference_lookup_fun),
          {:ok, erlavro} <- do_expand(full_name, lookup_table) do
       # NOTE: It could be that json field will be moved to be a method because of
       #       schema registry support of references. OR we should care about how
       #       to calculate it
-      {
-        :ok,
-        %Schema{
-          id: nil,
-          version: nil,
-          full_name: full_name,
-          lookup_table: lookup_table,
-          json: to_json(erlavro)
-        }
-      }
+      {:ok, %Schema{full_name: full_name, lookup_table: lookup_table, json: to_json(erlavro)}}
     else
       {:error, reason} ->
         true = :ets.delete(lookup_table)
@@ -77,22 +74,13 @@ defmodule Avrora.Schema.Encoder do
       "io.acme.Payment"
   """
   @spec from_erlavro(term(), keyword()) :: {:ok, Schema.t()} | {:error, term()}
-  def from_erlavro(schema, attributes \\ []) do
+  def from_erlavro(erlavro, attributes \\ []) do
     lookup_table = ets().new()
 
-    with {:ok, full_name} <- extract_full_name(schema),
-         lookup_table <- :avro_schema_store.add_type(schema, lookup_table),
-         json <- Keyword.get_lazy(attributes, :json, fn -> to_json(schema) end) do
-      {
-        :ok,
-        %Schema{
-          id: nil,
-          version: nil,
-          full_name: full_name,
-          lookup_table: lookup_table,
-          json: json
-        }
-      }
+    with {:ok, full_name} <- extract_full_name(erlavro),
+         lookup_table <- :avro_schema_store.add_type(erlavro, lookup_table),
+         json <- Keyword.get_lazy(attributes, :json, fn -> to_json(erlavro) end) do
+      {:ok, %Schema{full_name: full_name, lookup_table: lookup_table, json: json}}
     else
       {:error, reason} ->
         true = :ets.delete(lookup_table)
