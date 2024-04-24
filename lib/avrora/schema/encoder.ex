@@ -21,17 +21,18 @@ defmodule Avrora.Schema.Encoder do
       iex> schema.full_name
       "io.acme.Payment"
   """
-  @spec from_json(String.t(), name: String.t(), reference_lookup_fun: reference_lookup_fun_t) ::
-          {:ok, Schema.t()} | {:error, term()}
-  def from_json(definition, []),
+  @spec from_json(String.t()) :: {:ok, Schema.t()} | {:error, term()}
+  def from_json(definition),
     do: from_json(definition, name: @undefined_name, reference_lookup_fun: @reference_lookup_fun)
 
-  def from_json(definition, name: name) when is_binary(name),
+  def from_json(definition, name: name),
     do: from_json(definition, name: name, reference_lookup_fun: @reference_lookup_fun)
 
   def from_json(definition, reference_lookup_fun: reference_lookup_fun),
     do: from_json(definition, name: @undefined_name, reference_lookup_fun: reference_lookup_fun)
 
+  @spec from_json(String.t(), name: :undefined | String.t(), reference_lookup_fun: reference_lookup_fun_t()) ::
+          {:ok, Schema.t()} | {:error, term()}
   def from_json(definition, name: name, reference_lookup_fun: reference_lookup_fun) do
     lookup_table = ets().new()
 
@@ -105,7 +106,7 @@ defmodule Avrora.Schema.Encoder do
   def to_erlavro(%Schema{} = schema),
     do: do_expand(schema.full_name, schema.lookup_table)
 
-  defp to_json(schema), do: :avro_json_encoder.encode_type(schema)
+  defp to_json(erlavro), do: :avro_json_encoder.encode_type(erlavro)
 
   defp unwrap!({:ok, result}), do: result
   defp unwrap!({:error, error}), do: throw(error)
