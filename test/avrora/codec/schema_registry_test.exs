@@ -66,7 +66,7 @@ defmodule Avrora.Codec.SchemaRegistryTest do
       {:ok, schema} = Codec.SchemaRegistry.extract_schema(payment_message())
 
       assert schema.id == 42
-      assert schema.full_name == "io.confluent.Payment"
+      assert schema.full_name == "io.acme.Payment"
       assert schema.json == payment_json_schema()
     end
 
@@ -192,7 +192,7 @@ defmodule Avrora.Codec.SchemaRegistryTest do
           {:ok, decoded} =
             Codec.SchemaRegistry.decode(
               payment_message(),
-              schema: %Schema{id: 42, full_name: "io.confluent.Payment"}
+              schema: %Schema{id: 42, full_name: "io.acme.Payment"}
             )
 
           assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
@@ -217,18 +217,18 @@ defmodule Avrora.Codec.SchemaRegistryTest do
         {:ok, value}
       end)
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == payment_schema_with_id
 
         {:ok, value}
       end)
       |> expect(:expire, fn key, ttl ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert ttl == :infinity
 
         {:ok, :infinity}
@@ -241,7 +241,7 @@ defmodule Avrora.Codec.SchemaRegistryTest do
         {:error, :unknown_version}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == payment_json_schema()
 
         {:ok, payment_schema_with_id}
@@ -249,7 +249,7 @@ defmodule Avrora.Codec.SchemaRegistryTest do
 
       Storage.FileMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, payment_schema()}
       end)
@@ -259,7 +259,7 @@ defmodule Avrora.Codec.SchemaRegistryTest do
           {:ok, decoded} =
             Codec.SchemaRegistry.decode(
               payment_message(),
-              schema: %Schema{full_name: "io.confluent.Payment"}
+              schema: %Schema{full_name: "io.acme.Payment"}
             )
 
           assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
@@ -289,12 +289,12 @@ defmodule Avrora.Codec.SchemaRegistryTest do
 
       Storage.MemoryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == payment_schema
 
         {:ok, payment_schema}
@@ -302,7 +302,7 @@ defmodule Avrora.Codec.SchemaRegistryTest do
 
       Storage.RegistryMock
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == payment_json_schema()
 
         {:error, :unconfigured_registry_url}
@@ -310,7 +310,7 @@ defmodule Avrora.Codec.SchemaRegistryTest do
 
       Storage.FileMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, payment_schema}
       end)
@@ -324,7 +324,7 @@ defmodule Avrora.Codec.SchemaRegistryTest do
 
       Storage.MemoryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, nil}
       end)
@@ -335,13 +335,13 @@ defmodule Avrora.Codec.SchemaRegistryTest do
         {:ok, value}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == payment_schema_with_id
 
         {:ok, value}
       end)
       |> expect(:expire, fn key, ttl ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert ttl == :infinity
 
         {:ok, :infinity}
@@ -349,7 +349,7 @@ defmodule Avrora.Codec.SchemaRegistryTest do
 
       Storage.RegistryMock
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == payment_json_schema()
 
         {:ok, payment_schema_with_id}
@@ -357,7 +357,7 @@ defmodule Avrora.Codec.SchemaRegistryTest do
 
       Storage.FileMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, payment_schema}
       end)
@@ -373,7 +373,7 @@ defmodule Avrora.Codec.SchemaRegistryTest do
 
   defp missing_field_error do
     %ErlangError{
-      original: {:"$avro_encode_error", :required_field_missed, [record: "io.confluent.Payment", field: "id"]}
+      original: {:"$avro_encode_error", :required_field_missed, [record: "io.acme.Payment", field: "id"]}
     }
   end
 
@@ -388,7 +388,7 @@ defmodule Avrora.Codec.SchemaRegistryTest do
   end
 
   defp payment_json_schema do
-    ~s({"namespace":"io.confluent","name":"Payment","type":"record","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
+    ~s({"namespace":"io.acme","name":"Payment","type":"record","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
   end
 
   defp payment_payload, do: %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}

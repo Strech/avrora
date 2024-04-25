@@ -27,12 +27,12 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
 
       Storage.MemoryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value.json == payment_json_schema
 
         {:ok, value}
@@ -43,14 +43,14 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
       assert is_nil(schema.id)
       assert is_nil(schema.version)
 
-      assert schema.full_name == "io.confluent.Payment"
+      assert schema.full_name == "io.acme.Payment"
       assert schema.json == payment_json_schema
     end
 
     test "when payload is valid and contains schema which found in memory" do
       Storage.MemoryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, payment_schema()}
       end)
@@ -60,7 +60,7 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
       assert is_nil(schema.id)
       assert is_nil(schema.version)
 
-      assert schema.full_name == "io.confluent.Payment"
+      assert schema.full_name == "io.acme.Payment"
       assert schema.json == payment_json_schema()
     end
 
@@ -141,12 +141,12 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == payment_schema
 
         {:ok, value}
@@ -154,7 +154,7 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
 
       Avrora.Storage.RegistryMock
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == payment_json_schema()
 
         {:error, :unconfigured_registry_url}
@@ -162,7 +162,7 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
 
       Avrora.Storage.FileMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, payment_schema}
       end)
@@ -170,7 +170,7 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
       {:ok, encoded} =
         Codec.ObjectContainerFile.encode(
           payment_payload(),
-          schema: %Schema{full_name: "io.confluent.Payment"}
+          schema: %Schema{full_name: "io.acme.Payment"}
         )
 
       assert is_payment_ocf(encoded)
@@ -179,7 +179,7 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
 
   defp missing_field_error do
     %ErlangError{
-      original: {:"$avro_encode_error", :required_field_missed, [record: "io.confluent.Payment", field: "id"]}
+      original: {:"$avro_encode_error", :required_field_missed, [record: "io.acme.Payment", field: "id"]}
     }
   end
 
@@ -205,11 +205,11 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
   defp payment_payload, do: %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
 
   defp payment_json_schema do
-    ~s({"namespace":"io.confluent","name":"Payment","type":"record","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
+    ~s({"namespace":"io.acme","name":"Payment","type":"record","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
   end
 
   defp null_value_json_schema do
-    ~s({"namespace":"io.confluent","name":"Null_Value","type":"record","fields":[{"name":"key","type":"string"},{"name":"value","type":["null","int"]}]})
+    ~s({"namespace":"io.acme","name":"Null_Value","type":"record","fields":[{"name":"key","type":"string"},{"name":"value","type":["null","int"]}]})
   end
 
   defp payment_message do

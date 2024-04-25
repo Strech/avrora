@@ -1,6 +1,6 @@
 defmodule Avrora.Schema.Name do
   @moduledoc """
-  Struct for versioned schema names like `io.confluent.Payment:42`.
+  Struct for versioned schema names like `io.acme.Payment:42`.
   """
 
   defstruct [:origin, :name, :version]
@@ -20,8 +20,8 @@ defmodule Avrora.Schema.Name do
 
       iex> Avrora.Schema.Name.parse("Payment")
       {:ok, %Avrora.Schema.Name{origin: "Payment", name: "Payment", version: nil}}
-      iex> Avrora.Schema.Name.parse("io.confluent.Payment:42")
-      {:ok, %Avrora.Schema.Name{origin: "io.confluent.Payment:42", name: "io.confluent.Payment", version: 42}}
+      iex> Avrora.Schema.Name.parse("io.acme.Payment:42")
+      {:ok, %Avrora.Schema.Name{origin: "io.acme.Payment:42", name: "io.acme.Payment", version: 42}}
   """
   @spec parse(String.t()) :: {:ok, t()} | {:error, term()}
   def parse(payload) when is_binary(payload) do

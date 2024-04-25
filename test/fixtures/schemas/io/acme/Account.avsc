@@ -1,22 +1,22 @@
 {
   "type": "record",
   "name": "Account",
-  "namespace": "io.confluent",
+  "namespace": "io.acme",
   "aliases": ["Profile"],
   "fields": [
     {
       "name": "payment_history",
-      "type": "io.confluent.PaymentHistory"
+      "type": "io.acme.PaymentHistory"
     },
     {
       "name": "messenger",
-      "type": "io.confluent.Messenger"
+      "type": "io.acme.Messenger"
     },
     {
       "name": "emails",
       "type": {
         "type": "map",
-        "values": "io.confluent.Email"
+        "values": "io.acme.Email"
       }
     },
     {

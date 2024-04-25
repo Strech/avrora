@@ -1,7 +1,7 @@
 {
   "type": "record",
   "name": "Payment",
-  "namespace": "io.confluent",
+  "namespace": "io.acme",
   "fields": [
     {
       "name": "id",

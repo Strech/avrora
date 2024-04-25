@@ -15,10 +15,10 @@ defmodule Avrora.Schema.Encoder do
 
   ## Examples
 
-      iex> json = ~s({"namespace":"io.confluent","type":"record","name":"Payment","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
+      iex> json = ~s({"namespace":"io.acme","type":"record","name":"Payment","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
       iex> {:ok, schema} = Avrora.Schema.Encoder.from_json(json)
       iex> schema.full_name
-      "io.confluent.Payment"
+      "io.acme.Payment"
   """
   @spec from_json(String.t(), reference_lookup_fun) :: {:ok, Schema.t()} | {:error, term()}
   def from_json(payload, reference_lookup_fun \\ @reference_lookup_fun) when is_binary(payload) do
@@ -56,18 +56,18 @@ defmodule Avrora.Schema.Encoder do
   ## Examples
 
       iex> payload =
-      ...>   {:avro_record_type, "Payment", "io.confluent", "", [],
+      ...>   {:avro_record_type, "Payment", "io.acme", "", [],
       ...>        [
       ...>          {:avro_record_field, "id", "", {:avro_primitive_type, "string", []}, :undefined,
       ...>           :ascending, []},
       ...>          {:avro_record_field, "amount", "", {:avro_primitive_type, "double", []}, :undefined,
       ...>           :ascending, []}
-      ...>        ], "io.confluent.Payment", []}
+      ...>        ], "io.acme.Payment", []}
       iex> {:ok, schema} = Avrora.Schema.Encoder.from_erlavro(payload)
       iex> schema.id
       nil
       iex> schema.full_name
-      "io.confluent.Payment"
+      "io.acme.Payment"
   """
   @spec from_erlavro(term(), keyword()) :: {:ok, Schema.t()} | {:error, term()}
   def from_erlavro(schema, attributes \\ []) do
@@ -98,11 +98,11 @@ defmodule Avrora.Schema.Encoder do
 
   ## Examples
 
-      iex> json = ~s({"namespace":"io.confluent","type":"record","name":"Payment","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
+      iex> json = ~s({"namespace":"io.acme","type":"record","name":"Payment","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
       iex> {:ok, schema} = Avrora.Schema.Encoder.from_json(json)
       iex> {:ok, {type, _, _, _, _, _, full_name, _}} = Avrora.Schema.Encoder.to_erlavro(schema)
       iex> full_name
-      "io.confluent.Payment"
+      "io.acme.Payment"
       iex> type
       :avro_record_type
   """

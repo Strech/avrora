@@ -15,14 +15,14 @@ defmodule Avrora.Utils.RegistrarTest do
     test "when registry is not configured" do
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, nil}
       end)
 
       Avrora.Storage.RegistryMock
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == json_schema()
 
         {:error, :unconfigured_registry_url}
@@ -34,7 +34,7 @@ defmodule Avrora.Utils.RegistrarTest do
     test "when schema was found in memory" do
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, schema_with_id()}
       end)
@@ -43,7 +43,7 @@ defmodule Avrora.Utils.RegistrarTest do
 
       assert schema.id == 1
       assert is_nil(schema.version)
-      assert schema.full_name == "io.confluent.Payment"
+      assert schema.full_name == "io.acme.Payment"
     end
 
     test "when schema should be registered under specific name" do
@@ -51,7 +51,7 @@ defmodule Avrora.Utils.RegistrarTest do
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, nil}
       end)
@@ -62,13 +62,13 @@ defmodule Avrora.Utils.RegistrarTest do
         {:ok, value}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == schema_with_id
 
         {:ok, value}
       end)
       |> expect(:expire, fn key, ttl ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert ttl == :infinity
 
         {:ok, :infinity}
@@ -86,7 +86,7 @@ defmodule Avrora.Utils.RegistrarTest do
 
       assert schema.id == 1
       assert is_nil(schema.version)
-      assert schema.full_name == "io.confluent.Payment"
+      assert schema.full_name == "io.acme.Payment"
     end
 
     test "when schema was found in memory and forced to be registered" do
@@ -100,13 +100,13 @@ defmodule Avrora.Utils.RegistrarTest do
         {:ok, value}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == schema_with_id
 
         {:ok, value}
       end)
       |> expect(:expire, fn key, ttl ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert ttl == :infinity
 
         {:ok, :infinity}
@@ -114,7 +114,7 @@ defmodule Avrora.Utils.RegistrarTest do
 
       Avrora.Storage.RegistryMock
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == json_schema()
 
         {:ok, schema_with_id}
@@ -124,7 +124,7 @@ defmodule Avrora.Utils.RegistrarTest do
 
       assert schema.id == 1
       assert is_nil(schema.version)
-      assert schema.full_name == "io.confluent.Payment"
+      assert schema.full_name == "io.acme.Payment"
     end
 
     test "when schema contains version and was not found in memory" do
@@ -132,7 +132,7 @@ defmodule Avrora.Utils.RegistrarTest do
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment:2"
+        assert key == "io.acme.Payment:2"
 
         {:ok, nil}
       end)
@@ -143,13 +143,13 @@ defmodule Avrora.Utils.RegistrarTest do
         {:ok, value}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == schema_with_id
 
         {:ok, value}
       end)
       |> expect(:expire, fn key, ttl ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert ttl == :infinity
 
         {:ok, :infinity}
@@ -157,7 +157,7 @@ defmodule Avrora.Utils.RegistrarTest do
 
       Avrora.Storage.RegistryMock
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment:2"
+        assert key == "io.acme.Payment:2"
         assert value == json_schema()
 
         {:ok, schema_with_id}
@@ -169,10 +169,10 @@ defmodule Avrora.Utils.RegistrarTest do
 
           assert schema.id == 1
           assert is_nil(schema.version)
-          assert schema.full_name == "io.confluent.Payment"
+          assert schema.full_name == "io.acme.Payment"
         end)
 
-      assert output =~ "schema `io.confluent.Payment` will be always resolved from memory"
+      assert output =~ "schema `io.acme.Payment` will be always resolved from memory"
     end
 
     test "when schema contains id and was not found in memory" do
@@ -180,7 +180,7 @@ defmodule Avrora.Utils.RegistrarTest do
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, nil}
       end)
@@ -191,13 +191,13 @@ defmodule Avrora.Utils.RegistrarTest do
         {:ok, value}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == schema_with_id
 
         {:ok, value}
       end)
       |> expect(:expire, fn key, ttl ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert ttl == :infinity
 
         {:ok, :infinity}
@@ -205,7 +205,7 @@ defmodule Avrora.Utils.RegistrarTest do
 
       Avrora.Storage.RegistryMock
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == json_schema()
 
         {:ok, schema_with_id}
@@ -215,7 +215,7 @@ defmodule Avrora.Utils.RegistrarTest do
 
       assert schema.id == 1
       assert is_nil(schema.version)
-      assert schema.full_name == "io.confluent.Payment"
+      assert schema.full_name == "io.acme.Payment"
     end
   end
 
@@ -223,34 +223,34 @@ defmodule Avrora.Utils.RegistrarTest do
     test "when schema files was not found" do
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, nil}
       end)
 
       Avrora.Storage.FileMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:error, :enoent}
       end)
 
-      assert Registrar.register_schema_by_name("io.confluent.Payment") == {:error, :enoent}
+      assert Registrar.register_schema_by_name("io.acme.Payment") == {:error, :enoent}
     end
 
     test "when schema was found in memory" do
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, schema_with_id()}
       end)
 
-      {:ok, schema} = Registrar.register_schema_by_name("io.confluent.Payment")
+      {:ok, schema} = Registrar.register_schema_by_name("io.acme.Payment")
 
       assert schema.id == 1
       assert is_nil(schema.version)
-      assert schema.full_name == "io.confluent.Payment"
+      assert schema.full_name == "io.acme.Payment"
     end
 
     test "when schema should be registered under specific name" do
@@ -258,7 +258,7 @@ defmodule Avrora.Utils.RegistrarTest do
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, nil}
       end)
@@ -269,13 +269,13 @@ defmodule Avrora.Utils.RegistrarTest do
         {:ok, value}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == schema_with_id
 
         {:ok, value}
       end)
       |> expect(:expire, fn key, ttl ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert ttl == :infinity
 
         {:ok, :infinity}
@@ -291,16 +291,16 @@ defmodule Avrora.Utils.RegistrarTest do
 
       Avrora.Storage.FileMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, schema_without_id_and_version()}
       end)
 
-      {:ok, schema} = Registrar.register_schema_by_name("io.confluent.Payment", as: "MyCustomName")
+      {:ok, schema} = Registrar.register_schema_by_name("io.acme.Payment", as: "MyCustomName")
 
       assert schema.id == 1
       assert is_nil(schema.version)
-      assert schema.full_name == "io.confluent.Payment"
+      assert schema.full_name == "io.acme.Payment"
     end
 
     test "when schema was found in memory and forced to be registered" do
@@ -314,13 +314,13 @@ defmodule Avrora.Utils.RegistrarTest do
         {:ok, value}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == schema_with_id
 
         {:ok, value}
       end)
       |> expect(:expire, fn key, ttl ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert ttl == :infinity
 
         {:ok, :infinity}
@@ -328,7 +328,7 @@ defmodule Avrora.Utils.RegistrarTest do
 
       Avrora.Storage.RegistryMock
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == json_schema()
 
         {:ok, schema_with_id}
@@ -336,16 +336,16 @@ defmodule Avrora.Utils.RegistrarTest do
 
       Avrora.Storage.FileMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, schema_without_id_and_version()}
       end)
 
-      {:ok, schema} = Registrar.register_schema_by_name("io.confluent.Payment", force: true)
+      {:ok, schema} = Registrar.register_schema_by_name("io.acme.Payment", force: true)
 
       assert schema.id == 1
       assert is_nil(schema.version)
-      assert schema.full_name == "io.confluent.Payment"
+      assert schema.full_name == "io.acme.Payment"
     end
   end
 
@@ -365,6 +365,6 @@ defmodule Avrora.Utils.RegistrarTest do
   end
 
   defp json_schema do
-    ~s({"namespace":"io.confluent","name":"Payment","type":"record","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
+    ~s({"namespace":"io.acme","name":"Payment","type":"record","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
   end
 end

@@ -12,9 +12,9 @@ defmodule Avrora.Resolver do
 
   ## Examples
 
-      ...> {:ok, schema} = Avrora.Resolver.resolve_any([1, "io.confluent.Payment"])
+      ...> {:ok, schema} = Avrora.Resolver.resolve_any([1, "io.acme.Payment"])
       ...> schema.full_name
-      "io.confluent.Payment"
+      "io.acme.Payment"
   """
   @spec resolve_any(nonempty_list(integer() | String.t())) :: {:ok, Avrora.Schema.t()} | {:error, term()}
   def resolve_any(ids) do
@@ -40,27 +40,27 @@ defmodule Avrora.Resolver do
 
       ...> {:ok, schema} = Avrora.Resolver.resolve(1)
       ...> schema.full_name
-      "io.confluent.Payment"
+      "io.acme.Payment"
 
   In case of a string name it stores schema in memory with key `name` and `name:version`,
   also adds schema to the Schema Registry (if it's configured).
 
   A version for the name can be provided by adding `:` with the version number,
-  e.g. `io.confluent.Payment:5`. If the Schema Registry is configured (`:registry_url`),
+  e.g. `io.acme.Payment:5`. If the Schema Registry is configured (`:registry_url`),
   it will first try fetch there, then local schemas folder (`:schemas_path`).
 
   ## Examples
 
-      ...> {:ok, schema1} = Avrora.Resolver.resolve("io.confluent.Payment")
-      ...> {:ok, schema2} = Avrora.Resolver.resolve("io.confluent.Payment:42")
+      ...> {:ok, schema1} = Avrora.Resolver.resolve("io.acme.Payment")
+      ...> {:ok, schema2} = Avrora.Resolver.resolve("io.acme.Payment:42")
       ...> schema1.version
       42
       ...> schema2.version
       42
       ...> schema1.full_name
-      "io.confluent.Payment"
+      "io.acme.Payment"
       ...> schema.full_name
-      "io.confluent.Payment"
+      "io.acme.Payment"
 
   """
   @spec resolve(integer() | String.t()) :: {:ok, Avrora.Schema.t()} | {:error, term()}
