@@ -25,8 +25,9 @@ defmodule Avrora.Codec.Plain do
     with {:ok, schema} <- resolve(schema), do: do_decode(payload, schema)
   end
 
+  # FIXME payload could be anything? We need a type!
   @impl true
-  def encode(payload, schema: schema) when is_binary(payload) or is_map(payload) do
+  def encode(payload, schema: schema) do
     with {:ok, schema} <- resolve(schema), do: do_encode(payload, schema)
   end
 
