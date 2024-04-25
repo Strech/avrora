@@ -127,7 +127,6 @@ defmodule Avrora.Schema.Encoder do
       {:ok, full_name}
     end
   catch
-    # TODO: Improve error handling
     error -> {:error, error}
   end
 
@@ -147,18 +146,11 @@ defmodule Avrora.Schema.Encoder do
     error in ErlangError -> {:error, error.original}
   end
 
-  # FIXME
-  # iex(7)> json = ~s(["int", "string", null])
-  # "[\"int\", \"string\", null]"
-  # iex(8)> {:ok, schema} = Avrora.Schema.Encoder.from_json(json, name: "my.schema.String")
-  # ** (KeyError) key :original not found in: %FunctionClauseError{args: nil, arity: 1, clauses: nil, function: :parse_schema, kind: nil, module: :avro_json_decoder}
-  #     (avrora 0.28.0) lib/avrora/schema/encoder.ex:155: Avrora.Schema.Encoder.do_parse/1
-  #     (avrora 0.28.0) lib/avrora/schema/encoder.ex:115: Avrora.Schema.Encoder.parse_recursive/4
-  #     (avrora 0.28.0) lib/avrora/schema/encoder.ex:39: Avrora.Schema.Encoder.from_json/2
   # Parse schema to `erlavro` format, converting errors to error return
   defp do_parse(payload) do
     {:ok, :avro_json_decoder.decode_schema(payload, allow_bad_references: true)}
   rescue
+    _ in FunctionClauseError -> {:error, :invalid_schema}
     error in ArgumentError -> {:error, error.message}
     error in ErlangError -> {:error, error.original}
   end
