@@ -8,7 +8,6 @@ defmodule Avrora.Storage.FileTest do
 
   setup :support_config
 
-  # TODO: Add test for primitive schema
   describe "get/1" do
     test "when schema file contains named type" do
       {:ok, schema} = File.get("io.acme.Payment")
