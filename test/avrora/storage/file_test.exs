@@ -15,13 +15,6 @@ defmodule Avrora.Storage.FileTest do
       assert schema.full_name == "io.acme.Payment"
     end
 
-    @tag :skip
-    test "when schema file contains unnamed type" do
-      {:ok, schema} = File.get("io.acme.Primitive")
-
-      assert schema.full_name == "io.acme.Primitive"
-    end
-
     test "when schema file contains named type with nested references" do
       output =
         capture_log(fn ->

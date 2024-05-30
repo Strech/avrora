@@ -136,30 +136,6 @@ defmodule Avrora.Storage.RegistryTest do
       assert schema.full_name == "io.acme.Payment"
     end
 
-    @tag :skip
-    test "when requesting by subject name and schema is unnamed type" do
-      Avrora.HTTPClientMock
-      |> expect(:get, fn url, _ ->
-        assert url == "http://reg.loc/subjects/io.acme.Primitive/versions/latest"
-
-        {
-          :ok,
-          %{
-            "id" => 42,
-            "version" => 1,
-            "schema" => json_schema_unnamed(),
-            "subject" => "io.acme.Primitive"
-          }
-        }
-      end)
-
-      {:ok, schema} = Registry.get("io.acme.Primitive")
-
-      assert schema.id == 42
-      assert schema.version == 1
-      assert schema.full_name == "io.acme.Primitive"
-    end
-
     test "when requesting by subject name failed" do
       Avrora.HTTPClientMock
       |> expect(:get, fn url, _ ->
@@ -223,7 +199,7 @@ defmodule Avrora.Storage.RegistryTest do
         {
           :ok,
           %{
-            "subject" => "io.confluent.Account",
+            "subject" => "io.acme.Account",
             "id" => 43,
             "version" => 1,
             "schema" => json_schema_with_reference(),
@@ -253,7 +229,7 @@ defmodule Avrora.Storage.RegistryTest do
 
       assert schema.id == 43
       assert is_nil(schema.version)
-      assert schema.full_name == "io.confluent.Account"
+      assert schema.full_name == "io.acme.Account"
       assert schema.json == json_schema_with_reference_denormalized()
     end
 
