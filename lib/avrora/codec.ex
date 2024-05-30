@@ -29,7 +29,7 @@ defmodule Avrora.Codec do
       ...> schema.id
       42
       ...> schema.full_name
-      "io.confluent.Payment"
+      "io.acme.Payment"
   """
   @callback extract_schema(payload :: binary()) :: {:ok, result :: Avrora.Schema.t()} | {:error, reason :: term()}
 
@@ -55,7 +55,7 @@ defmodule Avrora.Codec do
       ...> payload = <<72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48, 48, 48, 48,
       45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 48, 48, 48,
       48, 48, 48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64>>
-      ...> {:ok, schema} = Avrora.Resolver.resolve("io.confluent.Payment")
+      ...> {:ok, schema} = Avrora.Resolver.resolve("io.acme.Payment")
       ...> Avrora.Codec.Plain.decode(payload, schema: schema)
       {:ok, %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}}
 
@@ -69,7 +69,7 @@ defmodule Avrora.Codec do
   ## Examples
 
       ...> payload = %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
-      ...> {:ok, schema} = Avrora.Resolver.resolve("io.confluent.Payment")
+      ...> {:ok, schema} = Avrora.Resolver.resolve("io.acme.Payment")
       ...> Avrora.Codec.Plain.encode(payload, schema: schema)
       <<72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48,
       48, 45, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64>>

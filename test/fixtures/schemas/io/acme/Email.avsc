@@ -1,7 +1,7 @@
 {
   "type": "record",
   "name": "Email",
-  "namespace": "io.confluent",
+  "namespace": "io.acme",
   "fields": [
     {
       "name": "address",

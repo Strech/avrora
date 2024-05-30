@@ -29,13 +29,13 @@ defmodule Mix.Tasks.Avrora.Reg.Schema do
   The `--appconfig` option expects just application config file name without an extension
   and will load it additionally to default. Note: runtime config doesn't support imports!
 
-  For example, if the schema name is `io.confluent.Payment` it should be stored
-  as `<schemas path>/io/confluent/Payment.avsc`
+  For example, if the schema name is `io.acme.Payment` it should be stored
+  as `<schemas path>/io/acme/Payment.avsc`
 
   ## Usage
 
-      mix avrora.reg.schema --name io.confluent.Payment
-      mix avrora.reg.schema --name io.confluent.Payment --as MyCustomName
+      mix avrora.reg.schema --name io.acme.Payment
+      mix avrora.reg.schema --name io.acme.Payment --as MyCustomName
       mix avrora.reg.schema --all --appconfig runtime
       mix avrora.reg.schema --all --module MyClient
       mix avrora.reg.schema --all

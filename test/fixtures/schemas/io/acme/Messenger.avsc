@@ -1,7 +1,7 @@
 {
   "type": "record",
   "name": "Messenger",
-  "namespace": "io.confluent",
+  "namespace": "io.acme",
   "fields": [
     {
       "name": "inbox",
@@ -25,9 +25,9 @@
             {
               "name": "attachment",
               "type": [
-                "io.confluent.File",
-                "io.confluent.Image",
-                "io.confluent.Payment"
+                "io.acme.File",
+                "io.acme.Image",
+                "io.acme.Payment"
               ]
             }
           ]
@@ -38,7 +38,7 @@
       "name": "archive",
       "type": {
         "type": "array",
-        "items": "io.confluent.Message"
+        "items": "io.acme.Message"
       }
     }
   ]

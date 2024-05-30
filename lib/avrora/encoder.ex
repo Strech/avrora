@@ -20,7 +20,7 @@ defmodule Avrora.Encoder do
       ...> schema.id
       42
       ...> schema.full_name
-      "io.confluent.Payment"
+      "io.acme.Payment"
   """
   @spec extract_schema(binary()) :: {:ok, Schema.t()} | {:error, term()}
   def extract_schema(payload) when is_binary(payload) do
@@ -59,7 +59,7 @@ defmodule Avrora.Encoder do
       ...> payload = <<72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45,
       48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 48, 48, 48, 48, 48,
       48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64>>
-      ...> Avrora.Encoder.decode(payload, schema_name: "io.confluent.Payment")
+      ...> Avrora.Encoder.decode(payload, schema_name: "io.acme.Payment")
       {:ok, %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}}
   """
   @spec decode(binary(), schema_name: String.t()) :: {:ok, map() | list(map())} | {:error, term()}
@@ -91,7 +91,7 @@ defmodule Avrora.Encoder do
   ## Examples
 
       ...> payload = <<0, 232, 220, 144, 233, 11, 200, 1>>
-      ...> Avrora.Encoder.decode_plain(payload,"io.confluent.NumericTransfer")
+      ...> Avrora.Encoder.decode_plain(payload,"io.acme.NumericTransfer")
       {:ok, %{"link_is_enabled" => false, "updated_at" => 1586632500, "updated_by_id" => 100}
   """
   @spec decode_plain(binary(), schema_name: String.t()) :: {:ok, map()} | {:error, term()}
@@ -127,7 +127,7 @@ defmodule Avrora.Encoder do
   ## Examples
 
       ...> payload = %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
-      ...> Avrora.Encoder.encode(payload, schema_name: "io.confluent.Payment", format: :plain)
+      ...> Avrora.Encoder.encode(payload, schema_name: "io.acme.Payment", format: :plain)
       {:ok, <<72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45,
             48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 48, 48, 48, 48, 48,
             48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64>>}
@@ -174,7 +174,7 @@ defmodule Avrora.Encoder do
   ## Examples
 
       ...> payload = %{"link_is_enabled" => false, "updated_at" => 1586632500, "updated_by_id" => 100}
-      ...> Avrora.Encoder.encode_plain(payload,"io.confluent.NumericTransfer")
+      ...> Avrora.Encoder.encode_plain(payload,"io.acme.NumericTransfer")
       {:ok, <<0, 232, 220, 144, 233, 11, 200, 1>>}
   """
   @spec encode_plain(map(), schema_name: String.t()) :: {:ok, binary()} | {:error, term()}

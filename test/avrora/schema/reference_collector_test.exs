@@ -14,25 +14,25 @@ defmodule Avrora.Schema.ReferenceCollectorTest do
     test "when schema contains primitive and reference types" do
       {:ok, references} = ReferenceCollector.collect(record_with_reference())
 
-      assert Enum.sort(references) == Enum.sort(~w(io.confluent.PaymentHistory io.confluent.Message))
+      assert Enum.sort(references) == Enum.sort(~w(io.acme.PaymentHistory io.acme.Message))
     end
 
     test "when schema contains primitive, sub-type and alias reference" do
       {:ok, references} = ReferenceCollector.collect(record_with_alias_reference())
 
-      assert references == Enum.sort(~w(io.confluent.PaymentHistory))
+      assert references == Enum.sort(~w(io.acme.PaymentHistory))
     end
 
     test "when schema contains maps" do
       {:ok, references} = ReferenceCollector.collect(record_with_map())
 
-      assert references == ~w(io.confluent.Payment)
+      assert references == ~w(io.acme.Payment)
     end
 
     test "when schema contains arrays" do
       {:ok, references} = ReferenceCollector.collect(record_with_array())
 
-      assert references == ~w(io.confluent.Payment)
+      assert references == ~w(io.acme.Payment)
     end
 
     test "when schema contains enums" do
@@ -44,7 +44,7 @@ defmodule Avrora.Schema.ReferenceCollectorTest do
     test "when schema contains unions" do
       {:ok, references} = ReferenceCollector.collect(record_with_union())
 
-      assert references == ~w(io.confluent.Image)
+      assert references == ~w(io.acme.Image)
     end
 
     test "when schema contains fixed" do
@@ -65,7 +65,7 @@ defmodule Avrora.Schema.ReferenceCollectorTest do
       {
         "type": "record",
         "name": "Image",
-        "namespace": "io.confluent",
+        "namespace": "io.acme",
         "fields": [
           {
             "name": "blob",
@@ -85,13 +85,13 @@ defmodule Avrora.Schema.ReferenceCollectorTest do
       {
         "type": "record",
         "name": "Message",
-        "namespace": "io.confluent",
+        "namespace": "io.acme",
         "fields": [
           {
             "name": "attachment",
             "type": [
               "string",
-              "io.confluent.Image",
+              "io.acme.Image",
               {
                 "type": "record",
                 "name": "Contact",
@@ -109,7 +109,7 @@ defmodule Avrora.Schema.ReferenceCollectorTest do
       {
         "type": "record",
         "name": "Image",
-        "namespace": "io.confluent",
+        "namespace": "io.acme",
         "fields": [
           {
             "name": "orientation",
@@ -129,11 +129,11 @@ defmodule Avrora.Schema.ReferenceCollectorTest do
       {
         "type": "record",
         "name": "Account",
-        "namespace": "io.confluent",
+        "namespace": "io.acme",
         "fields": [
           {
             "name": "payment_history",
-            "type": {"type": "array", "items": "io.confluent.Payment"}
+            "type": {"type": "array", "items": "io.acme.Payment"}
           },
           {
             "name": "colors",
@@ -160,7 +160,7 @@ defmodule Avrora.Schema.ReferenceCollectorTest do
       {
         "type": "record",
         "name": "Account",
-        "namespace": "io.confluent",
+        "namespace": "io.acme",
         "fields": [
           {
             "name": "tags",
@@ -173,7 +173,7 @@ defmodule Avrora.Schema.ReferenceCollectorTest do
             "name": "payment_history",
             "type": {
               "type": "map",
-              "values": "io.confluent.Payment"
+              "values": "io.acme.Payment"
             }
           },
           {
@@ -198,11 +198,11 @@ defmodule Avrora.Schema.ReferenceCollectorTest do
       {
         "type": "record",
         "name": "Account",
-        "namespace": "io.confluent",
+        "namespace": "io.acme",
         "fields": [
           {"name": "id", "type": "int"},
-          {"name": "payment_history", "type": "io.confluent.PaymentHistory"},
-          {"name": "letters", "type": {"type": "array", "items": "io.confluent.Letter"}},
+          {"name": "payment_history", "type": "io.acme.PaymentHistory"},
+          {"name": "letters", "type": {"type": "array", "items": "io.acme.Letter"}},
           {
             "name": "messages",
             "type": {
@@ -225,11 +225,11 @@ defmodule Avrora.Schema.ReferenceCollectorTest do
       {
         "type": "record",
         "name": "Account",
-        "namespace": "io.confluent",
+        "namespace": "io.acme",
         "fields": [
           {"name": "id", "type": "int"},
-          {"name": "payment_history", "type": "io.confluent.PaymentHistory"},
-          {"name": "messages", "type": {"type": "array", "items": "io.confluent.Message"}}
+          {"name": "payment_history", "type": "io.acme.PaymentHistory"},
+          {"name": "messages", "type": {"type": "array", "items": "io.acme.Message"}}
         ]
       }
     ) |> decode_schema()
@@ -240,7 +240,7 @@ defmodule Avrora.Schema.ReferenceCollectorTest do
       {
         "type": "record",
         "name": "Payment",
-        "namespace": "io.confluent",
+        "namespace": "io.acme",
         "aliases": ["Transfer"],
         "fields": [
           {"name": "id", "type": "string"},

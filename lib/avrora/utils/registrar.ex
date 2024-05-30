@@ -14,7 +14,7 @@ defmodule Avrora.Utils.Registrar do
 
         def loop do
           Enum.reduce_while(1..100, 0, fn x, acc ->
-            if x < 100, do: {:cont, register("io.confluent.Payment")}, else: {:halt, acc}
+            if x < 100, do: {:cont, register("io.acme.Payment")}, else: {:halt, acc}
           end)
         end
 
@@ -40,9 +40,9 @@ defmodule Avrora.Utils.Registrar do
 
   ## Examples
 
-      ...> {:ok, schema} = Avrora.Utils.Registrar.register_schema_by_name("io.confluent.Payment", as: "NewName", force: true)
+      ...> {:ok, schema} = Avrora.Utils.Registrar.register_schema_by_name("io.acme.Payment", as: "NewName", force: true)
       ...> schema.full_name
-      "io.confluent.Payment"
+      "io.acme.Payment"
   """
   @spec register_schema_by_name(String.t(), as: String.t(), force: boolean) :: {:ok, Schema.t()} | {:error, term()}
   def register_schema_by_name(name, opts \\ []) do
@@ -71,10 +71,10 @@ defmodule Avrora.Utils.Registrar do
 
   ## Examples
 
-      ...> {:ok, schema} = Avrora.Resolver.resolve("io.confluent.Payment")
+      ...> {:ok, schema} = Avrora.Resolver.resolve("io.acme.Payment")
       ...> {:ok, schema} = Avrora.Utils.Registrar.register_schema(schema, as: "NewName", force: true)
       ...> schema.full_name
-      "io.confluent.Payment"
+      "io.acme.Payment"
   """
   @spec register_schema(Schema.t(), as: String.t(), force: boolean) :: {:ok, Schema.t()} | {:error, term()}
   def register_schema(schema, opts \\ []) do

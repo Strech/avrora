@@ -1,7 +1,7 @@
 {
   "type": "record",
   "name": "Image",
-  "namespace": "io.confluent",
+  "namespace": "io.acme",
   "aliases": ["Picture", "Photo"],
   "fields": [
     {

@@ -46,12 +46,12 @@ defmodule Avrora.Codec.PlainTest do
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == payment_schema
 
         {:ok, value}
@@ -59,7 +59,7 @@ defmodule Avrora.Codec.PlainTest do
 
       Avrora.Storage.RegistryMock
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == payment_json_schema()
 
         {:error, :unconfigured_registry_url}
@@ -67,12 +67,12 @@ defmodule Avrora.Codec.PlainTest do
 
       Avrora.Storage.FileMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, payment_schema}
       end)
 
-      {:ok, decoded} = Codec.Plain.decode(payment_message(), schema: %Schema{full_name: "io.confluent.Payment"})
+      {:ok, decoded} = Codec.Plain.decode(payment_message(), schema: %Schema{full_name: "io.acme.Payment"})
 
       assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
     end
@@ -132,8 +132,8 @@ defmodule Avrora.Codec.PlainTest do
       {:ok, decoded_int} = Codec.Plain.decode(<<2, 84>>, schema: union_schema())
       {:ok, decoded_str} = Codec.Plain.decode(<<0, 4, 52, 50>>, schema: union_schema())
 
-      assert decoded_int == %{"union_field" => {"io.confluent.as_int", %{"value" => 42}}}
-      assert decoded_str == %{"union_field" => {"io.confluent.as_str", %{"value" => "42"}}}
+      assert decoded_int == %{"union_field" => {"io.acme.as_int", %{"value" => 42}}}
+      assert decoded_str == %{"union_field" => {"io.acme.as_str", %{"value" => "42"}}}
     end
   end
 
@@ -157,12 +157,12 @@ defmodule Avrora.Codec.PlainTest do
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == payment_schema
 
         {:ok, value}
@@ -170,7 +170,7 @@ defmodule Avrora.Codec.PlainTest do
 
       Avrora.Storage.RegistryMock
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == payment_json_schema()
 
         {:error, :unconfigured_registry_url}
@@ -178,12 +178,12 @@ defmodule Avrora.Codec.PlainTest do
 
       Avrora.Storage.FileMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, payment_schema}
       end)
 
-      {:ok, encoded} = Codec.Plain.encode(payment_payload(), schema: %Schema{full_name: "io.confluent.Payment"})
+      {:ok, encoded} = Codec.Plain.encode(payment_payload(), schema: %Schema{full_name: "io.acme.Payment"})
 
       assert encoded == payment_message()
     end
@@ -193,12 +193,12 @@ defmodule Avrora.Codec.PlainTest do
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.CardType"
+        assert key == "io.acme.CardType"
 
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.CardType"
+        assert key == "io.acme.CardType"
         assert value == enum_schema
 
         {:ok, value}
@@ -206,7 +206,7 @@ defmodule Avrora.Codec.PlainTest do
 
       Avrora.Storage.RegistryMock
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.CardType"
+        assert key == "io.acme.CardType"
         assert value == enum_json_schema()
 
         {:error, :unconfigured_registry_url}
@@ -214,12 +214,12 @@ defmodule Avrora.Codec.PlainTest do
 
       Avrora.Storage.FileMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.CardType"
+        assert key == "io.acme.CardType"
 
         {:ok, enum_schema}
       end)
 
-      {:ok, encoded} = Codec.Plain.encode("VISA", schema: %Schema{full_name: "io.confluent.CardType"})
+      {:ok, encoded} = Codec.Plain.encode("VISA", schema: %Schema{full_name: "io.acme.CardType"})
 
       assert encoded == <<2>>
     end
@@ -229,12 +229,12 @@ defmodule Avrora.Codec.PlainTest do
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.CRC32"
+        assert key == "io.acme.CRC32"
 
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.CRC32"
+        assert key == "io.acme.CRC32"
         assert value == fixed_schema
 
         {:ok, value}
@@ -242,7 +242,7 @@ defmodule Avrora.Codec.PlainTest do
 
       Avrora.Storage.RegistryMock
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.CRC32"
+        assert key == "io.acme.CRC32"
         assert value == fixed_json_schema()
 
         {:error, :unconfigured_registry_url}
@@ -250,12 +250,12 @@ defmodule Avrora.Codec.PlainTest do
 
       Avrora.Storage.FileMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.CRC32"
+        assert key == "io.acme.CRC32"
 
         {:ok, fixed_schema}
       end)
 
-      {:ok, encoded} = Codec.Plain.encode("59B02128", schema: %Schema{full_name: "io.confluent.CRC32"})
+      {:ok, encoded} = Codec.Plain.encode("59B02128", schema: %Schema{full_name: "io.acme.CRC32"})
 
       assert encoded == "59B02128"
     end
@@ -263,7 +263,7 @@ defmodule Avrora.Codec.PlainTest do
 
   defp missing_field_error do
     %ErlangError{
-      original: {:"$avro_encode_error", :required_field_missed, [record: "io.confluent.Payment", field: "id"]}
+      original: {:"$avro_encode_error", :required_field_missed, [record: "io.acme.Payment", field: "id"]}
     }
   end
 
@@ -307,26 +307,26 @@ defmodule Avrora.Codec.PlainTest do
   end
 
   defp payment_json_schema do
-    ~s({"namespace":"io.confluent","name":"Payment","type":"record","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
+    ~s({"namespace":"io.acme","name":"Payment","type":"record","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
   end
 
   defp null_value_json_schema do
-    ~s({"namespace":"io.confluent","name":"Null_Value","type":"record","fields":[{"name":"key","type":"string"},{"name":"value","type":["null","int"]}]})
+    ~s({"namespace":"io.acme","name":"Null_Value","type":"record","fields":[{"name":"key","type":"string"},{"name":"value","type":["null","int"]}]})
   end
 
   defp map_json_schema do
-    ~s({"namespace":"io.confluent","name":"Map_Value","type":"record","fields":[{"name":"map_field", "type": {"type": "map", "values": "string"}}]})
+    ~s({"namespace":"io.acme","name":"Map_Value","type":"record","fields":[{"name":"map_field", "type": {"type": "map", "values": "string"}}]})
   end
 
   defp enum_json_schema do
-    ~s({"namespace":"io.confluent","name":"CardType","type":"enum","symbols":["MASTERCARD","VISA","AMERICANEXPRESS"]})
+    ~s({"namespace":"io.acme","name":"CardType","type":"enum","symbols":["MASTERCARD","VISA","AMERICANEXPRESS"]})
   end
 
   defp fixed_json_schema do
-    ~s({"namespace":"io.confluent","name":"CRC32","type":"fixed","size":8})
+    ~s({"namespace":"io.acme","name":"CRC32","type":"fixed","size":8})
   end
 
   defp union_json_schema do
-    ~s({"namespace":"io.confluent","name":"Union_Value","type":"record","fields":[{"name":"union_field","type":[{"type":"record","name":"as_str","fields":[{"name":"value","type":"string"}]},{"type":"record","name":"as_int","fields":[{"name":"value","type":"int"}]}]}]})
+    ~s({"namespace":"io.acme","name":"Union_Value","type":"record","fields":[{"name":"union_field","type":[{"type":"record","name":"as_str","fields":[{"name":"value","type":"string"}]},{"type":"record","name":"as_int","fields":[{"name":"value","type":"int"}]}]}]})
   end
 end

@@ -20,16 +20,16 @@ defmodule Avrora.Storage.Registry do
   Get schema by integer ID or by the subject name.
 
   If subject name was used by default the latest version will be used
-  unless it explicitly given (e.g `io.confluent.Payment:1`).
+  unless it explicitly given (e.g `io.acme.Payment:1`).
 
   ## Examples
 
       ...> {:ok, schema} = Avrora.Storage.Registry.get(1)
       ...> schema.full_name
-      "io.confluent.Payment"
-      ...> {:ok, schema} = Avrora.Storage.Registry.get("io.confluent.Payment")
+      "io.acme.Payment"
+      ...> {:ok, schema} = Avrora.Storage.Registry.get("io.acme.Payment")
       ...> schema.full_name
-      "io.confluent.Payment"
+      "io.acme.Payment"
   """
   def get(key) when is_binary(key) do
     with {:ok, schema_name} <- Name.parse(key),
@@ -62,10 +62,10 @@ defmodule Avrora.Storage.Registry do
 
   ## Examples
 
-      ...> schema = ~s({"fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}],"name":"Payment","namespace":"io.confluent","type":"record"})
-      ...> {:ok, schema} = Avrora.Storage.Registry.put("io.confluent.examples.Payment", schema)
+      ...> schema = ~s({"fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}],"name":"Payment","namespace":"io.acme","type":"record"})
+      ...> {:ok, schema} = Avrora.Storage.Registry.put("io.acme.examples.Payment", schema)
       ...> schema.full_name
-      "io.confluent.Payment"
+      "io.acme.Payment"
   """
   def put(key, value) when is_binary(key) and is_binary(value) do
     with {:ok, schema_name} <- Name.parse(key),

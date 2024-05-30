@@ -23,10 +23,10 @@ defmodule Avrora.Schema.ReferenceCollector do
 
   ## Examples
 
-      iex> json_schema = File.read!("test/fixtures/schemas/io/confluent/Account.avsc")
+      iex> json_schema = File.read!("test/fixtures/schemas/io/acme/Account.avsc")
       iex> erlavro = :avro_json_decoder.decode_schema(json_schema, allow_bad_references: true)
       iex> Avrora.Schema.ReferenceCollector.collect(erlavro)
-      {:ok, ["io.confluent.Email", "io.confluent.Messenger", "io.confluent.PaymentHistory"]}
+      {:ok, ["io.acme.Email", "io.acme.Messenger", "io.acme.PaymentHistory"]}
   """
   @spec collect(term()) :: {:ok, list(String.t())} | {:error, term()}
   def collect(schema) do

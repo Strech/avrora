@@ -18,7 +18,7 @@ defmodule Avrora.Storage.File do
   Read schema from disk by full name, including namespace.
 
   Files are stored with each namespace component as a folder name.
-  For example `io.confluent.Payment` should be stored as follows:
+  For example `io.acme.Payment` should be stored as follows:
 
       .
       ├── lib/
@@ -26,15 +26,15 @@ defmodule Avrora.Storage.File do
       │   ├── ...
       │   └── schemas/
       │       └── io/
-      │           └── confluent/
+      │           └── acme/
       │               └── Payment.avsc
       └── ...
 
   ## Examples
 
-      iex> {:ok, schema} = Avrora.Storage.File.get("io.confluent.Payment")
+      iex> {:ok, schema} = Avrora.Storage.File.get("io.acme.Payment")
       iex> schema.full_name
-      "io.confluent.Payment"
+      "io.acme.Payment"
   """
   def get(key) when is_binary(key) do
     with {:ok, body} <- read_schema_file_by_name(key),

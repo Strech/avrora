@@ -37,19 +37,19 @@ defmodule Avrora.EncoderTest do
       {:ok, schema} = Encoder.extract_schema(payment_registry_message())
 
       assert schema.id == 42
-      assert schema.full_name == "io.confluent.Payment"
+      assert schema.full_name == "io.acme.Payment"
       assert schema.json == payment_json_schema()
     end
 
     test "when payload was encoded with OCF magic byte" do
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value.json == payment_json_schema()
 
         {:ok, value}
@@ -60,7 +60,7 @@ defmodule Avrora.EncoderTest do
       assert is_nil(schema.id)
       assert is_nil(schema.version)
 
-      assert schema.full_name == "io.confluent.Payment"
+      assert schema.full_name == "io.acme.Payment"
       assert schema.json == payment_json_schema()
     end
 
@@ -113,12 +113,12 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == payment_schema
 
         {:ok, value}
@@ -126,7 +126,7 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.RegistryMock
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == payment_json_schema()
 
         {:error, :unconfigured_registry_url}
@@ -134,12 +134,12 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.FileMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, payment_schema}
       end)
 
-      {:ok, decoded} = Encoder.decode(payment_plain_message(), schema_name: "io.confluent.Payment")
+      {:ok, decoded} = Encoder.decode(payment_plain_message(), schema_name: "io.acme.Payment")
 
       assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
     end
@@ -149,7 +149,7 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, nil}
       end)
@@ -160,13 +160,13 @@ defmodule Avrora.EncoderTest do
         {:ok, value}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == payment_schema_with_id
 
         {:ok, value}
       end)
       |> expect(:expire, fn key, ttl ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert ttl == :infinity
 
         {:ok, :infinity}
@@ -174,20 +174,20 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.FileMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, payment_schema()}
       end)
 
       Avrora.Storage.RegistryMock
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == payment_json_schema()
 
         {:ok, payment_schema_with_id}
       end)
 
-      {:ok, decoded} = Encoder.decode(payment_plain_message(), schema_name: "io.confluent.Payment")
+      {:ok, decoded} = Encoder.decode(payment_plain_message(), schema_name: "io.acme.Payment")
 
       assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
     end
@@ -202,12 +202,12 @@ defmodule Avrora.EncoderTest do
         {:ok, nil}
       end)
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == payment_schema
 
         {:ok, value}
@@ -220,7 +220,7 @@ defmodule Avrora.EncoderTest do
         {:error, :unconfigured_registry_url}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == payment_json_schema()
 
         {:error, :unconfigured_registry_url}
@@ -228,12 +228,12 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.FileMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, payment_schema}
       end)
 
-      {:ok, decoded} = Encoder.decode(payment_registry_message(), schema_name: "io.confluent.Payment")
+      {:ok, decoded} = Encoder.decode(payment_registry_message(), schema_name: "io.acme.Payment")
 
       assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
     end
@@ -243,12 +243,12 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == payment_schema
 
         {:ok, value}
@@ -256,7 +256,7 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.RegistryMock
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == payment_json_schema()
 
         {:error, :unconfigured_registry_url}
@@ -264,14 +264,14 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.FileMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, payment_schema}
       end)
 
       output =
         capture_log(fn ->
-          {:ok, decoded} = Encoder.decode(payment_plain_message(), schema_name: "io.confluent.Payment:42")
+          {:ok, decoded} = Encoder.decode(payment_plain_message(), schema_name: "io.acme.Payment:42")
 
           assert decoded == %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
         end)
@@ -282,7 +282,7 @@ defmodule Avrora.EncoderTest do
     test "when payload is OCF and given schema_name it warn about enbeded schema" do
       output =
         capture_log(fn ->
-          {:ok, decoded} = Encoder.decode(payment_ocf_message(), schema_name: "io.confluent.Payment")
+          {:ok, decoded} = Encoder.decode(payment_ocf_message(), schema_name: "io.acme.Payment")
 
           assert decoded == [%{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}]
         end)
@@ -295,12 +295,12 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Messenger"
+        assert key == "io.acme.Messenger"
 
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Messenger"
+        assert key == "io.acme.Messenger"
         assert value == messenger_schema
 
         {:ok, value}
@@ -308,7 +308,7 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.RegistryMock
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Messenger"
+        assert key == "io.acme.Messenger"
         assert value == messenger_json_schema_with_local_reference()
 
         {:error, :unconfigured_registry_url}
@@ -316,12 +316,12 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.FileMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Messenger"
+        assert key == "io.acme.Messenger"
 
         {:ok, messenger_schema}
       end)
 
-      {:ok, decoded} = Encoder.decode(messenger_plain_message(), schema_name: "io.confluent.Messenger")
+      {:ok, decoded} = Encoder.decode(messenger_plain_message(), schema_name: "io.acme.Messenger")
 
       assert decoded == %{
                "inbox" => [%{"text" => "Hello world!"}],
@@ -336,12 +336,12 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.NumericTransfer"
+        assert key == "io.acme.NumericTransfer"
 
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.NumericTransfer"
+        assert key == "io.acme.NumericTransfer"
         assert value == numeric_transfer_schema
 
         {:ok, value}
@@ -349,7 +349,7 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.RegistryMock
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.NumericTransfer"
+        assert key == "io.acme.NumericTransfer"
         assert value == numeric_transfer_json_schema()
 
         {:error, :unconfigured_registry_url}
@@ -357,7 +357,7 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.FileMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.NumericTransfer"
+        assert key == "io.acme.NumericTransfer"
 
         {:ok, numeric_transfer_schema}
       end)
@@ -365,7 +365,7 @@ defmodule Avrora.EncoderTest do
       {:ok, decoded} =
         Avrora.decode_plain(
           numeric_transfer_plain_message_with_fake_magic_byte(),
-          schema_name: "io.confluent.NumericTransfer"
+          schema_name: "io.acme.NumericTransfer"
         )
 
       assert decoded == numeric_transfer_payload()
@@ -378,25 +378,25 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == payment_schema
 
         {:ok, value}
       end)
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, payment_schema}
       end)
 
       Avrora.Storage.RegistryMock
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == payment_json_schema()
 
         {:error, :unconfigured_registry_url}
@@ -404,12 +404,12 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.FileMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, payment_schema}
       end)
 
-      {:ok, encoded} = Encoder.encode(payment_payload(), schema_name: "io.confluent.Payment")
+      {:ok, encoded} = Encoder.encode(payment_payload(), schema_name: "io.acme.Payment")
       assert is_payment_ocf(encoded)
     end
 
@@ -418,12 +418,12 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == payment_schema
 
         {:ok, value}
@@ -431,7 +431,7 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.RegistryMock
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == payment_json_schema()
 
         {:error, :unconfigured_registry_url}
@@ -439,12 +439,12 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.FileMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, payment_schema}
       end)
 
-      encoded = Encoder.encode(payment_payload(), schema_name: "io.confluent.Payment", format: :registry)
+      encoded = Encoder.encode(payment_payload(), schema_name: "io.acme.Payment", format: :registry)
 
       assert encoded == {:error, :invalid_schema_id}
     end
@@ -454,7 +454,7 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, nil}
       end)
@@ -465,13 +465,13 @@ defmodule Avrora.EncoderTest do
         {:ok, value}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == payment_schema_with_id
 
         {:ok, value}
       end)
       |> expect(:expire, fn key, ttl ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert ttl == :infinity
 
         {:ok, :infinity}
@@ -479,20 +479,20 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.FileMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, payment_schema()}
       end)
 
       Avrora.Storage.RegistryMock
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == payment_json_schema()
 
         {:ok, payment_schema_with_id}
       end)
 
-      {:ok, encoded} = Encoder.encode(payment_payload(), schema_name: "io.confluent.Payment", format: :ocf)
+      {:ok, encoded} = Encoder.encode(payment_payload(), schema_name: "io.acme.Payment", format: :ocf)
 
       assert is_payment_ocf(encoded)
     end
@@ -502,7 +502,7 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, nil}
       end)
@@ -513,13 +513,13 @@ defmodule Avrora.EncoderTest do
         {:ok, value}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == payment_schema_with_id
 
         {:ok, value}
       end)
       |> expect(:expire, fn key, ttl ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert ttl == :infinity
 
         {:ok, :infinity}
@@ -527,7 +527,7 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.RegistryMock
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == payment_json_schema()
 
         {:ok, payment_schema_with_id}
@@ -535,12 +535,12 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.FileMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, payment_schema()}
       end)
 
-      {:ok, encoded} = Encoder.encode(payment_payload(), schema_name: "io.confluent.Payment")
+      {:ok, encoded} = Encoder.encode(payment_payload(), schema_name: "io.acme.Payment")
       assert encoded == payment_registry_message()
     end
 
@@ -549,12 +549,12 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == payment_schema
 
         {:ok, value}
@@ -562,7 +562,7 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.RegistryMock
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
         assert value == payment_json_schema()
 
         {:error, :unconfigured_registry_url}
@@ -570,7 +570,7 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.FileMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Payment"
+        assert key == "io.acme.Payment"
 
         {:ok, payment_schema}
       end)
@@ -580,7 +580,7 @@ defmodule Avrora.EncoderTest do
           {:ok, encoded} =
             Encoder.encode(
               payment_payload(),
-              schema_name: "io.confluent.Payment:42",
+              schema_name: "io.acme.Payment:42",
               format: :plain
             )
 
@@ -595,12 +595,12 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Messenger"
+        assert key == "io.acme.Messenger"
 
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Messenger"
+        assert key == "io.acme.Messenger"
         assert value == messenger_schema
 
         {:ok, value}
@@ -608,7 +608,7 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.RegistryMock
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Messenger"
+        assert key == "io.acme.Messenger"
         assert value == messenger_json_schema_with_local_reference()
 
         {:error, :unconfigured_registry_url}
@@ -616,12 +616,12 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.FileMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Messenger"
+        assert key == "io.acme.Messenger"
 
         {:ok, messenger_schema}
       end)
 
-      {:ok, encoded} = Encoder.encode(messenger_payload(), schema_name: "io.confluent.Messenger", format: :plain)
+      {:ok, encoded} = Encoder.encode(messenger_payload(), schema_name: "io.acme.Messenger", format: :plain)
 
       assert encoded == messenger_plain_message()
     end
@@ -631,12 +631,12 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Messenger"
+        assert key == "io.acme.Messenger"
 
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Messenger"
+        assert key == "io.acme.Messenger"
         assert value == messenger_schema
 
         {:ok, value}
@@ -644,7 +644,7 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.RegistryMock
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.Messenger"
+        assert key == "io.acme.Messenger"
         assert value == messenger_json_schema_with_local_reference()
 
         {:error, :unconfigured_registry_url}
@@ -652,12 +652,12 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.FileMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.Messenger"
+        assert key == "io.acme.Messenger"
 
         {:ok, messenger_schema}
       end)
 
-      {:ok, encoded} = Encoder.encode(messenger_payload(), format: :plain, schema_name: "io.confluent.Messenger")
+      {:ok, encoded} = Encoder.encode(messenger_payload(), format: :plain, schema_name: "io.acme.Messenger")
 
       assert encoded == messenger_plain_message()
     end
@@ -669,12 +669,12 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.MemoryMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.NumericTransfer"
+        assert key == "io.acme.NumericTransfer"
 
         {:ok, nil}
       end)
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.NumericTransfer"
+        assert key == "io.acme.NumericTransfer"
         assert value == numeric_transfer_schema
 
         {:ok, value}
@@ -682,7 +682,7 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.RegistryMock
       |> expect(:put, fn key, value ->
-        assert key == "io.confluent.NumericTransfer"
+        assert key == "io.acme.NumericTransfer"
         assert value == numeric_transfer_json_schema()
 
         {:error, :unconfigured_registry_url}
@@ -690,7 +690,7 @@ defmodule Avrora.EncoderTest do
 
       Avrora.Storage.FileMock
       |> expect(:get, fn key ->
-        assert key == "io.confluent.NumericTransfer"
+        assert key == "io.acme.NumericTransfer"
 
         {:ok, numeric_transfer_schema}
       end)
@@ -700,7 +700,7 @@ defmodule Avrora.EncoderTest do
           {:ok, encoded} =
             Avrora.encode_plain(
               numeric_transfer_payload(),
-              schema_name: "io.confluent.NumericTransfer:1"
+              schema_name: "io.acme.NumericTransfer:1"
             )
 
           assert encoded == numeric_transfer_plain_message_with_fake_magic_byte()
@@ -710,9 +710,10 @@ defmodule Avrora.EncoderTest do
     end
   end
 
+  # byte_size(<< message container binary >>) * 8
   defp is_payment_ocf(payload) do
     match?(
-      <<79, 98, 106, 1, _::size(1504), 72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45,
+      <<79, 98, 106, 1, _::size(1464), 72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45,
         48, 48, 48, 48, 45, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64,
         _::binary>>,
       payload
@@ -733,16 +734,16 @@ defmodule Avrora.EncoderTest do
   end
 
   defp payment_ocf_message do
-    <<79, 98, 106, 1, 3, 204, 2, 20, 97, 118, 114, 111, 46, 99, 111, 100, 101, 99, 8, 110, 117, 108, 108, 22, 97, 118,
-      114, 111, 46, 115, 99, 104, 101, 109, 97, 144, 2, 123, 34, 110, 97, 109, 101, 115, 112, 97, 99, 101, 34, 58, 34,
-      105, 111, 46, 99, 111, 110, 102, 108, 117, 101, 110, 116, 34, 44, 34, 110, 97, 109, 101, 34, 58, 34, 80, 97, 121,
-      109, 101, 110, 116, 34, 44, 34, 116, 121, 112, 101, 34, 58, 34, 114, 101, 99, 111, 114, 100, 34, 44, 34, 102, 105,
-      101, 108, 100, 115, 34, 58, 91, 123, 34, 110, 97, 109, 101, 34, 58, 34, 105, 100, 34, 44, 34, 116, 121, 112, 101,
-      34, 58, 34, 115, 116, 114, 105, 110, 103, 34, 125, 44, 123, 34, 110, 97, 109, 101, 34, 58, 34, 97, 109, 111, 117,
-      110, 116, 34, 44, 34, 116, 121, 112, 101, 34, 58, 34, 100, 111, 117, 98, 108, 101, 34, 125, 93, 125, 0, 236, 47,
-      96, 164, 206, 59, 152, 115, 80, 243, 64, 50, 180, 153, 105, 34, 2, 90, 72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48,
-      48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 123, 20,
-      174, 71, 225, 250, 47, 64, 236, 47, 96, 164, 206, 59, 152, 115, 80, 243, 64, 50, 180, 153, 105, 34>>
+    <<79, 98, 106, 1, 3, 194, 2, 20, 97, 118, 114, 111, 46, 99, 111, 100, 101, 99, 8, 110, 117, 108, 108, 22, 97, 118,
+      114, 111, 46, 115, 99, 104, 101, 109, 97, 134, 2, 123, 34, 110, 97, 109, 101, 115, 112, 97, 99, 101, 34, 58, 34,
+      105, 111, 46, 97, 99, 109, 101, 34, 44, 34, 110, 97, 109, 101, 34, 58, 34, 80, 97, 121, 109, 101, 110, 116, 34,
+      44, 34, 116, 121, 112, 101, 34, 58, 34, 114, 101, 99, 111, 114, 100, 34, 44, 34, 102, 105, 101, 108, 100, 115, 34,
+      58, 91, 123, 34, 110, 97, 109, 101, 34, 58, 34, 105, 100, 34, 44, 34, 116, 121, 112, 101, 34, 58, 34, 115, 116,
+      114, 105, 110, 103, 34, 125, 44, 123, 34, 110, 97, 109, 101, 34, 58, 34, 97, 109, 111, 117, 110, 116, 34, 44, 34,
+      116, 121, 112, 101, 34, 58, 34, 100, 111, 117, 98, 108, 101, 34, 125, 93, 125, 0, 76, 217, 232, 193, 27, 233, 50,
+      40, 75, 196, 233, 176, 94, 69, 45, 227, 2, 90, 72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48,
+      48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 123, 20, 174, 71, 225, 250, 47,
+      64, 76, 217, 232, 193, 27, 233, 50, 40, 75, 196, 233, 176, 94, 69, 45, 227>>
   end
 
   defp payment_plain_message do
@@ -780,18 +781,18 @@ defmodule Avrora.EncoderTest do
   end
 
   defp messenger_json_schema do
-    ~s({"namespace":"io.confluent","name":"Messenger","type":"record","fields":[{"name":"inbox","type":{"type":"array","items":{"type":"record","name":"Message","fields":[{"name":"text","type":"string"}]}}},{"name":"archive","type":{"type":"array","items":"io.confluent.Message"}}]})
+    ~s({"namespace":"io.acme","name":"Messenger","type":"record","fields":[{"name":"inbox","type":{"type":"array","items":{"type":"record","name":"Message","fields":[{"name":"text","type":"string"}]}}},{"name":"archive","type":{"type":"array","items":"io.acme.Message"}}]})
   end
 
   defp messenger_json_schema_with_local_reference do
-    ~s({"namespace":"io.confluent","name":"Messenger","type":"record","fields":[{"name":"inbox","type":{"type":"array","items":{"name":"Message","type":"record","fields":[{"name":"text","type":"string"}]}}},{"name":"archive","type":{"type":"array","items":"Message"}}]})
+    ~s({"namespace":"io.acme","name":"Messenger","type":"record","fields":[{"name":"inbox","type":{"type":"array","items":{"name":"Message","type":"record","fields":[{"name":"text","type":"string"}]}}},{"name":"archive","type":{"type":"array","items":"Message"}}]})
   end
 
   defp payment_json_schema do
-    ~s({"namespace":"io.confluent","name":"Payment","type":"record","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
+    ~s({"namespace":"io.acme","name":"Payment","type":"record","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
   end
 
   defp numeric_transfer_json_schema do
-    ~s({"namespace":"io.confluent","name":"NumericTransfer","type":"record","fields":[{"name":"link_is_enabled","type":"boolean"},{"name":"updated_at","type":"int"},{"name":"updated_by_id","type":"int"}]})
+    ~s({"namespace":"io.acme","name":"NumericTransfer","type":"record","fields":[{"name":"link_is_enabled","type":"boolean"},{"name":"updated_at","type":"int"},{"name":"updated_by_id","type":"int"}]})
   end
 end

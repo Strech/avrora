@@ -211,13 +211,13 @@ If `registry_url` defined, it enables Schema Registry storage. If the schema
 file found locally but not in the registry, either fuction will register the schema.
 
 These examples assume you have a `Payment` schema stored in the file
-`priv/schemas/io/confluent/Payment.avsc`
+`priv/schemas/io/acme/Payment.avsc`
 
 ```json
 {
   "type": "record",
   "name": "Payment",
-  "namespace": "io.confluent",
+  "namespace": "io.acme",
   "fields": [
     {
       "name": "id",
@@ -245,7 +245,7 @@ To encode a `Payment` message:
 {:ok, pid} = Avrora.start_link()
 message = %{"id" => "tx-1", "amount" => 15.99}
 
-{:ok, encoded} = Avrora.encode(message, schema_name: "io.confluent.Payment")
+{:ok, encoded} = Avrora.encode(message, schema_name: "io.acme.Payment")
 <<79, 98, 106, 1, 3, 204, 2, 20, 97, 118, 114, 111, 46, 99, 111, 100, 101, 99,
   8, 110, 117, 108, 108, 22, 97, 118, 114, 111, 46, 115, 99, 104, 101, 109, 97,
   144, 2, 123, 34, 110, 97, 109, 101, 115, 112, 97, 99, 101, 34, 58, 34, 105,
@@ -275,7 +275,7 @@ The `:format` argument controls output format:
 {:ok, pid} = Avrora.start_link()
 message = %{"id" => "tx-1", "amount" => 15.99}
 
-{:ok, encoded} = Avrora.encode(message, schema_name: "io.confluent.Payment", format: :registry)
+{:ok, encoded} = Avrora.encode(message, schema_name: "io.acme.Payment", format: :registry)
 <<0, 0, 42, 0, 8, 116, 120, 45, 49, 123, 20, 174, 71, 225, 250, 47, 64>>
 ```
 
@@ -287,7 +287,7 @@ Decode `Payment` message using the specified schema
 {:ok, pid} = Avrora.start_link()
 message = <<0, 0, 42, 0, 8, 116, 120, 45, 49, 123, 20, 174, 71, 225, 250, 47, 64>>
 
-{:ok, decoded} = Avrora.decode(message, schema_name: "io.confluent.Payment")
+{:ok, decoded} = Avrora.decode(message, schema_name: "io.acme.Payment")
 %{"id" => "tx-1", "amount" => 15.99}
 ```
 
@@ -336,7 +336,7 @@ Decode a message encoded in a `:plain` format.
 {:ok, pid} = Avrora.start_link()
 message = <<8, 116, 120, 45, 49, 123, 20, 174, 71, 225, 250, 47, 64>>
 
-{:ok, decoded} = Avrora.decode(message, schema_name: "io.confluent.Payment")
+{:ok, decoded} = Avrora.decode(message, schema_name: "io.acme.Payment")
 %{"id" => "tx-1", "amount" => 15.99}
 ```
 
@@ -348,7 +348,7 @@ Encode a payload in a `:plain` format.
 {:ok, pid} = Avrora.start_link()
 message = %{"id" => "tx-1", "amount" => 15.99}
 
-{:ok, encoded} = Avrora.encode(message, schema_name: "io.confluent.Payment")
+{:ok, encoded} = Avrora.encode(message, schema_name: "io.acme.Payment")
 <<8, 116, 120, 45, 49, 123, 20, 174, 71, 225, 250, 47, 64>>
 ```
 
@@ -378,9 +378,9 @@ message =
 {:ok, schema} = Avrora.extract_schema(message)
 {:ok,
  %Avrora.Schema{
-   full_name: "io.confluent.Payment",
+   full_name: "io.acme.Payment",
    id: nil,
-   json: "{\"namespace\":\"io.confluent\",\"name\":\"Payment\",\"type\":\"record\",\"fields\":[{\"name\":\"id\",\"type\":\"string\"},{\"name\":\"amount\",\"type\":\"double\"}]}",
+   json: "{\"namespace\":\"io.acme\",\"name\":\"Payment\",\"type\":\"record\",\"fields\":[{\"name\":\"id\",\"type\":\"string\"},{\"name\":\"amount\",\"type\":\"double\"}]}",
    lookup_table: #Reference<0.146116641.3853647878.152744>,
    version: nil
  }}
@@ -408,13 +408,13 @@ But keep in mind that either way has a memory check to ensure that schema was no
 registered before and to bypass this check you have to use `force: true` flag
 
 ```elixir
-{:ok, schema} = Avrora.Utils.Registrar.register_schema_by_name("io.confluent.Payment", force: true)
+{:ok, schema} = Avrora.Utils.Registrar.register_schema_by_name("io.acme.Payment", force: true)
 ```
 
 In addition, any schema can be registered under different subject via `as: "NewName"` option
 
 ```elixir
-{:ok, schema} = Avrora.Storage.File.get("io.confluent.Payment")
+{:ok, schema} = Avrora.Storage.File.get("io.acme.Payment")
 {:ok, schema_with_id} = Avrora.Utils.Registrar.register_schema(schema, as: "NewName")
 ```
 
@@ -424,19 +424,19 @@ A separate mix task to register a specific schema or all found schemas in
 schemas folder (see [configuration](#configuration) section).
 
 For instance, if you configure Avrora schemas folder to be at `./priv/schemas`
-and you want to register a schema `io/confluent/Payment.avsc` then you can use
+and you want to register a schema `io/acme/Payment.avsc` then you can use
 this command
 
 ```console
-$ mix avrora.reg.schema --name io.confluent.Payment
-schema `io.confluent.Payment' will be registered
+$ mix avrora.reg.schema --name io.acme.Payment
+schema `io.acme.Payment' will be registered
 ```
 
 In addition, any schema can be registered under different subject via `--as` option<sup>[v0.16]</sup>
 
 ```console
-$ mix avrora.reg.schema --name io.confluent.Payment --as MyCustomName
-schema `io.confluent.Payment' will be registered as `MyCustomName'
+$ mix avrora.reg.schema --name io.acme.Payment --as MyCustomName
+schema `io.acme.Payment' will be registered as `MyCustomName'
 ```
 
 If you would like to register all schemas found under `./priv/schemas` then you
@@ -444,13 +444,13 @@ can simply execute this command
 
 ```console
 $ mix avrora.reg.schema --all
-schema `io.confluent.Payment' will be registered
-schema `io.confluent.Wrong' will be skipped due to an error `argument error'
+schema `io.acme.Payment' will be registered
+schema `io.acme.Wrong' will be skipped due to an error `argument error'
 ```
 
 Additional application config to load additional can be set via `--appconfig` option<sup>[v0.26]</sup>
 
 ```console
-$ mix avrora.reg.schema --name io.confluent.Payment --appconfig runtime
-schema `io.confluent.Payment' will be registered
+$ mix avrora.reg.schema --name io.acme.Payment --appconfig runtime
+schema `io.acme.Payment' will be registered
 ```
