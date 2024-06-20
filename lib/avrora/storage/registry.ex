@@ -69,7 +69,7 @@ defmodule Avrora.Storage.Registry do
   """
   def put(key, value) when is_binary(key) and is_binary(value) do
     with {:ok, schema_name} <- Name.parse(key),
-         {:ok, response} <- http_client_post("subjects/#{schema_name.name}/versions", value),
+         {:ok, response} <- http_client_post("subjects/#{schema_name.name}/versions", %{schema: value}),
          {:ok, id} <- Map.fetch(response, "id"),
          {:ok, schema} <- SchemaEncoder.from_json(value) do
       unless is_nil(schema_name.version) do
