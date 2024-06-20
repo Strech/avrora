@@ -15,6 +15,14 @@ defmodule Avrora.Storage.FileTest do
       assert schema.full_name == "io.acme.Payment"
     end
 
+    test "when schema file contains unnamed type" do
+      {:ok, schema} = File.get("io.acme.Primitive")
+      assert schema.full_name == "io.acme.Primitive"
+
+      {:ok, schema} = File.get("io.acme.Union")
+      assert schema.full_name == "io.acme.Union"
+    end
+
     test "when schema file contains named type with nested references" do
       output =
         capture_log(fn ->
@@ -34,7 +42,7 @@ defmodule Avrora.Storage.FileTest do
       assert length(Regex.scan(~r/reading schema .*`/, output)) == 7
     end
 
-    test "when schema name contains version and when schema file was found" do
+    test "when schema name contains version" do
       output =
         capture_log(fn ->
           {:ok, schema} = File.get("io.acme.Payment:42")
