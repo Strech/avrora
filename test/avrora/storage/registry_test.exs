@@ -139,7 +139,7 @@ defmodule Avrora.Storage.RegistryTest do
     test "when requesting by subject name and schema is unnamed type" do
       Avrora.HTTPClientMock
       |> expect(:get, fn url, _ ->
-        assert url == "http://reg.loc/subjects/io.confluent.Primitive/versions/latest"
+        assert url == "http://reg.loc/subjects/io.acme.Primitive/versions/latest"
 
         {
           :ok,
@@ -147,16 +147,16 @@ defmodule Avrora.Storage.RegistryTest do
             "id" => 42,
             "version" => 1,
             "schema" => json_schema_unnamed(),
-            "subject" => "io.confluent.Primitive"
+            "subject" => "io.acme.Primitive"
           }
         }
       end)
 
-      {:ok, schema} = Registry.get("io.confluent.Primitive")
+      {:ok, schema} = Registry.get("io.acme.Primitive")
 
       assert schema.id == 42
       assert schema.version == 1
-      assert schema.full_name == "io.confluent.Primitive"
+      assert schema.full_name == "io.acme.Primitive"
     end
 
     test "when requesting by subject name failed" do
@@ -182,14 +182,14 @@ defmodule Avrora.Storage.RegistryTest do
       |> expect(:get, fn url, _ ->
         assert url == "http://reg.loc/schemas/ids/1/versions"
 
-        {:ok, [%{"version" => 3, "subject" => "io.confluent.Payment"}]}
+        {:ok, [%{"version" => 3, "subject" => "io.acme.Payment"}]}
       end)
 
       {:ok, schema} = Registry.get(1)
 
       assert schema.id == 1
       assert schema.version == 3
-      assert schema.full_name == "io.confluent.Payment"
+      assert schema.full_name == "io.acme.Payment"
     end
 
     test "when requesting by global ID with basic auth" do
@@ -208,19 +208,14 @@ defmodule Avrora.Storage.RegistryTest do
         assert url == "http://reg.loc/schemas/ids/1/versions"
         assert Keyword.fetch!(options, :authorization) == "Basic bG9naW46cGFzc3dvcmQ="
 
-        {:ok, [%{"version" => 3, "subject" => "io.confluent.Payment"}]}
+        {:ok, [%{"version" => 3, "subject" => "io.acme.Payment"}]}
       end)
 
       {:ok, schema} = Registry.get(1)
 
       assert schema.id == 1
-<<<<<<< HEAD
-      assert is_nil(schema.version)
-      assert schema.full_name == "io.acme.Payment"
-=======
       assert schema.version == 3
-      assert schema.full_name == "io.confluent.Payment"
->>>>>>> 05ef51b (Make registry storage handle unnamed types)
+      assert schema.full_name == "io.acme.Payment"
     end
 
     test "when requesting by global ID failed" do
@@ -272,14 +267,14 @@ defmodule Avrora.Storage.RegistryTest do
       |> expect(:get, fn url, _ ->
         assert url == "http://reg.loc/schemas/ids/43/versions"
 
-        {:ok, [%{"version" => 13, "subject" => "io.confluent.Account"}]}
+        {:ok, [%{"version" => 13, "subject" => "io.acme.Account"}]}
       end)
 
       {:ok, schema} = Registry.get(43)
 
       assert schema.id == 43
       assert schema.version == 13
-      assert schema.full_name == "io.confluent.Account"
+      assert schema.full_name == "io.acme.Account"
       assert schema.json == json_schema_with_reference_denormalized()
     end
 
@@ -288,21 +283,21 @@ defmodule Avrora.Storage.RegistryTest do
       |> expect(:get, fn url, _ ->
         assert url == "http://reg.loc/schemas/ids/42"
 
-        {:ok, %{"schema" => json_schema_unnamed(), "subject" => "io.confluent.Primitive"}}
+        {:ok, %{"schema" => json_schema_unnamed(), "subject" => "io.acme.Primitive"}}
       end)
 
       Avrora.HTTPClientMock
       |> expect(:get, fn url, _ ->
         assert url == "http://reg.loc/schemas/ids/42/versions"
 
-        {:ok, [%{"version" => 1, "subject" => "io.confluent.Primitive"}]}
+        {:ok, [%{"version" => 1, "subject" => "io.acme.Primitive"}]}
       end)
 
       {:ok, schema} = Registry.get(42)
 
       assert schema.id == 42
       assert schema.version == 1
-      assert schema.full_name == "io.confluent.Primitive"
+      assert schema.full_name == "io.acme.Primitive"
     end
 
     test "when requesting by global ID and versions response invalid" do
@@ -337,14 +332,14 @@ defmodule Avrora.Storage.RegistryTest do
         assert url == "http://reg.loc/schemas/ids/1/versions"
         assert Keyword.fetch!(options, :ssl_options) == [verify: :verify_none]
 
-        {:ok, [%{"version" => 3, "subject" => "io.confluent.Payment"}]}
+        {:ok, [%{"version" => 3, "subject" => "io.acme.Payment"}]}
       end)
 
       {:ok, schema} = Registry.get(1)
 
       assert schema.id == 1
       assert schema.version == 3
-      assert schema.full_name == "io.confluent.Payment"
+      assert schema.full_name == "io.acme.Payment"
     end
 
     test "when request should not perform SSL verification based on given cert" do
@@ -364,7 +359,7 @@ defmodule Avrora.Storage.RegistryTest do
         assert url == "http://reg.loc/schemas/ids/1/versions"
         assert Keyword.fetch!(options, :ssl_options) == [verify: :verify_peer, cacerts: [<<48, 130, 3, 201>>]]
 
-        {:ok, [%{"version" => 3, "subject" => "io.confluent.Payment"}]}
+        {:ok, [%{"version" => 3, "subject" => "io.acme.Payment"}]}
       end)
 
       assert :ok == Registry.get(1) |> elem(0)
@@ -386,7 +381,7 @@ defmodule Avrora.Storage.RegistryTest do
         assert url == "http://reg.loc/schemas/ids/1/versions"
         assert Keyword.fetch!(options, :ssl_options) == [verify: :verify_peer, cacertfile: "path/to/file"]
 
-        {:ok, [%{"version" => 3, "subject" => "io.confluent.Payment"}]}
+        {:ok, [%{"version" => 3, "subject" => "io.acme.Payment"}]}
       end)
 
       assert :ok == Registry.get(1) |> elem(0)
@@ -403,7 +398,7 @@ defmodule Avrora.Storage.RegistryTest do
     test "when request was successful" do
       Avrora.HTTPClientMock
       |> expect(:post, fn url, payload, options ->
-        assert url == "http://reg.loc/subjects/io.confluent.Payment/versions"
+        assert url == "http://reg.loc/subjects/io.acme.Payment/versions"
         assert payload == %{schema: json_schema()}
         assert Keyword.fetch!(options, :content_type) == "application/vnd.schemaregistry.v1+json"
         assert Keyword.fetch!(options, :ssl_options) == [verify: :verify_none]
@@ -421,7 +416,7 @@ defmodule Avrora.Storage.RegistryTest do
     test "when key contains version and request was successful" do
       Avrora.HTTPClientMock
       |> expect(:post, fn url, payload, _ ->
-        assert url == "http://reg.loc/subjects/io.confluent.Payment/versions"
+        assert url == "http://reg.loc/subjects/io.acme.Payment/versions"
         assert payload == %{schema: json_schema()}
 
         {:ok, %{"id" => 1}}
@@ -442,13 +437,13 @@ defmodule Avrora.Storage.RegistryTest do
     test "when request was unsuccessful" do
       Avrora.HTTPClientMock
       |> expect(:post, fn url, payload, _ ->
-        assert url == "http://reg.loc/subjects/io.confluent.Payment/versions"
+        assert url == "http://reg.loc/subjects/io.acme.Payment/versions"
         assert payload == %{schema: ~s({"type":"unknown"})}
 
         {:error, schema_invalid_parsed_error()}
       end)
 
-      assert Registry.put("io.confluent.Payment", ~s({"type":"unknown"})) == {:error, :invalid_schema}
+      assert Registry.put("io.acme.Payment", ~s({"type":"unknown"})) == {:error, :invalid_schema}
     end
 
     test "when request should send Authorization header" do
@@ -456,7 +451,7 @@ defmodule Avrora.Storage.RegistryTest do
 
       Avrora.HTTPClientMock
       |> expect(:post, fn url, payload, options ->
-        assert url == "http://reg.loc/subjects/io.confluent.Payment/versions"
+        assert url == "http://reg.loc/subjects/io.acme.Payment/versions"
         assert payload == %{schema: json_schema()}
         assert Keyword.fetch!(options, :authorization) == "Basic bG9naW46cGFzc3dvcmQ="
 
@@ -471,7 +466,7 @@ defmodule Avrora.Storage.RegistryTest do
 
       Avrora.HTTPClientMock
       |> expect(:post, fn url, payload, options ->
-        assert url == "http://reg.loc/subjects/io.confluent.Payment/versions"
+        assert url == "http://reg.loc/subjects/io.acme.Payment/versions"
         assert payload == %{schema: json_schema()}
         assert Keyword.fetch!(options, :user_agent) == "Avrora/0.0.1 Elixir"
 
@@ -487,7 +482,7 @@ defmodule Avrora.Storage.RegistryTest do
 
       Avrora.HTTPClientMock
       |> expect(:post, fn url, payload, options ->
-        assert url == "http://reg.loc/subjects/io.confluent.Payment/versions"
+        assert url == "http://reg.loc/subjects/io.acme.Payment/versions"
         assert payload == %{schema: json_schema()}
         assert Keyword.fetch!(options, :ssl_options) == [verify: :verify_peer, cacerts: [<<48, 130, 3, 201>>]]
 
@@ -502,7 +497,7 @@ defmodule Avrora.Storage.RegistryTest do
 
       Avrora.HTTPClientMock
       |> expect(:post, fn url, payload, options ->
-        assert url == "http://reg.loc/subjects/io.confluent.Payment/versions"
+        assert url == "http://reg.loc/subjects/io.acme.Payment/versions"
         assert payload == %{schema: json_schema()}
         assert Keyword.fetch!(options, :ssl_options) == [verify: :verify_peer, cacertfile: "path/to/file"]
 
