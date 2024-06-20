@@ -16,7 +16,7 @@ defmodule Avrora.Storage.RegistryTest do
   setup :support_config
 
   describe "get/1" do
-    test "when request by subject name of schema with reference without version was successful" do
+    test "when requesting by subject name without version and schema contains external reference" do
       Avrora.HTTPClientMock
       |> expect(:get, fn url, _ ->
         assert url == "http://reg.loc/subjects/io.acme.Account/versions/latest"
@@ -58,7 +58,7 @@ defmodule Avrora.Storage.RegistryTest do
       assert schema.json == json_schema_with_reference_denormalized()
     end
 
-    test "when request by subject name of schema with reference was unsuccessful because of reference schema not found" do
+    test "when requesting by subject name and external reference schema not found" do
       Avrora.HTTPClientMock
       |> expect(:get, fn url, _ ->
         assert url == "http://reg.loc/subjects/io.acme.Account/versions/latest"
@@ -90,7 +90,7 @@ defmodule Avrora.Storage.RegistryTest do
       assert Registry.get("io.acme.Account") == {:error, :unknown_reference_subject}
     end
 
-    test "when request by subject name without version was successful" do
+    test "when requesting by subject name without version" do
       Avrora.HTTPClientMock
       |> expect(:get, fn url, _ ->
         assert url == "http://reg.loc/subjects/io.acme.Payment/versions/latest"
@@ -113,7 +113,7 @@ defmodule Avrora.Storage.RegistryTest do
       assert schema.full_name == "io.acme.Payment"
     end
 
-    test "when request by subject name with version was successful" do
+    test "when requesting by subject name with version" do
       Avrora.HTTPClientMock
       |> expect(:get, fn url, _ ->
         assert url == "http://reg.loc/subjects/io.acme.Payment/versions/10"
@@ -136,6 +136,29 @@ defmodule Avrora.Storage.RegistryTest do
       assert schema.full_name == "io.acme.Payment"
     end
 
+    test "when requesting by subject name and schema is unnamed type" do
+      Avrora.HTTPClientMock
+      |> expect(:get, fn url, _ ->
+        assert url == "http://reg.loc/subjects/io.acme.Primitive/versions/latest"
+
+        {
+          :ok,
+          %{
+            "id" => 42,
+            "version" => 1,
+            "schema" => json_schema_unnamed(),
+            "subject" => "io.acme.Primitive"
+          }
+        }
+      end)
+
+      {:ok, schema} = Registry.get("io.acme.Primitive")
+
+      assert schema.id == 42
+      assert schema.version == 1
+      assert schema.full_name == "io.acme.Primitive"
+    end
+
     test "when requesting by subject name failed" do
       Avrora.HTTPClientMock
       |> expect(:get, fn url, _ ->
@@ -147,7 +170,7 @@ defmodule Avrora.Storage.RegistryTest do
       assert Registry.get("io.acme.Payment") == {:error, :unknown_subject}
     end
 
-    test "when request by global ID was successful" do
+    test "when requesting by global ID" do
       Avrora.HTTPClientMock
       |> expect(:get, fn url, _ ->
         assert url == "http://reg.loc/schemas/ids/1"
@@ -155,14 +178,21 @@ defmodule Avrora.Storage.RegistryTest do
         {:ok, %{"schema" => json_schema()}}
       end)
 
+      Avrora.HTTPClientMock
+      |> expect(:get, fn url, _ ->
+        assert url == "http://reg.loc/schemas/ids/1/versions"
+
+        {:ok, [%{"version" => 3, "subject" => "io.acme.Payment"}]}
+      end)
+
       {:ok, schema} = Registry.get(1)
 
       assert schema.id == 1
-      assert is_nil(schema.version)
+      assert schema.version == 3
       assert schema.full_name == "io.acme.Payment"
     end
 
-    test "when request by global ID with basic auth was successful" do
+    test "when requesting by global ID with basic auth" do
       stub(Avrora.ConfigMock, :registry_auth, fn -> {:basic, ["login", "password"]} end)
 
       Avrora.HTTPClientMock
@@ -173,14 +203,22 @@ defmodule Avrora.Storage.RegistryTest do
         {:ok, %{"schema" => json_schema()}}
       end)
 
+      Avrora.HTTPClientMock
+      |> expect(:get, fn url, options ->
+        assert url == "http://reg.loc/schemas/ids/1/versions"
+        assert Keyword.fetch!(options, :authorization) == "Basic bG9naW46cGFzc3dvcmQ="
+
+        {:ok, [%{"version" => 3, "subject" => "io.acme.Payment"}]}
+      end)
+
       {:ok, schema} = Registry.get(1)
 
       assert schema.id == 1
-      assert is_nil(schema.version)
+      assert schema.version == 3
       assert schema.full_name == "io.acme.Payment"
     end
 
-    test "when request by global ID was unsuccessful" do
+    test "when requesting by global ID failed" do
       Avrora.HTTPClientMock
       |> expect(:get, fn url, _ ->
         assert url == "http://reg.loc/schemas/ids/1"
@@ -191,7 +229,7 @@ defmodule Avrora.Storage.RegistryTest do
       assert Registry.get(1) == {:error, :unknown_version}
     end
 
-    test "when request by global ID with reference was successful" do
+    test "when requesting by global ID with reference" do
       Avrora.HTTPClientMock
       |> expect(:get, fn url, _ ->
         assert url == "http://reg.loc/schemas/ids/43"
@@ -225,12 +263,59 @@ defmodule Avrora.Storage.RegistryTest do
         }
       end)
 
+      Avrora.HTTPClientMock
+      |> expect(:get, fn url, _ ->
+        assert url == "http://reg.loc/schemas/ids/43/versions"
+
+        {:ok, [%{"version" => 13, "subject" => "io.acme.Account"}]}
+      end)
+
       {:ok, schema} = Registry.get(43)
 
       assert schema.id == 43
-      assert is_nil(schema.version)
+      assert schema.version == 13
       assert schema.full_name == "io.acme.Account"
       assert schema.json == json_schema_with_reference_denormalized()
+    end
+
+    test "when requesting by global ID and schema is unnamed type" do
+      Avrora.HTTPClientMock
+      |> expect(:get, fn url, _ ->
+        assert url == "http://reg.loc/schemas/ids/42"
+
+        {:ok, %{"schema" => json_schema_unnamed(), "subject" => "io.acme.Primitive"}}
+      end)
+
+      Avrora.HTTPClientMock
+      |> expect(:get, fn url, _ ->
+        assert url == "http://reg.loc/schemas/ids/42/versions"
+
+        {:ok, [%{"version" => 1, "subject" => "io.acme.Primitive"}]}
+      end)
+
+      {:ok, schema} = Registry.get(42)
+
+      assert schema.id == 42
+      assert schema.version == 1
+      assert schema.full_name == "io.acme.Primitive"
+    end
+
+    test "when requesting by global ID and versions response invalid" do
+      Avrora.HTTPClientMock
+      |> expect(:get, fn url, _ ->
+        assert url == "http://reg.loc/schemas/ids/1"
+
+        {:ok, %{"schema" => json_schema()}}
+      end)
+
+      Avrora.HTTPClientMock
+      |> expect(:get, fn url, _ ->
+        assert url == "http://reg.loc/schemas/ids/1/versions"
+
+        {:ok, []}
+      end)
+
+      assert {:error, :invalid_versions} = Registry.get(1)
     end
 
     test "when request should not perform SSL verification" do
@@ -242,10 +327,18 @@ defmodule Avrora.Storage.RegistryTest do
         {:ok, %{"schema" => json_schema()}}
       end)
 
+      Avrora.HTTPClientMock
+      |> expect(:get, fn url, options ->
+        assert url == "http://reg.loc/schemas/ids/1/versions"
+        assert Keyword.fetch!(options, :ssl_options) == [verify: :verify_none]
+
+        {:ok, [%{"version" => 3, "subject" => "io.acme.Payment"}]}
+      end)
+
       {:ok, schema} = Registry.get(1)
 
       assert schema.id == 1
-      assert is_nil(schema.version)
+      assert schema.version == 3
       assert schema.full_name == "io.acme.Payment"
     end
 
@@ -261,6 +354,14 @@ defmodule Avrora.Storage.RegistryTest do
         {:ok, %{"schema" => json_schema()}}
       end)
 
+      Avrora.HTTPClientMock
+      |> expect(:get, fn url, options ->
+        assert url == "http://reg.loc/schemas/ids/1/versions"
+        assert Keyword.fetch!(options, :ssl_options) == [verify: :verify_peer, cacerts: [<<48, 130, 3, 201>>]]
+
+        {:ok, [%{"version" => 3, "subject" => "io.acme.Payment"}]}
+      end)
+
       assert :ok == Registry.get(1) |> elem(0)
     end
 
@@ -273,6 +374,14 @@ defmodule Avrora.Storage.RegistryTest do
         assert Keyword.fetch!(options, :ssl_options) == [verify: :verify_peer, cacertfile: "path/to/file"]
 
         {:ok, %{"schema" => json_schema()}}
+      end)
+
+      Avrora.HTTPClientMock
+      |> expect(:get, fn url, options ->
+        assert url == "http://reg.loc/schemas/ids/1/versions"
+        assert Keyword.fetch!(options, :ssl_options) == [verify: :verify_peer, cacertfile: "path/to/file"]
+
+        {:ok, [%{"version" => 3, "subject" => "io.acme.Payment"}]}
       end)
 
       assert :ok == Registry.get(1) |> elem(0)
@@ -290,7 +399,7 @@ defmodule Avrora.Storage.RegistryTest do
       Avrora.HTTPClientMock
       |> expect(:post, fn url, payload, options ->
         assert url == "http://reg.loc/subjects/io.acme.Payment/versions"
-        assert payload == json_schema()
+        assert payload == %{schema: json_schema()}
         assert Keyword.fetch!(options, :content_type) == "application/vnd.schemaregistry.v1+json"
         assert Keyword.fetch!(options, :ssl_options) == [verify: :verify_none]
 
@@ -308,7 +417,7 @@ defmodule Avrora.Storage.RegistryTest do
       Avrora.HTTPClientMock
       |> expect(:post, fn url, payload, _ ->
         assert url == "http://reg.loc/subjects/io.acme.Payment/versions"
-        assert payload == json_schema()
+        assert payload == %{schema: json_schema()}
 
         {:ok, %{"id" => 1}}
       end)
@@ -329,12 +438,12 @@ defmodule Avrora.Storage.RegistryTest do
       Avrora.HTTPClientMock
       |> expect(:post, fn url, payload, _ ->
         assert url == "http://reg.loc/subjects/io.acme.Payment/versions"
-        assert payload == ~s({"type":"string"})
+        assert payload == %{schema: ~s({"type":"unknown"})}
 
-        {:error, schema_incompatible_parsed_error()}
+        {:error, schema_invalid_parsed_error()}
       end)
 
-      assert Registry.put("io.acme.Payment", ~s({"type":"string"})) == {:error, :conflict}
+      assert Registry.put("io.acme.Payment", ~s({"type":"unknown"})) == {:error, :invalid_schema}
     end
 
     test "when request should send Authorization header" do
@@ -343,7 +452,7 @@ defmodule Avrora.Storage.RegistryTest do
       Avrora.HTTPClientMock
       |> expect(:post, fn url, payload, options ->
         assert url == "http://reg.loc/subjects/io.acme.Payment/versions"
-        assert payload == json_schema()
+        assert payload == %{schema: json_schema()}
         assert Keyword.fetch!(options, :authorization) == "Basic bG9naW46cGFzc3dvcmQ="
 
         {:ok, %{"id" => 1}}
@@ -358,7 +467,7 @@ defmodule Avrora.Storage.RegistryTest do
       Avrora.HTTPClientMock
       |> expect(:post, fn url, payload, options ->
         assert url == "http://reg.loc/subjects/io.acme.Payment/versions"
-        assert payload == json_schema()
+        assert payload == %{schema: json_schema()}
         assert Keyword.fetch!(options, :user_agent) == "Avrora/0.0.1 Elixir"
 
         {:ok, %{"id" => 1}}
@@ -374,7 +483,7 @@ defmodule Avrora.Storage.RegistryTest do
       Avrora.HTTPClientMock
       |> expect(:post, fn url, payload, options ->
         assert url == "http://reg.loc/subjects/io.acme.Payment/versions"
-        assert payload == json_schema()
+        assert payload == %{schema: json_schema()}
         assert Keyword.fetch!(options, :ssl_options) == [verify: :verify_peer, cacerts: [<<48, 130, 3, 201>>]]
 
         {:ok, %{"id" => 1}}
@@ -389,7 +498,7 @@ defmodule Avrora.Storage.RegistryTest do
       Avrora.HTTPClientMock
       |> expect(:post, fn url, payload, options ->
         assert url == "http://reg.loc/subjects/io.acme.Payment/versions"
-        assert payload == json_schema()
+        assert payload == %{schema: json_schema()}
         assert Keyword.fetch!(options, :ssl_options) == [verify: :verify_peer, cacertfile: "path/to/file"]
 
         {:ok, %{"id" => 1}}
@@ -413,9 +522,11 @@ defmodule Avrora.Storage.RegistryTest do
     %{"error_code" => 40402, "message" => "Subject version not found!"}
   end
 
-  defp schema_incompatible_parsed_error do
-    %{"error_code" => 409, "message" => "Schema is incompatible!"}
+  defp schema_invalid_parsed_error do
+    %{"error_code" => 42201, "message" => "Invalid schema!"}
   end
+
+  defp json_schema_unnamed, do: ~s({"type": "string"})
 
   defp json_schema do
     ~s({"namespace":"io.acme","type":"record","name":"Payment","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})

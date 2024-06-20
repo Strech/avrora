@@ -20,7 +20,7 @@ defmodule Avrora.HTTPClient do
   @doc false
   @spec post(String.t(), String.t(), keyword(String.t())) :: {:ok, map()} | {:error, term()}
   def post(url, payload, options \\ []) when is_binary(payload) do
-    with {:ok, body} <- Jason.encode(%{"schema" => payload}),
+    with {:ok, body} <- Jason.encode(payload),
          {:ok, content_type} <- Keyword.fetch(options, :content_type),
          {:ok, headers} <- extract_headers(options),
          {:ok, ssl_options} <- extract_ssl(options),
