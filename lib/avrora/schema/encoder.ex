@@ -7,7 +7,7 @@ defmodule Avrora.Schema.Encoder do
   alias Avrora.Schema
   alias Avrora.Schema.ReferenceCollector
 
-  @type reference_lookup_fun_t :: (String.t() -> {:ok, String.t()} | {:error, term()})
+  @type reference_lookup_fun :: (String.t() -> {:ok, String.t()} | {:error, term()})
   @undefined_name :undefined
   @reference_lookup_fun &__MODULE__.reference_lookup/1
 
@@ -31,7 +31,7 @@ defmodule Avrora.Schema.Encoder do
   def from_json(definition, reference_lookup_fun: reference_lookup_fun),
     do: from_json(definition, name: @undefined_name, reference_lookup_fun: reference_lookup_fun)
 
-  @spec from_json(String.t(), name: :undefined | String.t(), reference_lookup_fun: reference_lookup_fun_t()) ::
+  @spec from_json(String.t(), name: :undefined | String.t(), reference_lookup_fun: reference_lookup_fun()) ::
           {:ok, Schema.t()} | {:error, term()}
   def from_json(definition, name: name, reference_lookup_fun: reference_lookup_fun) do
     lookup_table = ets().new()
