@@ -20,7 +20,7 @@ defmodule Integration.MixProject do
   defp deps do
     [
       {:avrora, path: "../../"},
-      {:dialyxir, "~> 1.0.0", runtime: false}
+      {:dialyxir, "~> 1.1", runtime: false}
     ]
   end
 end

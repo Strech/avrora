@@ -290,7 +290,7 @@ defmodule Avrora.Storage.RegistryTest do
       Avrora.HTTPClientMock
       |> expect(:post, fn url, payload, options ->
         assert url == "http://reg.loc/subjects/io.acme.Payment/versions"
-        assert payload == json_schema()
+        assert payload == %{schema: json_schema()}
         assert Keyword.fetch!(options, :content_type) == "application/vnd.schemaregistry.v1+json"
         assert Keyword.fetch!(options, :ssl_options) == [verify: :verify_none]
 
@@ -308,7 +308,7 @@ defmodule Avrora.Storage.RegistryTest do
       Avrora.HTTPClientMock
       |> expect(:post, fn url, payload, _ ->
         assert url == "http://reg.loc/subjects/io.acme.Payment/versions"
-        assert payload == json_schema()
+        assert payload == %{schema: json_schema()}
 
         {:ok, %{"id" => 1}}
       end)
@@ -329,7 +329,7 @@ defmodule Avrora.Storage.RegistryTest do
       Avrora.HTTPClientMock
       |> expect(:post, fn url, payload, _ ->
         assert url == "http://reg.loc/subjects/io.acme.Payment/versions"
-        assert payload == ~s({"type":"string"})
+        assert payload == %{schema: ~s({"type":"string"})}
 
         {:error, schema_incompatible_parsed_error()}
       end)
@@ -343,7 +343,7 @@ defmodule Avrora.Storage.RegistryTest do
       Avrora.HTTPClientMock
       |> expect(:post, fn url, payload, options ->
         assert url == "http://reg.loc/subjects/io.acme.Payment/versions"
-        assert payload == json_schema()
+        assert payload == %{schema: json_schema()}
         assert Keyword.fetch!(options, :authorization) == "Basic bG9naW46cGFzc3dvcmQ="
 
         {:ok, %{"id" => 1}}
@@ -358,7 +358,7 @@ defmodule Avrora.Storage.RegistryTest do
       Avrora.HTTPClientMock
       |> expect(:post, fn url, payload, options ->
         assert url == "http://reg.loc/subjects/io.acme.Payment/versions"
-        assert payload == json_schema()
+        assert payload == %{schema: json_schema()}
         assert Keyword.fetch!(options, :user_agent) == "Avrora/0.0.1 Elixir"
 
         {:ok, %{"id" => 1}}
@@ -374,7 +374,7 @@ defmodule Avrora.Storage.RegistryTest do
       Avrora.HTTPClientMock
       |> expect(:post, fn url, payload, options ->
         assert url == "http://reg.loc/subjects/io.acme.Payment/versions"
-        assert payload == json_schema()
+        assert payload == %{schema: json_schema()}
         assert Keyword.fetch!(options, :ssl_options) == [verify: :verify_peer, cacerts: [<<48, 130, 3, 201>>]]
 
         {:ok, %{"id" => 1}}
@@ -389,7 +389,7 @@ defmodule Avrora.Storage.RegistryTest do
       Avrora.HTTPClientMock
       |> expect(:post, fn url, payload, options ->
         assert url == "http://reg.loc/subjects/io.acme.Payment/versions"
-        assert payload == json_schema()
+        assert payload == %{schema: json_schema()}
         assert Keyword.fetch!(options, :ssl_options) == [verify: :verify_peer, cacertfile: "path/to/file"]
 
         {:ok, %{"id" => 1}}
