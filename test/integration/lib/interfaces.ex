@@ -60,7 +60,7 @@ defmodule Interfaces do
 
     defmodule MyClient do
       @moduledoc false
-      use Avrora.Client
+      use Avrora.Client, otp_app: :integration
     end
 
     alias Interfaces.PrivateClientTest.MyClient
