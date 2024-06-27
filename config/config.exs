@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :avrora,
   schemas_path: Path.expand("./test/fixtures/schemas"),
