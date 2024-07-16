@@ -1,14 +1,13 @@
 defmodule Avrora.Storage do
   @moduledoc """
-  Behavior for storing and getting schemas by name or integer ID.
+  Behavior for storing and retrieving schemas by name or integer ID.
   """
 
   @typedoc "Schema indentifier."
-  @type schema_id :: String.t() | integer()
+  @type schema_id :: integer() | String.t()
 
-  @callback get(key :: schema_id) :: {:ok, result :: nil | Avrora.Schema.t()} | {:error, reason :: term()}
-
-  @callback put(key :: schema_id, value :: Avrora.Schema.t()) ::
+  @callback get(key :: schema_id()) :: {:ok, result :: nil | Avrora.Schema.t()} | {:error, reason :: term()}
+  @callback put(key :: schema_id(), value :: Avrora.Schema.t()) ::
               {:ok, result :: Avrora.Schema.t()} | {:error, reason :: term()}
 
   defmodule Transient do
@@ -21,11 +20,9 @@ defmodule Avrora.Storage do
     @typedoc "Naive timestamp with second precision."
     @type timestamp :: timeout()
 
+    @callback flush() :: {:ok, result :: boolean()} | {:error, reason :: term()}
     @callback delete(key :: Storage.schema_id()) :: {:ok, result :: boolean()} | {:error, reason :: term()}
-
     @callback expire(key :: Storage.schema_id(), ttl :: timeout()) ::
                 {:ok, timestamp :: timestamp()} | {:error, reason :: term()}
-
-    @callback flush() :: {:ok, result :: boolean()} | {:error, reason :: term()}
   end
 end
