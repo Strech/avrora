@@ -60,7 +60,7 @@ defmodule Avrora.Codec.PlainTest do
       Avrora.Storage.RegistryMock
       |> expect(:put, fn key, value ->
         assert key == "io.acme.Payment"
-        assert value == payment_json_schema()
+        assert value == payment_json()
 
         {:error, :unconfigured_registry_url}
       end)
@@ -80,13 +80,13 @@ defmodule Avrora.Codec.PlainTest do
     test "when payload is a valid binary and null values must be as is" do
       stub(Avrora.ConfigMock, :convert_null_values, fn -> false end)
 
-      {:ok, decoded} = Codec.Plain.decode(null_value_message(), schema: null_value_schema())
+      {:ok, decoded} = Codec.Plain.decode(null_value_message(), schema: record_with_null_union_field_schema())
 
       assert decoded == %{"key" => "user-1", "value" => :null}
     end
 
     test "when payload is a valid binary and null values must be converted" do
-      {:ok, decoded} = Codec.Plain.decode(null_value_message(), schema: null_value_schema())
+      {:ok, decoded} = Codec.Plain.decode(null_value_message(), schema: record_with_null_union_field_schema())
 
       assert decoded == %{"key" => "user-1", "value" => nil}
     end
@@ -114,8 +114,8 @@ defmodule Avrora.Codec.PlainTest do
     end
 
     test "when payload is valid binary and union type must be decoded without decoding hook" do
-      {:ok, decoded_int} = Codec.Plain.decode(<<2, 84>>, schema: union_schema())
-      {:ok, decoded_str} = Codec.Plain.decode(<<0, 4, 52, 50>>, schema: union_schema())
+      {:ok, decoded_int} = Codec.Plain.decode(<<2, 84>>, schema: record_with_record_union_field_schema())
+      {:ok, decoded_str} = Codec.Plain.decode(<<0, 4, 52, 50>>, schema: record_with_record_union_field_schema())
 
       assert decoded_int == %{"union_field" => %{"value" => 42}}
       assert decoded_str == %{"union_field" => %{"value" => "42"}}
@@ -129,8 +129,8 @@ defmodule Avrora.Codec.PlainTest do
         end
       end)
 
-      {:ok, decoded_int} = Codec.Plain.decode(<<2, 84>>, schema: union_schema())
-      {:ok, decoded_str} = Codec.Plain.decode(<<0, 4, 52, 50>>, schema: union_schema())
+      {:ok, decoded_int} = Codec.Plain.decode(<<2, 84>>, schema: record_with_record_union_field_schema())
+      {:ok, decoded_str} = Codec.Plain.decode(<<0, 4, 52, 50>>, schema: record_with_record_union_field_schema())
 
       assert decoded_int == %{"union_field" => {"io.acme.as_int", %{"value" => 42}}}
       assert decoded_str == %{"union_field" => {"io.acme.as_str", %{"value" => "42"}}}
@@ -171,7 +171,7 @@ defmodule Avrora.Codec.PlainTest do
       Avrora.Storage.RegistryMock
       |> expect(:put, fn key, value ->
         assert key == "io.acme.Payment"
-        assert value == payment_json_schema()
+        assert value == payment_json()
 
         {:error, :unconfigured_registry_url}
       end)
@@ -207,7 +207,7 @@ defmodule Avrora.Codec.PlainTest do
       Avrora.Storage.RegistryMock
       |> expect(:put, fn key, value ->
         assert key == "io.acme.CardType"
-        assert value == enum_json_schema()
+        assert value == enum_json()
 
         {:error, :unconfigured_registry_url}
       end)
@@ -243,7 +243,7 @@ defmodule Avrora.Codec.PlainTest do
       Avrora.Storage.RegistryMock
       |> expect(:put, fn key, value ->
         assert key == "io.acme.CRC32"
-        assert value == fixed_json_schema()
+        assert value == fixed_json()
 
         {:error, :unconfigured_registry_url}
       end)
@@ -277,56 +277,56 @@ defmodule Avrora.Codec.PlainTest do
   defp payment_payload, do: %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}
 
   defp payment_schema do
-    {:ok, schema} = Schema.Encoder.from_json(payment_json_schema())
+    {:ok, schema} = Schema.Encoder.from_json(payment_json())
     %{schema | id: nil, version: nil}
   end
 
-  defp null_value_schema do
-    {:ok, schema} = Schema.Encoder.from_json(null_value_json_schema())
+  defp record_with_null_union_field_schema do
+    {:ok, schema} = Schema.Encoder.from_json(record_with_null_union_field_json())
+    %{schema | id: nil, version: nil}
+  end
+
+  defp record_with_record_union_field_schema do
+    {:ok, schema} = Schema.Encoder.from_json(record_with_record_union_field_json())
     %{schema | id: nil, version: nil}
   end
 
   defp map_schema do
-    {:ok, schema} = Schema.Encoder.from_json(map_json_schema())
+    {:ok, schema} = Schema.Encoder.from_json(record_with_map_field_json())
     %{schema | id: nil, version: nil}
   end
 
   defp enum_schema do
-    {:ok, schema} = Schema.Encoder.from_json(enum_json_schema())
+    {:ok, schema} = Schema.Encoder.from_json(enum_json())
     %{schema | id: nil, version: nil}
   end
 
   defp fixed_schema do
-    {:ok, schema} = Schema.Encoder.from_json(fixed_json_schema())
+    {:ok, schema} = Schema.Encoder.from_json(fixed_json())
     %{schema | id: nil, version: nil}
   end
 
-  defp union_schema do
-    {:ok, schema} = Schema.Encoder.from_json(union_json_schema())
-    %{schema | id: nil, version: nil}
-  end
-
-  defp payment_json_schema do
+  defp payment_json do
     ~s({"namespace":"io.acme","name":"Payment","type":"record","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
   end
 
-  defp null_value_json_schema do
-    ~s({"namespace":"io.acme","name":"Null_Value","type":"record","fields":[{"name":"key","type":"string"},{"name":"value","type":["null","int"]}]})
+  defp record_with_null_union_field_json do
+    ~s({"namespace":"io.acme","name":"NullValue","type":"record","fields":[{"name":"key","type":"string"},{"name":"value","type":["null","int"]}]})
   end
 
-  defp map_json_schema do
-    ~s({"namespace":"io.acme","name":"Map_Value","type":"record","fields":[{"name":"map_field", "type": {"type": "map", "values": "string"}}]})
+  defp record_with_record_union_field_json do
+    ~s({"namespace":"io.acme","name":"UnionValue","type":"record","fields":[{"name":"union_field","type":[{"type":"record","name":"as_str","fields":[{"name":"value","type":"string"}]},{"type":"record","name":"as_int","fields":[{"name":"value","type":"int"}]}]}]})
   end
 
-  defp enum_json_schema do
+  defp record_with_map_field_json do
+    ~s({"namespace":"io.acme","name":"MapValue","type":"record","fields":[{"name":"map_field", "type": {"type": "map", "values": "string"}}]})
+  end
+
+  defp enum_json do
     ~s({"namespace":"io.acme","name":"CardType","type":"enum","symbols":["MASTERCARD","VISA","AMERICANEXPRESS"]})
   end
 
-  defp fixed_json_schema do
+  defp fixed_json do
     ~s({"namespace":"io.acme","name":"CRC32","type":"fixed","size":8})
-  end
-
-  defp union_json_schema do
-    ~s({"namespace":"io.acme","name":"Union_Value","type":"record","fields":[{"name":"union_field","type":[{"type":"record","name":"as_str","fields":[{"name":"value","type":"string"}]},{"type":"record","name":"as_int","fields":[{"name":"value","type":"int"}]}]}]})
   end
 end
