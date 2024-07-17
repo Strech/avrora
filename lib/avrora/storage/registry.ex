@@ -168,6 +168,7 @@ defmodule Avrora.Storage.Registry do
         40401 -> :unknown_subject
         40402 -> :unknown_version
         40403 -> :unknown_schema
+        42201 -> :invalid_schema
         409 -> :conflict
         422 -> :unprocessable
         _ -> payload

@@ -48,7 +48,7 @@ defmodule Avrora.Schema.Encoder do
   An example of a reference lookup which returns empty JSON body
   """
   @spec reference_lookup(String.t()) :: {:ok, String.t()} | {:error, term()}
-  def reference_lookup(_), do: {:ok, ~s({})}
+  def reference_lookup(_), do: {:error, :undefined_reference_lookup_function}
 
   @doc """
   Convert `erlavro` format to the Schema struct.
@@ -160,6 +160,7 @@ defmodule Avrora.Schema.Encoder do
   defp do_parse(payload) do
     {:ok, :avro_json_decoder.decode_schema(payload, allow_bad_references: true)}
   rescue
+    _ in FunctionClauseError -> {:error, :invalid_schema}
     error in ArgumentError -> {:error, error.message}
     error in ErlangError -> {:error, error.original}
   end
