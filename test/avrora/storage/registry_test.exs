@@ -16,7 +16,7 @@ defmodule Avrora.Storage.RegistryTest do
   setup :support_config
 
   describe "get/1" do
-    test "when request by subject name of schema with reference without version was successful" do
+    test "when requesting by subject name without version and schema contains external reference" do
       Avrora.HTTPClientMock
       |> expect(:get, fn url, _ ->
         assert url == "http://reg.loc/subjects/io.acme.Account/versions/latest"
@@ -58,7 +58,7 @@ defmodule Avrora.Storage.RegistryTest do
       assert schema.json == json_schema_with_reference_denormalized()
     end
 
-    test "when request by subject name of schema with reference was unsuccessful because of reference schema not found" do
+    test "when requesting by subject name and external reference schema not found" do
       Avrora.HTTPClientMock
       |> expect(:get, fn url, _ ->
         assert url == "http://reg.loc/subjects/io.acme.Account/versions/latest"
@@ -90,7 +90,7 @@ defmodule Avrora.Storage.RegistryTest do
       assert Registry.get("io.acme.Account") == {:error, :unknown_reference_subject}
     end
 
-    test "when request by subject name without version was successful" do
+    test "when requesting by subject name without version" do
       Avrora.HTTPClientMock
       |> expect(:get, fn url, _ ->
         assert url == "http://reg.loc/subjects/io.acme.Payment/versions/latest"
@@ -113,7 +113,7 @@ defmodule Avrora.Storage.RegistryTest do
       assert schema.full_name == "io.acme.Payment"
     end
 
-    test "when request by subject name with version was successful" do
+    test "when requesting by subject name with version" do
       Avrora.HTTPClientMock
       |> expect(:get, fn url, _ ->
         assert url == "http://reg.loc/subjects/io.acme.Payment/versions/10"
@@ -147,7 +147,7 @@ defmodule Avrora.Storage.RegistryTest do
       assert Registry.get("io.acme.Payment") == {:error, :unknown_subject}
     end
 
-    test "when request by global ID was successful" do
+    test "when requesting by global ID" do
       Avrora.HTTPClientMock
       |> expect(:get, fn url, _ ->
         assert url == "http://reg.loc/schemas/ids/1"
@@ -162,7 +162,7 @@ defmodule Avrora.Storage.RegistryTest do
       assert schema.full_name == "io.acme.Payment"
     end
 
-    test "when request by global ID with basic auth was successful" do
+    test "when requesting by global ID with basic auth" do
       stub(Avrora.ConfigMock, :registry_auth, fn -> {:basic, ["login", "password"]} end)
 
       Avrora.HTTPClientMock
@@ -180,7 +180,7 @@ defmodule Avrora.Storage.RegistryTest do
       assert schema.full_name == "io.acme.Payment"
     end
 
-    test "when request by global ID was unsuccessful" do
+    test "when requesting by global ID was failed" do
       Avrora.HTTPClientMock
       |> expect(:get, fn url, _ ->
         assert url == "http://reg.loc/schemas/ids/1"
@@ -191,7 +191,7 @@ defmodule Avrora.Storage.RegistryTest do
       assert Registry.get(1) == {:error, :unknown_version}
     end
 
-    test "when request by global ID with reference was successful" do
+    test "when requesting by global ID with reference" do
       Avrora.HTTPClientMock
       |> expect(:get, fn url, _ ->
         assert url == "http://reg.loc/schemas/ids/43"
@@ -329,12 +329,12 @@ defmodule Avrora.Storage.RegistryTest do
       Avrora.HTTPClientMock
       |> expect(:post, fn url, payload, _ ->
         assert url == "http://reg.loc/subjects/io.acme.Payment/versions"
-        assert payload == %{schema: ~s({"type":"string"})}
+        assert payload == %{schema: ~s({"type":"unknown"})}
 
-        {:error, schema_incompatible_parsed_error()}
+        {:error, schema_invalid_parsed_error()}
       end)
 
-      assert Registry.put("io.acme.Payment", ~s({"type":"string"})) == {:error, :conflict}
+      assert Registry.put("io.acme.Payment", ~s({"type":"unknown"})) == {:error, :invalid_schema}
     end
 
     test "when request should send Authorization header" do
@@ -413,8 +413,8 @@ defmodule Avrora.Storage.RegistryTest do
     %{"error_code" => 40402, "message" => "Subject version not found!"}
   end
 
-  defp schema_incompatible_parsed_error do
-    %{"error_code" => 409, "message" => "Schema is incompatible!"}
+  defp schema_invalid_parsed_error do
+    %{"error_code" => 42201, "message" => "Invalid schema!"}
   end
 
   defp json_schema do
