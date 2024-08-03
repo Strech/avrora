@@ -283,6 +283,10 @@ defmodule Avrora.Storage.RegistryTest do
 
       assert Registry.get("anything") == {:error, :unconfigured_registry_url}
     end
+
+    test "when references reusing same ets table" do
+      assert "TODO: Write test similar to Storage.File" == 1
+    end
   end
 
   describe "put/2" do

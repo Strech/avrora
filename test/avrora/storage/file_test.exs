@@ -45,6 +45,14 @@ defmodule Avrora.Storage.FileTest do
       assert output =~ "schema file with version is not allowed"
     end
 
+    test "when references reusing same ets table" do
+      {:ok, _} = File.get("io.acme.Image")
+      existing_ets_tables = count_ets_tables()
+      {:ok, _} = File.get("io.acme.PaymentHistory")
+
+      assert count_ets_tables() - existing_ets_tables == 1
+    end
+
     test "when schema file contains invalid json" do
       assert File.get("io.acme.Wrong") == {:error, "argument error"}
     end
@@ -63,4 +71,6 @@ defmodule Avrora.Storage.FileTest do
       assert File.put(42, %Avrora.Schema{}) == {:error, :unsupported}
     end
   end
+
+  defp count_ets_tables, do: :ets.all() |> length()
 end
