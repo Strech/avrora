@@ -50,6 +50,7 @@ defmodule Avrora.Storage.File do
   @impl true
   def put(_key, _value), do: {:error, :unsupported}
 
+  # TODO: Move `Name.parse` outside of the method
   defp read_schema_file_by_name(name) do
     with {:ok, schema_name} <- Name.parse(name),
          filepath <- name_to_filepath(schema_name.name) do
