@@ -2,6 +2,7 @@ defmodule Avrora.Storage.FileTest do
   use ExUnit.Case, async: true
   doctest Avrora.Storage.File
 
+  import Mox
   import Support.Config
   import ExUnit.CaptureLog
   alias Avrora.Storage.File
@@ -46,11 +47,13 @@ defmodule Avrora.Storage.FileTest do
     end
 
     test "when references reusing same ets table" do
-      {:ok, _} = File.get("io.acme.Image")
-      existing_ets_tables = count_ets_tables()
+      _ = start_link_supervised!(Support.AvroSchemaStore)
+      stub(Avrora.ConfigMock, :ets_lib, fn -> Support.AvroSchemaStore end)
+
+      existing_ets_tables = Support.AvroSchemaStore.count()
       {:ok, _} = File.get("io.acme.PaymentHistory")
 
-      assert count_ets_tables() - existing_ets_tables == 1
+      assert Support.AvroSchemaStore.count() - existing_ets_tables == 1
     end
 
     test "when schema file contains invalid json" do
@@ -71,6 +74,4 @@ defmodule Avrora.Storage.FileTest do
       assert File.put(42, %Avrora.Schema{}) == {:error, :unsupported}
     end
   end
-
-  defp count_ets_tables, do: :ets.all() |> length()
 end
