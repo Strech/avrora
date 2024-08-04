@@ -11,9 +11,10 @@ defmodule Support.AvroSchemaStore do
       {:ok, _} = start_link_supervised!(Support.AvroSchemaStore)
       stub(Avrora.ConfigMock, :ets_lib, fn -> Support.AvroSchemaStore end)
 
-      IO.inspect(Support.AvroSchemaStore.count(), label: "AvroSchemaStore created")
+      assert Support.AvroSchemaStore.count() == 0
+
       Support.AvroSchemaStore.new()
-      IO.inspect(Support.AvroSchemaStore.count(), label: "AvroSchemaStore created")
+      assert Support.AvroSchemaStore.count() == 1
     end
   """
 
