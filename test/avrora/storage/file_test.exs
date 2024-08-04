@@ -46,7 +46,7 @@ defmodule Avrora.Storage.FileTest do
       assert output =~ "schema file with version is not allowed"
     end
 
-    test "when references reusing same ets table" do
+    test "when references reuse same ets table" do
       _ = start_link_supervised!(Support.AvroSchemaStore)
       stub(Avrora.ConfigMock, :ets_lib, fn -> Support.AvroSchemaStore end)
 

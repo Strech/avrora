@@ -280,7 +280,7 @@ defmodule Avrora.Storage.RegistryTest do
     end
 
     @tag skip: "This test will fail because Registry creates new table on each reference"
-    test "when references reusing same ets table" do
+    test "when references reuse same ets table" do
       _ = start_link_supervised!(Support.AvroSchemaStore)
       stub(Avrora.ConfigMock, :ets_lib, fn -> Support.AvroSchemaStore end)
 
