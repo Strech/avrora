@@ -13,8 +13,8 @@ jobs:
     timeout-minutes: 30
     name: Internal Typespecs
     env:
-      OTP: "25.3"
-      ELIXIR: "1.13"
+      OTP: "26.2"
+      ELIXIR: "1.14"
     steps:
       - uses: actions/checkout@v2
       - uses: erlef/setup-beam@v1
@@ -50,8 +50,8 @@ jobs:
     runs-on: ubuntu-20.04
     name: Code Style
     env:
-      OTP: "25.3"
-      ELIXIR: "1.13"
+      OTP: "26.2"
+      ELIXIR: "1.14"
     steps:
       - uses: actions/checkout@v2
       - uses: erlef/setup-beam@v1
@@ -78,8 +78,8 @@ jobs:
     runs-on: ubuntu-20.04
     name: Code Formatting
     env:
-      OTP: "25.3"
-      ELIXIR: "1.13"
+      OTP: "26.2"
+      ELIXIR: "1.14"
     steps:
       - uses: actions/checkout@v2
       - uses: erlef/setup-beam@v1
@@ -107,8 +107,8 @@ jobs:
     timeout-minutes: 30
     name: External Typespecs
     env:
-      OTP: "25.3"
-      ELIXIR: "1.13"
+      OTP: "26.2"
+      ELIXIR: "1.14"
     steps:
       - uses: actions/checkout@v2
       - uses: erlef/setup-beam@v1
@@ -151,11 +151,9 @@ jobs:
       # NOTE: We are going to support 4 version from the official list of 5
       # https://hexdocs.pm/elixir/compatibility-and-deprecations.html
       matrix:
-        otp: ["25.3"]
-        elixir: ["1.13.4"]
+        otp: ["26.2"]
+        elixir: ["1.14.5"]
         include:
-          - otp: "26.2"
-            elixir: "1.14.5"
           - otp: "26.2"
             elixir: "1.15.8"
           - otp: "26.2"
