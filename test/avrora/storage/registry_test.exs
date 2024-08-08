@@ -1,16 +1,11 @@
 defmodule Avrora.Storage.RegistryTest do
-  # NOTE: Remove when Elixir 1.6 support ends
-  use ExUnit.Case
-  # use ExUnit.Case, async: true
+  use ExUnit.Case, async: true
   doctest Avrora.Storage.Registry
 
   import Mox
   import Support.Config
   import ExUnit.CaptureLog
   alias Avrora.Storage.Registry
-
-  # NOTE: Remove when Elixir 1.6 support ends
-  setup :set_mox_from_context
 
   setup :verify_on_exit!
   setup :support_config
@@ -282,6 +277,51 @@ defmodule Avrora.Storage.RegistryTest do
       stub(Avrora.ConfigMock, :registry_url, fn -> nil end)
 
       assert Registry.get("anything") == {:error, :unconfigured_registry_url}
+    end
+
+    @tag skip: "This test will fail because Registry creates new table on each reference"
+    test "when references reuse same ets table" do
+      _ = start_link_supervised!(Support.AvroSchemaStore)
+      stub(Avrora.ConfigMock, :ets_lib, fn -> Support.AvroSchemaStore end)
+
+      existing_ets_tables = Support.AvroSchemaStore.count()
+
+      Avrora.HTTPClientMock
+      |> expect(:get, fn url, _ ->
+        assert url == "http://reg.loc/schemas/ids/43"
+
+        {
+          :ok,
+          %{
+            "subject" => "io.acme.Account",
+            "id" => 43,
+            "version" => 1,
+            "schema" => json_schema_with_reference(),
+            "references" => [
+              %{"name" => "io.acme.User", "subject" => "io.acme.User", "version" => 1}
+            ]
+          }
+        }
+      end)
+
+      Avrora.HTTPClientMock
+      |> expect(:get, fn url, _ ->
+        assert url == "http://reg.loc/subjects/io.acme.User/versions/1"
+
+        {
+          :ok,
+          %{
+            "subject" => "io.acme.User",
+            "id" => 44,
+            "version" => 1,
+            "schema" => json_schema_referenced()
+          }
+        }
+      end)
+
+      {:ok, _} = Registry.get(43)
+
+      assert Support.AvroSchemaStore.count() - existing_ets_tables == 1
     end
   end
 
