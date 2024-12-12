@@ -103,18 +103,6 @@ defmodule Avrora.Client do
           @opts unquote(opts)
           @otp_app Keyword.get(@opts, :otp_app)
 
-          def schemas_path do
-            path = get(@opts, :schemas_path, "./priv/schemas")
-
-            if is_nil(@otp_app), do: Path.expand(path), else: Application.app_dir(@otp_app, path)
-          end
-
-          def registry_ssl_cacert_path do
-            path = get(@opts, :registry_ssl_cacert_path, nil)
-
-            if is_nil(path), do: nil, else: Path.expand(path)
-          end
-
           def registry_url, do: get(@opts, :registry_url, nil)
           def registry_auth, do: get(@opts, :registry_auth, nil)
           def registry_user_agent, do: get(@opts, :registry_user_agent, "Avrora/#{version()} Elixir")
@@ -133,10 +121,30 @@ defmodule Avrora.Client do
           defp version, do: Application.spec(:avrora, :vsn)
 
           if is_nil(@otp_app) do
+            def schemas_path do
+              path = get(@opts, :schemas_path, "./priv/schemas")
+
+              Path.expand(path)
+            end
+
+            def registry_ssl_cacert_path, do: nil
+
             def self, do: __MODULE__
 
             defp get(opts, key, default), do: Keyword.get(opts, key, default)
           else
+            def schemas_path do
+              path = get(@opts, :schemas_path, "./priv/schemas")
+
+              Application.app_dir(@otp_app, path)
+            end
+
+            def registry_ssl_cacert_path do
+              path = get(@opts, :registry_ssl_cacert_path, nil)
+
+              Path.expand(path)
+            end
+
             def self, do: get(@opts, :config, __MODULE__)
 
             defp get(opts, key, default) do
