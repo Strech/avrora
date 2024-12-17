@@ -32,6 +32,7 @@ defmodule Avrora.Config do
   @callback registry_user_agent :: String.t() | nil
   @callback registry_ssl_cacerts :: binary() | nil
   @callback registry_ssl_cacert_path :: String.t() | nil
+  @callback registry_ssl_opts :: [:ssl.tls_option()] | nil
   @callback registry_schemas_autoreg :: boolean()
   @callback convert_null_values :: boolean()
   @callback convert_map_to_proplist :: boolean()
