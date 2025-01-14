@@ -160,6 +160,8 @@ jobs:
             elixir: "1.16.3"
           - otp: "27.0"
             elixir: "1.17.1"
+          - otp: "27.0"
+            elixir: "1.18.1"
     steps:
       - uses: actions/checkout@v2
       - uses: erlef/setup-beam@v1
