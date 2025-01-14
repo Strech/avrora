@@ -12,7 +12,7 @@ defmodule Avrora.HTTPClient do
   def get(url, options \\ []) do
     with {:ok, headers} <- extract_headers(options),
          {:ok, ssl_options} <- extract_ssl(options),
-         {:ok, {{_, status, _}, _, body}} <- :httpc.request(:get, {~c"#{url}", headers}, [ssl: ssl_options], []) do
+         {:ok, {{_, status, _}, _, body}} <- :httpc.request(:get, {~c(#{url}), headers}, [ssl: ssl_options], []) do
       handle(status, body)
     end
   end
@@ -25,7 +25,7 @@ defmodule Avrora.HTTPClient do
          {:ok, headers} <- extract_headers(options),
          {:ok, ssl_options} <- extract_ssl(options),
          {:ok, {{_, status, _}, _, body}} <-
-           :httpc.request(:post, {~c"#{url}", headers, [content_type], body}, [ssl: ssl_options], []) do
+           :httpc.request(:post, {~c(#{url}), headers, [content_type], body}, [ssl: ssl_options], []) do
       handle(status, body)
     end
   end
@@ -34,12 +34,12 @@ defmodule Avrora.HTTPClient do
     authorization =
       case Keyword.get(options, :authorization) do
         nil -> []
-        credentials -> [{~c"Authorization", ~c"#{credentials}"}]
+        credentials -> [{~C(Authorization), ~c(#{credentials})}]
       end
 
     case Keyword.get(options, :user_agent) do
       nil -> {:ok, authorization}
-      user_agent -> {:ok, [{~c"User-Agent", ~c"#{user_agent}"} | authorization]}
+      user_agent -> {:ok, [{~C(User-Agent), ~c(#{user_agent})} | authorization]}
     end
   end
 
