@@ -37,7 +37,7 @@ defmodule Support.AvroSchemaStore do
     do: {:reply, :avro_schema_store.new(name: String.to_atom("#{@prefix}-#{rand()}")), state}
 
   def handle_call({:count}, _from, state),
-    do: {:reply, Enum.count(:ets.all(), &is_test_store/1), state}
+    do: {:reply, Enum.count(:ets.all(), &test_store?/1), state}
 
   @doc """
   Creates a new Erlang Term Store.
@@ -67,5 +67,5 @@ defmodule Support.AvroSchemaStore do
   def count, do: GenServer.call(__MODULE__, {:count})
 
   defp rand, do: :rand.uniform(1_000_000) + System.os_time()
-  defp is_test_store(id), do: !is_reference(id) && Atom.to_string(id) =~ @prefix
+  defp test_store?(id), do: !is_reference(id) && Atom.to_string(id) =~ @prefix
 end
