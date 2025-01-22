@@ -27,6 +27,7 @@ defmodule Avrora.Codec.SchemaRegistry do
     Logger.warning(
       "`Avrora.Codec.SchemaRegistry.is_decodable/1` is deprecated, use `Avrora.Codec.SchemaRegistry.decodable?/1` instead"
     )
+
     case payload do
       <<@magic_bytes, _::binary>> -> true
       _ -> false
