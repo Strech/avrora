@@ -131,9 +131,9 @@ defmodule Avrora.Client do
             def schemas_path, do: Application.app_dir(@otp_app, get(@opts, :schemas_path, "./priv/schemas"))
 
             def registry_ssl_cacert_path do
-              if path = get(@opts, :registry_ssl_cacert_path, nil) do
-                Path.expand(path)
-              end
+              path = get(@opts, :registry_ssl_cacert_path, nil)
+
+              if is_nil(path), do: nil, else: Path.expand(path)
             end
 
             defp get(opts, key, default) do
