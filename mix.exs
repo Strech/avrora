@@ -1,7 +1,7 @@
 defmodule Avrora.MixProject do
   use Mix.Project
 
-  @version "0.29.0"
+  @version "0.29.1"
 
   def project do
     [
