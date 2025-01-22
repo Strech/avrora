@@ -12,6 +12,9 @@ defmodule Avrora.Codec.Plain do
   alias Avrora.Resolver
 
   @impl true
+  def decodable?(payload) when is_binary(payload), do: true
+
+  @impl true
   def is_decodable(payload) when is_binary(payload), do: true
 
   @impl true

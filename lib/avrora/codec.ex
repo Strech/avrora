@@ -10,10 +10,18 @@ defmodule Avrora.Codec do
 
   ## Examples
 
-      ...> Avrora.Codec.Plain.is_decodable(<<1, 2, 3>>)
+      ...> Avrora.Codec.Plain.decodable?(<<1, 2, 3>>)
       true
-      ...> Avrora.Codec.SchemaRegistry.is_decodable(<<1, 2, 3>>)
+      ...> Avrora.Codec.SchemaRegistry.decodable?(<<1, 2, 3>>)
       false
+  """
+  @callback decodable?(payload :: binary()) :: boolean
+
+  @doc """
+  Checks whether a given binary Avro message is decodable with the Plain codec.
+
+  This function is deprecated and will be removed in future release. 
+  Please use `Avrora.Codec.Plain.decodable?/1` instead.   
   """
   @callback is_decodable(payload :: binary()) :: boolean
 
