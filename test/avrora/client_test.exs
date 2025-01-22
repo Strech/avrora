@@ -61,5 +61,9 @@ defmodule Avrora.ClientTest do
 
       assert Beta.Config.names_cache_ttl() == :infinity
     end
+
+    test "when otp_app is set and registry_ssl_cacert_path is not set" do
+      assert Gamma.Config.registry_ssl_cacert_path() == nil
+    end
   end
 end
