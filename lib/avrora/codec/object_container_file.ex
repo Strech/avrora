@@ -29,6 +29,9 @@ defmodule Avrora.Codec.ObjectContainerFile do
 
   @impl true
   def is_decodable(payload) when is_binary(payload) do
+    Logger.warning(
+      "`Avrora.Codec.ObjectContainerFile.is_decodable/1` is deprecated, use `Avrora.Codec.ObjectContainerFile.decodable?/1` instead"
+    )
     case payload do
       <<@magic_bytes, _::binary>> -> true
       _ -> false
