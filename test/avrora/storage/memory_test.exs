@@ -1,5 +1,5 @@
 defmodule Avrora.Storage.MemoryTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   doctest Avrora.Storage.Memory
 
   alias Avrora.Storage.Memory
