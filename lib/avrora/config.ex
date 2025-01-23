@@ -11,6 +11,7 @@ defmodule Avrora.Config do
       * `registry_user_agent` HTTP `User-Agent` header for Schema Registry requests, default `Avrora/<version> Elixir`
       * `registry_ssl_cacerts` DER-encoded trusted certificate (not combined) (see https://www.erlang.org/docs/26/man/ssl#type-client_cacerts), default `nil`
       * `registry_ssl_cacert_path` path to a file containing PEM-encoded CA certificates, default `nil`
+      * `registry_ssl_opts` SSL options for connecting to the Schema Registry (see https://www.erlang.org/docs/26/man/ssl#type-client_option), takes precedence over other Schema Registry SSL options, default `nil`
       * `registry_schemas_autoreg` automatically register schemas in Schema Registry, default `true`
       * `convert_null_values` convert `:null` values in the decoded message into `nil`, default `true`
       * `convert_map_to_proplist` bring back old behavior and configure decoding AVRO map-type as proplist, default `false`
