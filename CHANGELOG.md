@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.29.1] - 2025-01-22
+
+- Fix regression caused by #129 (#136 @woylie)
+
+## [0.29.0] - 2025-01-16
+
+- Fix charlist warnings in Elixir 1.18 (#130 @sstoltze)
+- Move private client otp_app check at compile-time (#129 @rockneurotiko)
+
 ## [0.28.0] - 2024-04-18
 
 - Add new `Avrora.Config` SSL options `registry_ssl_cacerts` and `registry_ssl_cacert_path` (#114 @strech)
@@ -33,6 +42,9 @@
 
 - Add runtime config resolution for Avrora.Client (#92, @strech)
 
+[0.29.1]: https://github.com/Strech/avrora/releases/tag/v0.29.1
+[0.29.0]: https://github.com/Strech/avrora/releases/tag/v0.29.0
+[0.28.0]: https://github.com/Strech/avrora/releases/tag/v0.28.0
 [0.27.0]: https://github.com/Strech/avrora/releases/tag/v0.27.0
 [0.26.0]: https://github.com/Strech/avrora/releases/tag/v0.26.0
 [0.25.0]: https://github.com/Strech/avrora/releases/tag/v0.25.0

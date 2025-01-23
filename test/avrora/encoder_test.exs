@@ -410,7 +410,7 @@ defmodule Avrora.EncoderTest do
       end)
 
       {:ok, encoded} = Encoder.encode(payment_payload(), schema_name: "io.acme.Payment")
-      assert is_payment_ocf(encoded)
+      assert payment_ocf?(encoded)
     end
 
     test "when registry is not configured, but format requires schema id" do
@@ -494,7 +494,7 @@ defmodule Avrora.EncoderTest do
 
       {:ok, encoded} = Encoder.encode(payment_payload(), schema_name: "io.acme.Payment", format: :ocf)
 
-      assert is_payment_ocf(encoded)
+      assert payment_ocf?(encoded)
     end
 
     test "when registry is configured and schema not found (same as found)" do
@@ -711,7 +711,7 @@ defmodule Avrora.EncoderTest do
   end
 
   # byte_size(<< message container binary >>) * 8
-  defp is_payment_ocf(payload) do
+  defp payment_ocf?(payload) do
     match?(
       <<79, 98, 106, 1, _::size(1464), 72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45,
         48, 48, 48, 48, 45, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64,

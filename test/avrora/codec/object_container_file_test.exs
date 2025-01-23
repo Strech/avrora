@@ -133,7 +133,7 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
     test "when payload is matching the schema and schema is usable" do
       {:ok, encoded} = Codec.ObjectContainerFile.encode(payment_payload(), schema: payment_schema())
 
-      assert is_payment_ocf(encoded)
+      assert payment_ocf?(encoded)
     end
 
     test "when payload is matching the schema and schema is resolvable" do
@@ -173,7 +173,7 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
           schema: %Schema{full_name: "io.acme.Payment"}
         )
 
-      assert is_payment_ocf(encoded)
+      assert payment_ocf?(encoded)
     end
   end
 
@@ -184,7 +184,7 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
   end
 
   # byte_size(<< message container binary >>) * 8
-  defp is_payment_ocf(payload) do
+  defp payment_ocf?(payload) do
     match?(
       <<79, 98, 106, 1, _::size(1464), 72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45,
         48, 48, 48, 48, 45, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64,
