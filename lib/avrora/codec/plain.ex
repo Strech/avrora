@@ -19,7 +19,7 @@ defmodule Avrora.Codec.Plain do
   def is_decodable(payload) when is_binary(payload) do
     Logger.warning("`Avrora.Codec.Plain.is_decodable/1` is deprecated, use `Avrora.Codec.Plain.decodable?/1` instead")
 
-    true
+    decodable?(payload)
   end
 
   @impl true
