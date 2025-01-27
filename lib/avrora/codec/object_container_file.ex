@@ -20,11 +20,20 @@ defmodule Avrora.Codec.ObjectContainerFile do
   alias Avrora.Schema.Encoder, as: SchemaEncoder
 
   @impl true
-  def is_decodable(payload) when is_binary(payload) do
+  def decodable?(payload) when is_binary(payload) do
     case payload do
       <<@magic_bytes, _::binary>> -> true
       _ -> false
     end
+  end
+
+  @impl true
+  def is_decodable(payload) when is_binary(payload) do
+    Logger.warning(
+      "`Avrora.Codec.ObjectContainerFile.is_decodable/1` is deprecated, use `Avrora.Codec.ObjectContainerFile.decodable?/1` instead"
+    )
+
+    decodable?(payload)
   end
 
   @impl true

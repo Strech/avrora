@@ -26,7 +26,7 @@ defmodule Avrora.Encoder do
   def extract_schema(payload) when is_binary(payload) do
     codec =
       [Codec.SchemaRegistry, Codec.ObjectContainerFile, Codec.Plain]
-      |> Enum.find(& &1.is_decodable(payload))
+      |> Enum.find(& &1.decodable?(payload))
 
     codec.extract_schema(payload)
   end
@@ -46,7 +46,7 @@ defmodule Avrora.Encoder do
   def decode(payload) when is_binary(payload) do
     codec =
       [Codec.SchemaRegistry, Codec.ObjectContainerFile, Codec.Plain]
-      |> Enum.find(& &1.is_decodable(payload))
+      |> Enum.find(& &1.decodable?(payload))
 
     codec.decode(payload)
   end
@@ -73,7 +73,7 @@ defmodule Avrora.Encoder do
 
       codec =
         [Codec.SchemaRegistry, Codec.ObjectContainerFile, Codec.Plain]
-        |> Enum.find(& &1.is_decodable(payload))
+        |> Enum.find(& &1.decodable?(payload))
 
       if codec == Codec.Plain do
         Logger.warning(

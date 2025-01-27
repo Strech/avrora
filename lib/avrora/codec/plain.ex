@@ -8,11 +8,19 @@ defmodule Avrora.Codec.Plain do
 
   @behaviour Avrora.Codec
 
+  require Logger
   alias Avrora.AvroDecoderOptions
   alias Avrora.Resolver
 
   @impl true
-  def is_decodable(payload) when is_binary(payload), do: true
+  def decodable?(payload) when is_binary(payload), do: true
+
+  @impl true
+  def is_decodable(payload) when is_binary(payload) do
+    Logger.warning("`Avrora.Codec.Plain.is_decodable/1` is deprecated, use `Avrora.Codec.Plain.decodable?/1` instead")
+
+    decodable?(payload)
+  end
 
   @impl true
   def extract_schema(_payload), do: {:error, :schema_not_found}
