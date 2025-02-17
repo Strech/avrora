@@ -273,7 +273,7 @@ defmodule Avrora.Storage.RegistryTest do
       assert :ok == Registry.get(1) |> elem(0)
     end
 
-    test "when request should perform SSL verification based on given cert file using :ssl options" do
+    test "when request should perform SSL verification based on given arbitrary SSL options" do
       stub(Avrora.ConfigMock, :registry_ssl_cacert_path, fn -> "path/to/other/file" end)
       stub(Avrora.ConfigMock, :registry_ssl_opts, fn -> [verify: :verify_peer, cacertfile: "path/to/file"] end)
 

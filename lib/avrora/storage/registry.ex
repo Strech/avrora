@@ -184,7 +184,7 @@ defmodule Avrora.Storage.Registry do
   defp registry_url, do: Config.self().registry_url()
   defp registry_auth, do: Config.self().registry_auth()
   defp registry_user_agent, do: Config.self().registry_user_agent()
+  defp registry_ssl_opts, do: Config.self().registry_ssl_opts()
   defp registry_ssl_cacerts, do: Config.self().registry_ssl_cacerts()
   defp registry_ssl_cacert_path, do: Config.self().registry_ssl_cacert_path()
-  defp registry_ssl_opts, do: Config.self().registry_ssl_opts()
 end
