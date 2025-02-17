@@ -15,11 +15,20 @@ defmodule Avrora.Codec.SchemaRegistry do
   alias Avrora.Schema
 
   @impl true
-  def is_decodable(payload) when is_binary(payload) do
+  def decodable?(payload) when is_binary(payload) do
     case payload do
       <<@magic_bytes, _::binary>> -> true
       _ -> false
     end
+  end
+
+  @impl true
+  def is_decodable(payload) when is_binary(payload) do
+    Logger.warning(
+      "`Avrora.Codec.SchemaRegistry.is_decodable/1` is deprecated, use `Avrora.Codec.SchemaRegistry.decodable?/1` instead"
+    )
+
+    decodable?(payload)
   end
 
   @impl true

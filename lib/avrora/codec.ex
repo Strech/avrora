@@ -10,11 +10,14 @@ defmodule Avrora.Codec do
 
   ## Examples
 
-      ...> Avrora.Codec.Plain.is_decodable(<<1, 2, 3>>)
+      ...> Avrora.Codec.Plain.decodable?(<<1, 2, 3>>)
       true
-      ...> Avrora.Codec.SchemaRegistry.is_decodable(<<1, 2, 3>>)
+      ...> Avrora.Codec.SchemaRegistry.decodable?(<<1, 2, 3>>)
       false
   """
+  @callback decodable?(payload :: binary()) :: boolean
+
+  @doc deprecated: "Use `Avrora.Codec.Plain.decodable?/1` instead."
   @callback is_decodable(payload :: binary()) :: boolean
 
   @doc """
