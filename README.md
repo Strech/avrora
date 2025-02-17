@@ -24,6 +24,7 @@
 [v0.25]: https://github.com/Strech/avrora/releases/tag/v0.25.0
 [v0.26]: https://github.com/Strech/avrora/releases/tag/v0.26.0
 [v0.28]: https://github.com/Strech/avrora/releases/tag/v0.28.0
+[v0.30]: https://github.com/Strech/avrora/releases/tag/v0.30.0
 [1]: https://avro.apache.org/
 [2]: https://www.confluent.io/confluent-schema-registry
 [3]: https://docs.confluent.io/current/schema-registry/serializer-formatter.html#wire-format
@@ -36,6 +37,7 @@
 [10]: https://github.com/Strech/avrora/pull/70
 [11]: https://github.com/klarna/erlavro#decoder-hooks
 [12]: https://www.erlang.org/docs/26/man/ssl#type-client_cacerts
+[13]: https://www.erlang.org/docs/26/man/ssl#type-client_option
 
 # Getting Started
 
@@ -64,7 +66,7 @@ Add Avrora to `mix.exs` as a dependency
 ```elixir
 def deps do
   [
-    {:avrora, "~> 0.27"}
+    {:avrora, "~> 0.30"}
   ]
 end
 ```
@@ -88,7 +90,8 @@ defmodule MyClient do
     schemas_path: "./priv/schemas",
     registry_url: "http://localhost:8081",
     registry_auth: {:basic, ["username", "password"]},
-    registry_user_agent: "Avrora/0.25.0 Elixir",
+    registry_user_agent: "Avrora/0.30.0 Elixir",
+    registry_ssl_opts: [verify: :verify_none]
     registry_ssl_cacerts: File.read!("./priv/trusted.der"),
     registry_ssl_cacert_path: "./priv/trusted.crt",
     registry_schemas_autoreg: false,
@@ -111,7 +114,8 @@ config :avrora,
   schemas_path: "./priv/schemas",
   registry_url: "http://localhost:8081",
   registry_auth: {:basic, ["username", "password"]}, # optional
-  registry_user_agent: "Avrora/0.24.2 Elixir", # optional: if you want to return previous behaviour, set it to `nil`
+  registry_user_agent: "Avrora/0.30.0 Elixir", # optional: if you want to return previous behaviour, set it to `nil`
+  registry_ssl_opts: [verify: :verify_none], # optional: if you want to set any available SSL options, overwriting rest
   registry_ssl_cacerts: File.read!("./priv/trusted.der"), # optional: if you have DER-encoded certificate
   registry_ssl_cacert_path: "./priv/trusted.crt", # optional: if you have PEM-encoded certificate file
   registry_schemas_autoreg: false, # optional: if you want manually register schemas
@@ -126,6 +130,7 @@ config :avrora,
 - `registry_url` - URL for the Schema Registry, default `nil`
 - `registry_auth` – Credentials to authenticate in the Schema Registry, default `nil`
 - `registry_user_agent`<sup>[v0.25]</sup> - HTTP `User-Agent` header for Schema Registry requests, default `Avrora/<version> Elixir`
+- `registry_ssl_opts`<sup>[v0.30]</sup> - Arbitrary [SSL client options][13] in Erlang format (take precedence over other SSL options), default `nil`
 - `registry_ssl_cacerts`<sup>[v0.28]</sup> - DER-encoded certificates, but [without combined support][12], default `nil`
 - `registry_ssl_cacert_path`<sup>[v0.28]</sup> - Path to a file containing PEM-encoded CA certificates, default `nil`
 - `registry_schemas_autoreg`<sup>[v0.13]</sup> - Flag for automatic schemas registration in the Schema Registry, default `true`
