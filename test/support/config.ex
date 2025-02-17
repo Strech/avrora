@@ -42,6 +42,8 @@ defmodule Support.Config do
   @impl true
   def registry_user_agent, do: nil
   @impl true
+  def registry_ssl_opts, do: nil
+  @impl true
   def registry_ssl_cacerts, do: nil
   @impl true
   def registry_ssl_cacert_path, do: nil

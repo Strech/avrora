@@ -9,6 +9,7 @@ defmodule Avrora.Config do
       * `registry_url` URL for Schema Registry, default `nil`
       * `registry_auth` authentication settings for Schema Registry, default `nil`
       * `registry_user_agent` HTTP `User-Agent` header for Schema Registry requests, default `Avrora/<version> Elixir`
+      * `registry_ssl_opts` Erlang SSL client options for connecting to the Schema Registry (takes precedence over other SSL options) (see https://www.erlang.org/docs/26/man/ssl#type-client_option), default `nil`
       * `registry_ssl_cacerts` DER-encoded trusted certificate (not combined) (see https://www.erlang.org/docs/26/man/ssl#type-client_cacerts), default `nil`
       * `registry_ssl_cacert_path` path to a file containing PEM-encoded CA certificates, default `nil`
       * `registry_schemas_autoreg` automatically register schemas in Schema Registry, default `true`
@@ -30,6 +31,7 @@ defmodule Avrora.Config do
   @callback registry_url :: String.t() | nil
   @callback registry_auth :: tuple() | nil
   @callback registry_user_agent :: String.t() | nil
+  @callback registry_ssl_opts :: [:ssl.tls_option()] | nil
   @callback registry_ssl_cacerts :: binary() | nil
   @callback registry_ssl_cacert_path :: String.t() | nil
   @callback registry_schemas_autoreg :: boolean()

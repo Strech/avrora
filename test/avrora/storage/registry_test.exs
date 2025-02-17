@@ -273,6 +273,21 @@ defmodule Avrora.Storage.RegistryTest do
       assert :ok == Registry.get(1) |> elem(0)
     end
 
+    test "when request should perform SSL verification based on given arbitrary SSL options" do
+      stub(Avrora.ConfigMock, :registry_ssl_cacert_path, fn -> "path/to/other/file" end)
+      stub(Avrora.ConfigMock, :registry_ssl_opts, fn -> [verify: :verify_peer, cacertfile: "path/to/file"] end)
+
+      Avrora.HTTPClientMock
+      |> expect(:get, fn url, options ->
+        assert url == "http://reg.loc/schemas/ids/1"
+        assert Keyword.fetch!(options, :ssl_options) == [verify: :verify_peer, cacertfile: "path/to/file"]
+
+        {:ok, %{"schema" => json_schema()}}
+      end)
+
+      assert :ok == Registry.get(1) |> elem(0)
+    end
+
     test "when registry url is unconfigured" do
       stub(Avrora.ConfigMock, :registry_url, fn -> nil end)
 

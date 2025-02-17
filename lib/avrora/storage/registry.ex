@@ -135,6 +135,7 @@ defmodule Avrora.Storage.Registry do
   defp options do
     ssl_options =
       cond do
+        !is_nil(registry_ssl_opts()) -> registry_ssl_opts()
         !is_nil(registry_ssl_cacerts()) -> [verify: :verify_peer, cacerts: [registry_ssl_cacerts()]]
         !is_nil(registry_ssl_cacert_path()) -> [verify: :verify_peer, cacertfile: registry_ssl_cacert_path()]
         true -> [verify: :verify_none]
@@ -183,6 +184,7 @@ defmodule Avrora.Storage.Registry do
   defp registry_url, do: Config.self().registry_url()
   defp registry_auth, do: Config.self().registry_auth()
   defp registry_user_agent, do: Config.self().registry_user_agent()
+  defp registry_ssl_opts, do: Config.self().registry_ssl_opts()
   defp registry_ssl_cacerts, do: Config.self().registry_ssl_cacerts()
   defp registry_ssl_cacert_path, do: Config.self().registry_ssl_cacert_path()
 end

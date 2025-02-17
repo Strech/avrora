@@ -106,6 +106,7 @@ defmodule Avrora.Client do
           def registry_url, do: get(@opts, :registry_url, nil)
           def registry_auth, do: get(@opts, :registry_auth, nil)
           def registry_user_agent, do: get(@opts, :registry_user_agent, "Avrora/#{version()} Elixir")
+          def registry_ssl_opts, do: get(@opts, :registry_ssl_opts, nil)
           def registry_ssl_cacerts, do: get(@opts, :registry_ssl_cacerts, nil)
           def registry_schemas_autoreg, do: get(@opts, :registry_schemas_autoreg, true)
           def convert_null_values, do: get(@opts, :convert_null_values, true)
