@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.30.0] - 2025-02-17
+
+- Add new configuration option `registry_ssl_ops` with arbitrary Erlang SSL client options (#134 @sstoltze)
+
+## [0.29.2] - 2025-01-30
+
+- Fix guard for HTTPClient.post/3 #139 (#136 @azeemchauhan)
+
 ## [0.29.1] - 2025-01-22
 
 - Fix regression caused by #129 (#136 @woylie)
@@ -42,6 +50,8 @@
 
 - Add runtime config resolution for Avrora.Client (#92, @strech)
 
+[0.30.0]: https://github.com/Strech/avrora/releases/tag/v0.30.0
+[0.29.2]: https://github.com/Strech/avrora/releases/tag/v0.29.2
 [0.29.1]: https://github.com/Strech/avrora/releases/tag/v0.29.1
 [0.29.0]: https://github.com/Strech/avrora/releases/tag/v0.29.0
 [0.28.0]: https://github.com/Strech/avrora/releases/tag/v0.28.0
