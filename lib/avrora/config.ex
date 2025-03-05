@@ -62,6 +62,9 @@ defmodule Avrora.Config do
   @doc false
   def registry_user_agent, do: get_env(:registry_user_agent, "Avrora/#{version()} Elixir")
 
+  @doc false
+  def registry_ssl_opts, do: get_env(:registry_ssl_opts, nil)
+
   # NOTE: Starting OTP-25 it is possible to call `public_key:cacerts_get`
   #       See https://erlef.github.io/security-wg/secure_coding_and_deployment_hardening/ssl
   @doc false
