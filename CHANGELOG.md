@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.30.1] - 2025-03-05
+
+- Fix missing `Config.registry_ssl_opts/0` function, overlooked in #134 (#143 @strech)
+
 ## [0.30.0] - 2025-02-17
 
 - Add new configuration option `registry_ssl_ops` with arbitrary Erlang SSL client options (#134 @sstoltze)
@@ -50,6 +54,7 @@
 
 - Add runtime config resolution for Avrora.Client (#92, @strech)
 
+[0.30.0]: https://github.com/Strech/avrora/releases/tag/v0.30.1
 [0.30.0]: https://github.com/Strech/avrora/releases/tag/v0.30.0
 [0.29.2]: https://github.com/Strech/avrora/releases/tag/v0.29.2
 [0.29.1]: https://github.com/Strech/avrora/releases/tag/v0.29.1
