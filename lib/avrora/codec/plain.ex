@@ -34,7 +34,7 @@ defmodule Avrora.Codec.Plain do
   end
 
   @impl true
-  def encode(payload, schema: schema) when is_binary(payload) or is_map(payload) do
+  def encode(payload, schema: schema) do
     with {:ok, schema} <- resolve(schema), do: do_encode(payload, schema)
   end
 
