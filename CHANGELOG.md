@@ -54,7 +54,7 @@
 
 - Add runtime config resolution for Avrora.Client (#92, @strech)
 
-[0.30.0]: https://github.com/Strech/avrora/releases/tag/v0.30.1
+[0.30.1]: https://github.com/Strech/avrora/releases/tag/v0.30.1
 [0.30.0]: https://github.com/Strech/avrora/releases/tag/v0.30.0
 [0.29.2]: https://github.com/Strech/avrora/releases/tag/v0.29.2
 [0.29.1]: https://github.com/Strech/avrora/releases/tag/v0.29.1
