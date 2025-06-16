@@ -52,14 +52,14 @@ defmodule Avrora.Codec.SchemaRegistry do
   end
 
   @impl true
-  def decode(payload, schema: schema) when is_binary(payload) do
+  def decode(payload, schema: %Schema{} = schema) when is_binary(payload) do
     case payload do
       <<@magic_bytes, <<id::size(32)>>, body::binary>> ->
         unless is_nil(schema.id) do
           Logger.warning("message already contains embedded schema id, given schema id will be ignored")
         end
 
-        schema = %Schema{schema | id: id}
+        schema = %{schema | id: id}
 
         with {:ok, schema} <- resolve(schema) do
           if id != schema.id do
