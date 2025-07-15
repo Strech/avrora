@@ -9,7 +9,7 @@ on:
     branches: ["master"]
 jobs:
   internal_dialyzer:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 30
     name: Internal Typespecs
     env:
@@ -21,17 +21,17 @@ jobs:
         with:
           otp-version: ${{ env.OTP }}
           elixir-version: ${{ env.ELIXIR }}
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         id: mix-cache
         with:
           path: deps
           key: ${{ runner.os }}-${{ env.OTP }}-${{ env.ELIXIR }}-mix-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         id: build-cache
         with:
           path: _build
           key: ${{ runner.os }}-${{ env.OTP }}-${{ env.ELIXIR }}-build-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         id: plt-cache
         with:
           path: priv/plts
@@ -47,7 +47,7 @@ jobs:
       - run: mix dialyzer --force-check
 
   credo:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     name: Code Style
     env:
       OTP: "26.2"
@@ -58,12 +58,12 @@ jobs:
         with:
           otp-version: ${{ env.OTP }}
           elixir-version: ${{ env.ELIXIR }}
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         id: mix-cache
         with:
           path: deps
           key: ${{ runner.os }}-${{ env.OTP }}-${{ env.ELIXIR }}-mix-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         id: build-cache
         with:
           path: _build
@@ -75,7 +75,7 @@ jobs:
       - run: mix credo
 
   formatter:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     name: Code Formatting
     env:
       OTP: "26.2"
@@ -86,12 +86,12 @@ jobs:
         with:
           otp-version: ${{ env.OTP }}
           elixir-version: ${{ env.ELIXIR }}
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         id: mix-cache
         with:
           path: deps
           key: ${{ runner.os }}-${{ env.OTP }}-${{ env.ELIXIR }}-mix-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         id: build-cache
         with:
           path: _build
@@ -103,7 +103,7 @@ jobs:
       - run: mix format --check-formatted
 
   external_dialyzer:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 30
     name: External Typespecs
     env:
@@ -115,17 +115,17 @@ jobs:
         with:
           otp-version: ${{ env.OTP }}
           elixir-version: ${{ env.ELIXIR }}
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         id: mix-cache
         with:
           path: test/integration/deps
           key: ${{ runner.os }}-${{ env.OTP }}-${{ env.ELIXIR }}-mix-ext-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         id: build-cache
         with:
           path: test/integration/_build
           key: ${{ runner.os }}-${{ env.OTP }}-${{ env.ELIXIR }}-build-ext-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         id: plt-cache
         with:
           path: test/integration/priv/plts
@@ -144,7 +144,7 @@ jobs:
         run: mix dialyzer --force-check
 
   test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     name: OTP ${{ matrix.otp }} / Elixir ${{ matrix.elixir }}
     strategy:
       fail-fast: true
@@ -168,12 +168,12 @@ jobs:
         with:
           otp-version: ${{ matrix.otp }}
           elixir-version: ${{ matrix.elixir }}
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         id: mix-cache
         with:
           path: deps
           key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-mix-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         id: build-cache
         with:
           path: _build
