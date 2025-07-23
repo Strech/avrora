@@ -47,7 +47,7 @@ index 50b5b41a..535b7a0e 100755
  
  # Bring up more containers
 -docker-compose up --no-recreate -d schemaregistry connect control-center
-+# FIXME
++# PATCHED
 +# docker-compose up --no-recreate -d schemaregistry connect control-center
 +docker-compose up --no-recreate -d schemaregistry
  
@@ -59,7 +59,7 @@ index 50b5b41a..535b7a0e 100755
 -MAX_WAIT=240
 -echo -e "\nWaiting up to $MAX_WAIT seconds for Connect to start"
 -retry $MAX_WAIT host_check_up connect || exit 1
-+# FIXME
++# PATCHED
 +# MAX_WAIT=240
 +# echo -e "\nWaiting up to $MAX_WAIT seconds for Connect to start"
 +# retry $MAX_WAIT host_check_up connect || exit 1
@@ -68,7 +68,7 @@ index 50b5b41a..535b7a0e 100755
  
 -echo -e "\nStart streaming from the Wikipedia SSE source connector:"
 -${DIR}/connectors/submit_wikipedia_sse_config.sh || exit 1
-+# FIXME
++# PATCHED
 +# echo -e "\nStart streaming from the Wikipedia SSE source connector:"
 +# ${DIR}/connectors/submit_wikipedia_sse_config.sh || exit 1
  
@@ -102,7 +102,7 @@ index 50b5b41a..535b7a0e 100755
 -echo "Waiting up to $MAX_WAIT seconds for Confluent Control Center to start"
 -retry $MAX_WAIT host_check_up control-center || exit 1
 +# # Verify Confluent Control Center has started
-+# FIXME
++# PATCHED
 +# MAX_WAIT=300
 +# echo
 +# echo "Waiting up to $MAX_WAIT seconds for Confluent Control Center to start"
@@ -120,7 +120,7 @@ index 50b5b41a..535b7a0e 100755
  
 -# Start more containers
 -docker-compose up --no-recreate -d ksqldb-server ksqldb-cli restproxy
-+# FIXME
++# PATCHED
 +# # Start more containers
 +# docker-compose up --no-recreate -d ksqldb-server ksqldb-cli restproxy
  
@@ -149,7 +149,7 @@ index 50b5b41a..535b7a0e 100755
 -echo -e "\nStart additional consumers to read from topics WIKIPEDIANOBOT, WIKIPEDIA_COUNT_GT_1"
 -${DIR}/consumers/listen_WIKIPEDIANOBOT.sh
 -${DIR}/consumers/listen_WIKIPEDIA_COUNT_GT_1.sh
-+# FIXME
++# PATCHED
 +# echo -e "\nStart additional consumers to read from topics WIKIPEDIANOBOT, WIKIPEDIA_COUNT_GT_1"
 +# ${DIR}/consumers/listen_WIKIPEDIANOBOT.sh
 +# ${DIR}/consumers/listen_WIKIPEDIA_COUNT_GT_1.sh

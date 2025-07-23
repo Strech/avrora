@@ -259,6 +259,42 @@ defmodule Avrora.Codec.PlainTest do
 
       assert encoded == "59B02128"
     end
+
+    test "when payload is matching the Union schema and schema is resolvable" do
+      union_schema = union_schema()
+
+      Avrora.Storage.MemoryMock
+      |> expect(:get, fn key ->
+        assert key == "io.acme.Union"
+
+        {:ok, nil}
+      end)
+      |> expect(:put, fn key, value ->
+        assert key == "io.acme.Union"
+        assert value == union_schema
+
+        {:ok, value}
+      end)
+
+      Avrora.Storage.RegistryMock
+      |> expect(:put, fn key, value ->
+        assert key == "io.acme.Union"
+        assert value == union_json()
+
+        {:error, :unconfigured_registry_url}
+      end)
+
+      Avrora.Storage.FileMock
+      |> expect(:get, fn key ->
+        assert key == "io.acme.Union"
+
+        {:ok, union_schema}
+      end)
+
+      {:ok, encoded} = Codec.Plain.encode(123, schema: %Schema{full_name: "io.acme.Union"})
+
+      assert encoded == <<0, 246, 1>>
+    end
   end
 
   defp missing_field_error do
@@ -306,6 +342,11 @@ defmodule Avrora.Codec.PlainTest do
     %{schema | id: nil, version: nil}
   end
 
+  defp union_schema do
+    {:ok, schema} = Schema.Encoder.from_json(union_json(), name: "io.acme.Union")
+    %{schema | id: nil, version: nil}
+  end
+
   defp payment_json do
     ~s({"namespace":"io.acme","name":"Payment","type":"record","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
   end
@@ -329,4 +370,6 @@ defmodule Avrora.Codec.PlainTest do
   defp fixed_json do
     ~s({"namespace":"io.acme","name":"CRC32","type":"fixed","size":8})
   end
+
+  defp union_json, do: ~s(["int","string"])
 end

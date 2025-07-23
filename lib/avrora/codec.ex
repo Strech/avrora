@@ -77,6 +77,6 @@ defmodule Avrora.Codec do
       <<72, 48, 48, 48, 48, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48, 48, 45, 48, 48, 48,
       48, 45, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 123, 20, 174, 71, 225, 250, 47, 64>>
   """
-  @callback encode(payload :: binary() | map(), options :: keyword(Avrora.Schema.t())) ::
+  @callback encode(payload :: term(), options :: keyword(Avrora.Schema.t())) ::
               {:ok, result :: binary()} | {:error, reason :: term()}
 end

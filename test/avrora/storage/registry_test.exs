@@ -131,6 +131,29 @@ defmodule Avrora.Storage.RegistryTest do
       assert schema.full_name == "io.acme.Payment"
     end
 
+    test "when requesting by subject name and schema is unnamed type" do
+      Avrora.HTTPClientMock
+      |> expect(:get, fn url, _ ->
+        assert url == "http://reg.loc/subjects/io.acme.Primitive/versions/latest"
+
+        {
+          :ok,
+          %{
+            "id" => 42,
+            "version" => 1,
+            "schema" => json_schema_unnamed(),
+            "subject" => "io.acme.Primitive"
+          }
+        }
+      end)
+
+      {:ok, schema} = Registry.get("io.acme.Primitive")
+
+      assert schema.id == 42
+      assert schema.version == 1
+      assert schema.full_name == "io.acme.Primitive"
+    end
+
     test "when requesting by subject name failed" do
       Avrora.HTTPClientMock
       |> expect(:get, fn url, _ ->
@@ -150,10 +173,17 @@ defmodule Avrora.Storage.RegistryTest do
         {:ok, %{"schema" => json_schema()}}
       end)
 
+      Avrora.HTTPClientMock
+      |> expect(:get, fn url, _ ->
+        assert url == "http://reg.loc/schemas/ids/1/versions"
+
+        {:ok, [%{"version" => 3, "subject" => "io.acme.Payment"}]}
+      end)
+
       {:ok, schema} = Registry.get(1)
 
       assert schema.id == 1
-      assert is_nil(schema.version)
+      assert schema.version == 3
       assert schema.full_name == "io.acme.Payment"
     end
 
@@ -168,14 +198,22 @@ defmodule Avrora.Storage.RegistryTest do
         {:ok, %{"schema" => json_schema()}}
       end)
 
+      Avrora.HTTPClientMock
+      |> expect(:get, fn url, options ->
+        assert url == "http://reg.loc/schemas/ids/1/versions"
+        assert Keyword.fetch!(options, :authorization) == "Basic bG9naW46cGFzc3dvcmQ="
+
+        {:ok, [%{"version" => 3, "subject" => "io.acme.Payment"}]}
+      end)
+
       {:ok, schema} = Registry.get(1)
 
       assert schema.id == 1
-      assert is_nil(schema.version)
+      assert schema.version == 3
       assert schema.full_name == "io.acme.Payment"
     end
 
-    test "when requesting by global ID was failed" do
+    test "when requesting by global ID failed" do
       Avrora.HTTPClientMock
       |> expect(:get, fn url, _ ->
         assert url == "http://reg.loc/schemas/ids/1"
@@ -220,12 +258,59 @@ defmodule Avrora.Storage.RegistryTest do
         }
       end)
 
+      Avrora.HTTPClientMock
+      |> expect(:get, fn url, _ ->
+        assert url == "http://reg.loc/schemas/ids/43/versions"
+
+        {:ok, [%{"version" => 13, "subject" => "io.acme.Account"}]}
+      end)
+
       {:ok, schema} = Registry.get(43)
 
       assert schema.id == 43
-      assert is_nil(schema.version)
+      assert schema.version == 13
       assert schema.full_name == "io.acme.Account"
       assert schema.json == json_schema_with_reference_denormalized()
+    end
+
+    test "when requesting by global ID and schema is unnamed type" do
+      Avrora.HTTPClientMock
+      |> expect(:get, fn url, _ ->
+        assert url == "http://reg.loc/schemas/ids/42"
+
+        {:ok, %{"schema" => json_schema_unnamed(), "subject" => "io.acme.Primitive"}}
+      end)
+
+      Avrora.HTTPClientMock
+      |> expect(:get, fn url, _ ->
+        assert url == "http://reg.loc/schemas/ids/42/versions"
+
+        {:ok, [%{"version" => 1, "subject" => "io.acme.Primitive"}]}
+      end)
+
+      {:ok, schema} = Registry.get(42)
+
+      assert schema.id == 42
+      assert schema.version == 1
+      assert schema.full_name == "io.acme.Primitive"
+    end
+
+    test "when requesting by global ID and versions response invalid" do
+      Avrora.HTTPClientMock
+      |> expect(:get, fn url, _ ->
+        assert url == "http://reg.loc/schemas/ids/1"
+
+        {:ok, %{"schema" => json_schema()}}
+      end)
+
+      Avrora.HTTPClientMock
+      |> expect(:get, fn url, _ ->
+        assert url == "http://reg.loc/schemas/ids/1/versions"
+
+        {:ok, []}
+      end)
+
+      assert {:error, :invalid_versions} = Registry.get(1)
     end
 
     test "when request should not perform SSL verification" do
@@ -237,10 +322,18 @@ defmodule Avrora.Storage.RegistryTest do
         {:ok, %{"schema" => json_schema()}}
       end)
 
+      Avrora.HTTPClientMock
+      |> expect(:get, fn url, options ->
+        assert url == "http://reg.loc/schemas/ids/1/versions"
+        assert Keyword.fetch!(options, :ssl_options) == [verify: :verify_none]
+
+        {:ok, [%{"version" => 3, "subject" => "io.acme.Payment"}]}
+      end)
+
       {:ok, schema} = Registry.get(1)
 
       assert schema.id == 1
-      assert is_nil(schema.version)
+      assert schema.version == 3
       assert schema.full_name == "io.acme.Payment"
     end
 
@@ -256,6 +349,14 @@ defmodule Avrora.Storage.RegistryTest do
         {:ok, %{"schema" => json_schema()}}
       end)
 
+      Avrora.HTTPClientMock
+      |> expect(:get, fn url, options ->
+        assert url == "http://reg.loc/schemas/ids/1/versions"
+        assert Keyword.fetch!(options, :ssl_options) == [verify: :verify_peer, cacerts: [<<48, 130, 3, 201>>]]
+
+        {:ok, [%{"version" => 3, "subject" => "io.acme.Payment"}]}
+      end)
+
       assert :ok == Registry.get(1) |> elem(0)
     end
 
@@ -268,6 +369,14 @@ defmodule Avrora.Storage.RegistryTest do
         assert Keyword.fetch!(options, :ssl_options) == [verify: :verify_peer, cacertfile: "path/to/file"]
 
         {:ok, %{"schema" => json_schema()}}
+      end)
+
+      Avrora.HTTPClientMock
+      |> expect(:get, fn url, options ->
+        assert url == "http://reg.loc/schemas/ids/1/versions"
+        assert Keyword.fetch!(options, :ssl_options) == [verify: :verify_peer, cacertfile: "path/to/file"]
+
+        {:ok, [%{"version" => 3, "subject" => "io.acme.Payment"}]}
       end)
 
       assert :ok == Registry.get(1) |> elem(0)
@@ -471,6 +580,8 @@ defmodule Avrora.Storage.RegistryTest do
   defp schema_invalid_parsed_error do
     %{"error_code" => 42201, "message" => "Invalid schema!"}
   end
+
+  defp json_schema_unnamed, do: ~s({"type": "string"})
 
   defp json_schema do
     ~s({"namespace":"io.acme","type":"record","name":"Payment","fields":[{"name":"id","type":"string"},{"name":"amount","type":"double"}]})
