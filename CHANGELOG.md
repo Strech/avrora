@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.30.2] - 2025-09-03
+
+- Change deprecated struct update syntax (#144 @rockneurotiko)
+
 ## [0.30.1] - 2025-03-05
 
 - Fix missing `Config.registry_ssl_opts/0` function, overlooked in #134 (#143 @strech)
@@ -54,6 +58,7 @@
 
 - Add runtime config resolution for Avrora.Client (#92, @strech)
 
+[0.30.2]: https://github.com/Strech/avrora/releases/tag/v0.30.2
 [0.30.1]: https://github.com/Strech/avrora/releases/tag/v0.30.1
 [0.30.0]: https://github.com/Strech/avrora/releases/tag/v0.30.0
 [0.29.2]: https://github.com/Strech/avrora/releases/tag/v0.29.2
