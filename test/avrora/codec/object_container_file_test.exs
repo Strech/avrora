@@ -116,7 +116,7 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
           assert decoded == [%{"id" => "00000000-0000-0000-0000-000000000000", "amount" => 15.99}]
         end)
 
-      assert output =~ "message already contains embeded schema, given schema will be ignored"
+      assert output =~ "message already contains embedded schema, given schema will be ignored"
     end
   end
 

@@ -53,7 +53,7 @@ defmodule Avrora.Codec.ObjectContainerFile do
 
   @impl true
   def decode(payload, schema: _schema) when is_binary(payload) do
-    Logger.warning("message already contains embeded schema, given schema will be ignored")
+    Logger.warning("message already contains embedded schema, given schema will be ignored")
     decode(payload)
   end
 
