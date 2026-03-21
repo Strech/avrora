@@ -91,7 +91,7 @@ defmodule MyClient do
     registry_url: "http://localhost:8081",
     registry_auth: {:basic, ["username", "password"]},
     registry_user_agent: "Avrora/0.30.0 Elixir",
-    registry_ssl_opts: [verify: :verify_none]
+    registry_ssl_opts: [verify: :verify_none],
     registry_ssl_cacerts: File.read!("./priv/trusted.der"),
     registry_ssl_cacert_path: "./priv/trusted.crt",
     registry_schemas_autoreg: false,
@@ -213,7 +213,7 @@ The primary way to use the library is via the `Avrora.encode/2` and
 `Avrora.decode/2` functions. These functions load the Avro schema for you.
 
 If `registry_url` defined, it enables Schema Registry storage. If the schema
-file found locally but not in the registry, either fuction will register the schema.
+file found locally but not in the registry, either function will register the schema.
 
 These examples assume you have a `Payment` schema stored in the file
 `priv/schemas/io/acme/Payment.avsc`
@@ -341,7 +341,7 @@ Decode a message encoded in a `:plain` format.
 {:ok, pid} = Avrora.start_link()
 message = <<8, 116, 120, 45, 49, 123, 20, 174, 71, 225, 250, 47, 64>>
 
-{:ok, decoded} = Avrora.decode(message, schema_name: "io.acme.Payment")
+{:ok, decoded} = Avrora.decode_plain(message, schema_name: "io.acme.Payment")
 %{"id" => "tx-1", "amount" => 15.99}
 ```
 
@@ -353,7 +353,7 @@ Encode a payload in a `:plain` format.
 {:ok, pid} = Avrora.start_link()
 message = %{"id" => "tx-1", "amount" => 15.99}
 
-{:ok, encoded} = Avrora.encode(message, schema_name: "io.acme.Payment")
+{:ok, encoded} = Avrora.encode_plain(message, schema_name: "io.acme.Payment")
 <<8, 116, 120, 45, 49, 123, 20, 174, 71, 225, 250, 47, 64>>
 ```
 
