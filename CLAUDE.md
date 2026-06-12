@@ -7,54 +7,16 @@ Elixir library for encoding/decoding Avro messages with Confluent Schema Registr
 - `mix test` — run tests
 - `mix format` — format code
 - `mix format --check-formatted` — check formatting
-- `mix credo --strict` — lint
+- `mix credo` — lint (`.credo.exs` already sets `strict: true`)
 - `mix dialyzer` — type check
 - `mix check` — run all checks (coveralls + dialyzer + credo)
 
 ## Project structure
 
-```
-lib/
-  avrora.ex                          # Main supervisor, delegates to Encoder
-  avrora/
-    client.ex                        # Macro for private isolated clients (`use Avrora.Client`)
-    config.ex                        # Configuration callbacks with defaults
-    encoder.ex                       # Public API: encode/decode with format detection
-    resolver.ex                      # Schema resolution with caching (memory → registry → file)
-    schema.ex                        # Schema struct definition
-    http_client.ex                   # Minimal HTTP wrapper over :httpc
-    avro_schema_store.ex             # Erlang avro schema store wrapper
-    avro_decoder_options.ex          # Decoder options struct
-    test_case.ex                     # ExUnit case template for testing
-    codec.ex                         # Codec behaviour definition
-    codec/
-      plain.ex                       # Raw Avro binary codec
-      schema_registry.ex             # Confluent wire format codec (schema ID prefix)
-      object_container_file.ex       # OCF format codec (embedded schema)
-    schema/
-      encoder.ex                     # JSON ↔ erlavro type conversion
-      name.ex                        # Schema name parser (name:version)
-      reference_collector.ex         # Collects schema references for registration
-    storage.ex                       # Storage behaviour definition
-    storage/
-      file.ex                        # Read schemas from filesystem
-      memory.ex                      # ETS-based in-memory cache with TTL
-      registry.ex                    # Confluent Schema Registry HTTP client
-    utils/
-      registrar.ex                   # Schema registration utility
-  mix/tasks/
-    avrora.reg.schema.ex             # Mix task for schema registration
-
-test/
-  avrora/                            # Unit tests mirror lib/ structure
-  integration/                       # Integration test project
-  fixtures/                          # Avro schema files (.avsc) for tests
-  support/                           # Test helpers and mocks
-  mix/tasks/                         # Mix task tests
-
-config/config.exs                    # Mix configuration
-priv/plts/                           # Dialyzer PLT cache
-```
+- `lib/avrora/` — library code; unit tests in `test/avrora/` mirror its structure
+- `test/integration/` — not a test suite: separate mix project depending on avrora by path, used only by the CI "External Typespecs" job to dialyze avrora from a consumer perspective
+- `test/fixtures/` — Avro schema files (.avsc) for tests
+- `test/support/` — test helpers and mocks
 
 ## Testing styleguide
 
@@ -176,7 +138,7 @@ assert output =~ "with schema version is not supported"
   defp put(pid, key, value), do: Memory.put(pid, key, value)
   ```
 
-### Integration tests
+### Stateful tests
 
 - Use `start_supervised/1` in setup, not manual start/stop
 - Pass context via setup return: `%{memory: pid}`
