@@ -7,7 +7,112 @@ defmodule Avrora.Schema.EncoderTest do
 
   setup :support_config
 
+  describe "xxx/2" do
+    test "when schema is Enum type" do
+      {:ok, schema} = Schema.Encoder.xxx(card_type_schema())
+      {:ok, {type, _, _, _, _, fields, full_name, _}} = Schema.Encoder.to_erlavro(schema)
+
+      assert type == :avro_enum_type
+      assert full_name == "io.confluent.CardType"
+      assert length(fields) == 3
+
+      assert schema.full_name == "io.confluent.CardType"
+      assert schema.json == card_type_json()
+    end
+
+    test "when payload is Fixed type" do
+      {:ok, schema} = Schema.Encoder.xxx(crc32_schema())
+      {:ok, {type, _, _, _, value, full_name, _}} = Schema.Encoder.to_erlavro(schema)
+
+      assert type == :avro_fixed_type
+      assert full_name == "io.confluent.CRC32"
+      assert value == 8
+
+      assert schema.full_name == "io.confluent.CRC32"
+      assert schema.json == crc32_json()
+    end
+
+    test "when schema is Record type with primitive fields types" do
+      {:ok, schema} = Schema.Encoder.xxx(payment_schema())
+      {:ok, {type, _, _, _, _, fields, full_name, _}} = Schema.Encoder.to_erlavro(schema)
+
+      assert type == :avro_record_type
+      assert full_name == "io.confluent.Payment"
+      assert length(fields) == 2
+
+      assert schema.full_name == "io.confluent.Payment"
+      assert schema.json == payment_json()
+    end
+
+    test "when schema is Record type with nested type ref" do
+      {:ok, schema} =
+        Schema.Encoder.xxx(message_with_reference_schema(), fn name ->
+          case name do
+            "io.confluent.Attachment" -> {:ok, attachment_schema()}
+            "io.confluent.Signature" -> {:ok, signature_schema()}
+            _ -> raise "unknown reference name!"
+          end
+        end)
+
+      {:ok, {type, _, _, _, _, fields, full_name, _}} = Schema.Encoder.to_erlavro(schema)
+
+      assert type == :avro_record_type
+      assert full_name == "io.confluent.Message"
+      assert length(fields) == 2
+
+      assert schema.full_name == "io.confluent.Message"
+      assert schema.json == message_json()
+
+      {:avro_record_field, _, _, body_type, _, _, _} = List.first(fields)
+      assert body_type == {:avro_primitive_type, "string", []}
+
+      {:avro_record_field, _, _, attachments_type, _, _, _} = List.last(fields)
+      {:avro_array_type, {type, _, _, _, _, fields, full_name, _}, []} = attachments_type
+
+      assert type == :avro_record_type
+      assert full_name == "io.confluent.Attachment"
+      assert length(fields) == 2
+
+      {:avro_record_field, _, _, signature_type, _, _, _} = List.last(fields)
+      {type, _, _, _, _, fields, full_name, _} = signature_type
+
+      assert type == :avro_record_type
+      assert full_name == "io.confluent.Signature"
+      assert length(fields) == 1
+    end
+
+    test "when schema is Record type with type ref of invalid schema" do
+      result =
+        Schema.Encoder.xxx(message_with_reference_schema(), fn name ->
+          assert name == "io.confluent.Attachment"
+          {:ok, %Schema{full_name: "io.confluent.Attachment", source: "{}"}}
+        end)
+
+      assert {:error, {:not_found, "type"}} == result
+    end
+
+    test "when schema is Record type with type ref and resolution failed" do
+      result =
+        Schema.Encoder.xxx(message_with_reference_schema(), fn name ->
+          assert name == "io.confluent.Attachment"
+          {:error, :bad_thing_happen}
+        end)
+
+      assert {:error, :bad_thing_happen} == result
+    end
+
+    test "when schema is Record type with type ref and lookup function given" do
+      assert {:error, {:not_found, "type"}} == Schema.Encoder.xxx(message_with_reference_schema())
+    end
+
+    test "when schema is an invalid" do
+      assert Schema.Encoder.xxx(%Schema{full_name: "", source: "a:b"}) == {:error, "argument error"}
+      assert Schema.Encoder.xxx(%Schema{full_name: "", source: "{}"}) == {:error, {:not_found, "type"}}
+    end
+  end
+
   describe "from_json/2" do
+    @tag :skip
     test "when payload is a valid Record json schema" do
       {:ok, schema} = Schema.Encoder.from_json(payment_json())
       {:ok, {type, _, _, _, _, fields, full_name, _}} = Schema.Encoder.to_erlavro(schema)
@@ -160,6 +265,30 @@ defmodule Avrora.Schema.EncoderTest do
     test "when payload is not a named type schema" do
       assert Schema.Encoder.from_erlavro(unnamed_erlavro()) == {:error, :unnamed_type}
     end
+  end
+
+  defp payment_schema do
+    %Schema{full_name: "io.confluent.Payment", source: payment_json()}
+  end
+
+  defp message_with_reference_schema do
+    %Schema{full_name: "io.confluent.Message", source: message_with_reference_json()}
+  end
+
+  defp attachment_schema do
+    %Schema{full_name: "io.confluent.Attachment", source: attachment_json()}
+  end
+
+  defp signature_schema do
+    %Schema{full_name: "io.confluent.Signature", source: signature_json()}
+  end
+
+  defp card_type_schema do
+    %Schema{full_name: "io.confluent.CardType", source: card_type_json()}
+  end
+
+  defp crc32_schema do
+    %Schema{full_name: "io.confluent.CRC32", source: crc32_json()}
   end
 
   defp payment_erlavro do

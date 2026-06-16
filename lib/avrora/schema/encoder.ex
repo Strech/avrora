@@ -8,6 +8,7 @@ defmodule Avrora.Schema.Encoder do
   alias Avrora.Schema.ReferenceCollector
 
   @type reference_lookup_fun :: (String.t() -> {:ok, String.t()} | {:error, term()})
+  @undefined_name :undefined
   @reference_lookup_fun &__MODULE__.reference_lookup/1
 
   @doc """
@@ -20,23 +21,27 @@ defmodule Avrora.Schema.Encoder do
       iex> schema.full_name
       "io.acme.Payment"
   """
-  @spec from_json(String.t(), reference_lookup_fun) :: {:ok, Schema.t()} | {:error, term()}
-  def from_json(payload, reference_lookup_fun \\ @reference_lookup_fun) when is_binary(payload) do
+  @spec from_json(String.t()) :: {:ok, Schema.t()} | {:error, term()}
+  def from_json(definition),
+    do: from_json(definition, name: @undefined_name, reference_lookup_fun: @reference_lookup_fun)
+
+  def from_json(definition, name: name),
+    do: from_json(definition, name: name, reference_lookup_fun: @reference_lookup_fun)
+
+  def from_json(definition, reference_lookup_fun: reference_lookup_fun),
+    do: from_json(definition, name: @undefined_name, reference_lookup_fun: reference_lookup_fun)
+
+  @spec from_json(String.t(), name: :undefined | String.t(), reference_lookup_fun: reference_lookup_fun()) ::
+          {:ok, Schema.t()} | {:error, term()}
+  def from_json(definition, name: name, reference_lookup_fun: reference_lookup_fun) do
     lookup_table = ets().new()
 
-    with {:ok, [schema | _]} <- parse_recursive(payload, lookup_table, reference_lookup_fun),
-         {:ok, full_name} <- extract_full_name(schema),
-         {:ok, schema} <- do_compile(full_name, lookup_table) do
-      {
-        :ok,
-        %Schema{
-          id: nil,
-          version: nil,
-          full_name: full_name,
-          lookup_table: lookup_table,
-          json: to_json(schema)
-        }
-      }
+    with {:ok, full_name} <- parse_recursive(definition, name, lookup_table, reference_lookup_fun),
+         {:ok, erlavro} <- do_expand(full_name, lookup_table) do
+      # NOTE: It could be that json field will be moved to be a method because of
+      #       schema registry support of references. OR we should care about how
+      #       to calculate it
+      {:ok, %Schema{full_name: full_name, lookup_table: lookup_table, json: to_json(erlavro)}}
     else
       {:error, reason} ->
         true = :ets.delete(lookup_table)
@@ -70,22 +75,13 @@ defmodule Avrora.Schema.Encoder do
       "io.acme.Payment"
   """
   @spec from_erlavro(term(), keyword()) :: {:ok, Schema.t()} | {:error, term()}
-  def from_erlavro(schema, attributes \\ []) do
+  def from_erlavro(erlavro, attributes \\ []) do
     lookup_table = ets().new()
 
-    with {:ok, full_name} <- extract_full_name(schema),
-         lookup_table <- :avro_schema_store.add_type(schema, lookup_table),
-         json <- Keyword.get_lazy(attributes, :json, fn -> to_json(schema) end) do
-      {
-        :ok,
-        %Schema{
-          id: nil,
-          version: nil,
-          full_name: full_name,
-          lookup_table: lookup_table,
-          json: json
-        }
-      }
+    with {:ok, full_name} <- extract_full_name(erlavro),
+         lookup_table <- :avro_schema_store.add_type(erlavro, lookup_table),
+         json <- Keyword.get_lazy(attributes, :json, fn -> to_json(erlavro) end) do
+      {:ok, %Schema{full_name: full_name, lookup_table: lookup_table, json: json}}
     else
       {:error, reason} ->
         true = :ets.delete(lookup_table)
@@ -108,38 +104,34 @@ defmodule Avrora.Schema.Encoder do
   """
   @spec to_erlavro(Schema.t()) :: {:ok, term()} | {:error, term()}
   def to_erlavro(%Schema{} = schema),
-    do: do_compile(schema.full_name, schema.lookup_table)
+    do: do_expand(schema.full_name, schema.lookup_table)
 
-  defp to_json(schema), do: :avro_json_encoder.encode_type(schema)
+  defp to_json(erlavro), do: :avro_json_encoder.encode_type(erlavro)
 
-  defp parse_recursive(payload, lookup_table, reference_lookup_fun) do
-    with {:ok, schema} <- do_parse(payload),
-         {:ok, _} <- extract_full_name(schema),
-         {:ok, references} <- ReferenceCollector.collect(schema),
-         lookup_table <- :avro_schema_store.add_type(schema, lookup_table) do
-      payloads =
-        references
-        |> Enum.reject(&:avro_schema_store.lookup_type(&1, lookup_table))
-        |> Enum.map(fn reference ->
-          reference |> reference_lookup_fun.() |> unwrap!()
-        end)
+  defp unwrap!({:ok, result}), do: result
+  defp unwrap!({:error, error}), do: throw(error)
 
-      schemas =
-        Enum.flat_map(payloads, fn payload ->
-          payload |> parse_recursive(lookup_table, reference_lookup_fun) |> unwrap!()
-        end)
+  defp parse_recursive(definition, name, lookup_table, reference_lookup_fun) do
+    with {:ok, erlavro} <- do_parse(definition),
+         {:ok, references} <- ReferenceCollector.collect(erlavro),
+         {:ok, full_name} <- do_add_type(name, erlavro, lookup_table) do
+      references
+      |> Enum.reject(&:avro_schema_store.lookup_type(&1, lookup_table))
+      |> Enum.each(fn reference_name ->
+        reference_lookup_fun.(reference_name)
+        |> unwrap!()
+        |> parse_recursive(reference_name, lookup_table, reference_lookup_fun)
+        |> unwrap!()
+      end)
 
-      {:ok, [schema | schemas]}
+      {:ok, full_name}
     end
   catch
     error -> {:error, error}
   end
 
-  defp unwrap!({:ok, result}), do: result
-  defp unwrap!({:error, error}), do: throw(error)
-
-  defp extract_full_name(schema) do
-    case schema do
+  defp extract_full_name(erlavro) do
+    case erlavro do
       {:avro_fixed_type, _, _, _, _, full_name, _} -> {:ok, full_name}
       {:avro_enum_type, _, _, _, _, _, full_name, _} -> {:ok, full_name}
       {:avro_record_type, _, _, _, _, _, full_name, _} -> {:ok, full_name}
@@ -147,9 +139,7 @@ defmodule Avrora.Schema.Encoder do
     end
   end
 
-  # Compile complete version of the `erlavro` format with all references
-  # being resolved, converting errors to error return
-  defp do_compile(full_name, lookup_table) do
+  defp do_expand(full_name, lookup_table) do
     {:ok, :avro_util.expand_type(full_name, lookup_table)}
   rescue
     _ in MatchError -> {:error, :bad_reference}
@@ -162,6 +152,16 @@ defmodule Avrora.Schema.Encoder do
   rescue
     _ in FunctionClauseError -> {:error, :invalid_schema}
     error in ArgumentError -> {:error, error.message}
+    error in ErlangError -> {:error, error.original}
+  end
+
+  defp do_add_type(name, erlavro, lookup_table) do
+    name = if :avro.is_named_type(erlavro), do: :undefined, else: name
+    full_name = if :avro.is_named_type(erlavro), do: :avro.get_type_fullname(erlavro), else: name
+
+    :avro_schema_store.add_type(name, erlavro, lookup_table)
+    {:ok, full_name}
+  rescue
     error in ErlangError -> {:error, error.original}
   end
 

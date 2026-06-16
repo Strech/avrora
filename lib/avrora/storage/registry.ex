@@ -40,7 +40,8 @@ defmodule Avrora.Storage.Registry do
          {:ok, version} <- Map.fetch(response, "version"),
          {:ok, schema} <- Map.fetch(response, "schema"),
          {:ok, references} <- extract_references(response),
-         {:ok, schema} <- SchemaEncoder.from_json(schema, make_reference_lookup_fun(references)) do
+         {:ok, schema} <-
+           SchemaEncoder.from_json(schema, name: name, reference_lookup_fun: make_reference_lookup_fun(references)) do
       Logger.debug("obtaining schema `#{schema_name.name}` with version `#{version}`")
 
       {:ok, %{schema | id: id, version: version}}
@@ -51,10 +52,18 @@ defmodule Avrora.Storage.Registry do
     with {:ok, response} <- http_client_get("schemas/ids/#{key}"),
          {:ok, schema} <- Map.fetch(response, "schema"),
          {:ok, references} <- extract_references(response),
-         {:ok, schema} <- SchemaEncoder.from_json(schema, make_reference_lookup_fun(references)) do
-      Logger.debug("obtaining schema with global id `#{key}`")
+         # TODO: Add note in the readme that:
+         #       There is no such endpoint in registry versions < 5.5.0
+         {:ok, response} <- http_client_get("schemas/ids/#{key}/versions"),
+         {:ok, schema_name} <- extract_name(response),
+         {:ok, schema} <-
+           SchemaEncoder.from_json(schema,
+             name: schema_name.name,
+             reference_lookup_fun: make_reference_lookup_fun(references)
+           ) do
+      Logger.debug("obtaining schema and version with global id `#{key}`")
 
-      {:ok, %{schema | id: key}}
+      {:ok, %{schema | id: key, version: schema_name.version}}
     end
   end
 
@@ -108,6 +117,13 @@ defmodule Avrora.Storage.Registry do
   catch
     :unknown_subject -> {:error, :unknown_reference_subject}
     error -> {:error, error}
+  end
+
+  defp extract_name(response) do
+    case response do
+      [%{"subject" => name, "version" => version}] -> {:ok, %Name{name: name, version: version}}
+      _ -> {:error, :invalid_versions}
+    end
   end
 
   defp make_reference_lookup_fun(map) when map_size(map) == 0,
