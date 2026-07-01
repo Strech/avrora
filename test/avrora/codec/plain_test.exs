@@ -138,8 +138,15 @@ defmodule Avrora.Codec.PlainTest do
   end
 
   describe "encode/2" do
-    test "when payload is not matching the schema" do
-      assert Codec.Plain.encode(%{"hello" => "world"}, schema: payment_schema()) == {:error, missing_field_error()}
+    test "when payload is missing a required field" do
+      assert Codec.Plain.encode(%{"hello" => "world"}, schema: payment_schema()) ==
+               {:error, missing_field_error()}
+    end
+
+    test "when payload has a field of the wrong type" do
+      payload = %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => "lots"}
+
+      assert Codec.Plain.encode(payload, schema: payment_schema()) == {:error, type_mismatch_error()}
     end
 
     test "when payload is matching the schema and schema is unusable" do
@@ -262,8 +269,22 @@ defmodule Avrora.Codec.PlainTest do
   end
 
   defp missing_field_error do
-    %ErlangError{
+    %Codec.Error{
+      reason: :missing_field,
+      message: "field `id` is required",
+      path: "io.acme.Payment.id",
       original: {:"$avro_encode_error", :required_field_missed, [record: "io.acme.Payment", field: "id"]}
+    }
+  end
+
+  defp type_mismatch_error do
+    %Codec.Error{
+      reason: :type_mismatch,
+      message: "field `amount` expected `double`, got `\"lots\"`",
+      path: "io.acme.Payment.amount",
+      original:
+        {:"$avro_encode_error", {:badmatch, {:error, {:type_mismatch, {:avro_primitive_type, "double", []}, "lots"}}},
+         [record: "io.acme.Payment", field: "amount"]}
     }
   end
 

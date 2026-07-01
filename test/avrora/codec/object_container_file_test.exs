@@ -178,7 +178,10 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
   end
 
   defp missing_field_error do
-    %ErlangError{
+    %Codec.Error{
+      reason: :missing_field,
+      message: "field `id` is required",
+      path: "io.acme.Payment.id",
       original: {:"$avro_encode_error", :required_field_missed, [record: "io.acme.Payment", field: "id"]}
     }
   end

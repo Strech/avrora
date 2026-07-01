@@ -40,4 +40,53 @@ defmodule Avrora.Codec.ErrorTest do
       assert_raise Error, "boom", fn -> raise %Error{reason: :unknown, message: "boom"} end
     end
   end
+
+  describe "from_erlavro/1" do
+    test "when a required field is missing" do
+      original = {:"$avro_encode_error", :required_field_missed, [record: "io.acme.Payment", field: "id"]}
+
+      assert Error.from_erlavro(%ErlangError{original: original}) == %Error{
+               reason: :missing_field,
+               message: "field `id` is required",
+               path: "io.acme.Payment.id",
+               original: original
+             }
+    end
+
+    test "when a field has the wrong type" do
+      original =
+        {:"$avro_encode_error", {:badmatch, {:error, {:type_mismatch, {:avro_primitive_type, "double", []}, "lots"}}},
+         [record: "io.acme.Payment", field: "amount"]}
+
+      assert Error.from_erlavro(%ErlangError{original: original}) == %Error{
+               reason: :type_mismatch,
+               message: "field `amount` expected `double`, got `\"lots\"`",
+               path: "io.acme.Payment.amount",
+               original: original
+             }
+    end
+
+    test "when the error is not recognized it falls back to unknown" do
+      error = %RuntimeError{message: "boom"}
+
+      assert Error.from_erlavro(error) == %Error{reason: :unknown, message: "boom", original: error}
+    end
+  end
+
+  describe "from_erlavro/2" do
+    test "when attributes are given they override the translated fields" do
+      error = %RuntimeError{message: "boom"}
+
+      assert Error.from_erlavro(error, reason: :schema_mismatch, path: "io.acme.Payment") == %Error{
+               reason: :schema_mismatch,
+               message: "boom",
+               path: "io.acme.Payment",
+               original: error
+             }
+    end
+
+    test "when an unknown field is given it raises error" do
+      assert_raise KeyError, fn -> Error.from_erlavro(%RuntimeError{message: "boom"}, bogus: 1) end
+    end
+  end
 end

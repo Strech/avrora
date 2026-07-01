@@ -10,6 +10,7 @@ defmodule Avrora.Codec.Plain do
 
   require Logger
   alias Avrora.AvroDecoderOptions
+  alias Avrora.Codec
   alias Avrora.Resolver
 
   @impl true
@@ -70,6 +71,6 @@ defmodule Avrora.Codec.Plain do
 
     {:ok, encoded}
   rescue
-    error -> {:error, error}
+    error -> {:error, Codec.Error.from_erlavro(error)}
   end
 end
