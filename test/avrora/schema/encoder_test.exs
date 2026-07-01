@@ -123,6 +123,11 @@ defmodule Avrora.Schema.EncoderTest do
       assert Schema.Encoder.from_json("{}") == {:error, {:not_found, "type"}}
       assert Schema.Encoder.from_json("[null]") == {:error, :invalid_schema}
     end
+
+    test "when schema Record fields is not a list" do
+      assert Schema.Encoder.from_json(~s({"type":"record","name":"R","fields":"nope"})) ==
+               {:error, :invalid_schema}
+    end
   end
 
   describe "to_erlavro/1" do

@@ -160,7 +160,7 @@ defmodule Avrora.Schema.Encoder do
   defp do_parse(payload) do
     {:ok, :avro_json_decoder.decode_schema(payload, allow_bad_references: true)}
   rescue
-    _ in FunctionClauseError -> {:error, :invalid_schema}
+    _ in [FunctionClauseError, CaseClauseError] -> {:error, :invalid_schema}
     error in ArgumentError -> {:error, error.message}
     error in ErlangError -> {:error, error.original}
   end
