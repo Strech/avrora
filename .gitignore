@@ -30,6 +30,7 @@ avrora-*.tar
 # Local development
 .planning
 .tool-versions
+.graphifyignore
 graphify-out/
 
 # Misc
