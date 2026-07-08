@@ -6,7 +6,7 @@ defmodule Avrora.Codec.ErrorTest do
 
   describe "message/1" do
     test "when built with a message it returns the message" do
-      error = %Error{reason: :missing_field, message: "field `amount` is required"}
+      error = %Error{reason: :field_missing, message: "field `amount` is required"}
 
       assert Exception.message(error) == "field `amount` is required"
     end
@@ -46,7 +46,7 @@ defmodule Avrora.Codec.ErrorTest do
       original = {:"$avro_encode_error", :required_field_missed, [record: "io.acme.Payment", field: "id"]}
 
       assert Error.from_erlavro(%ErlangError{original: original}) == %Error{
-               reason: :missing_field,
+               reason: :field_missing,
                message: "field `id` is required",
                path: "io.acme.Payment.id",
                original: original
@@ -63,6 +63,16 @@ defmodule Avrora.Codec.ErrorTest do
                message: "field `amount` expected `double`, got `\"lots\"`",
                path: "io.acme.Payment.amount",
                original: original
+             }
+    end
+
+    test "when the payload does not match the schema" do
+      error = %MatchError{term: <<1, 2>>}
+
+      assert Error.from_erlavro(error) == %Error{
+               reason: :schema_mismatch,
+               message: "payload does not match the schema",
+               original: error
              }
     end
 

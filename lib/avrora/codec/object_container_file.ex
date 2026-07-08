@@ -77,8 +77,7 @@ defmodule Avrora.Codec.ObjectContainerFile do
   defp do_decode(payload) do
     {:ok, :avro_ocf.decode_binary(payload, AvroDecoderOptions.options())}
   rescue
-    MatchError -> {:error, :schema_mismatch}
-    error -> {:error, error}
+    error -> {:error, Codec.Error.from_erlavro(error)}
   end
 
   defp do_encode(payload, schema) do

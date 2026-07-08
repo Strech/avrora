@@ -65,7 +65,11 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
     end
 
     test "when payload is invalid" do
-      assert Codec.ObjectContainerFile.extract_schema(<<79, 98, 106, 1, 0, 1, 2>>) == {:error, :schema_mismatch}
+      {:error, error} = Codec.ObjectContainerFile.extract_schema(<<79, 98, 106, 1, 0, 1, 2>>)
+
+      assert error.reason == :schema_mismatch
+      assert error.message == "payload does not match the schema"
+      assert is_nil(error.path)
     end
   end
 
@@ -105,7 +109,11 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
     end
 
     test "when payload is not a valid binary and schema is not given" do
-      assert Codec.ObjectContainerFile.decode(<<79, 98, 106, 1, 0, 1, 2>>) == {:error, :schema_mismatch}
+      {:error, error} = Codec.ObjectContainerFile.decode(<<79, 98, 106, 1, 0, 1, 2>>)
+
+      assert error.reason == :schema_mismatch
+      assert error.message == "payload does not match the schema"
+      assert is_nil(error.path)
     end
 
     test "when payload is a valid binary and schema is given" do
@@ -179,7 +187,7 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
 
   defp missing_field_error do
     %Codec.Error{
-      reason: :missing_field,
+      reason: :field_missing,
       message: "field `id` is required",
       path: "io.acme.Payment.id",
       original: {:"$avro_encode_error", :required_field_missed, [record: "io.acme.Payment", field: "id"]}

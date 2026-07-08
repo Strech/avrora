@@ -58,8 +58,8 @@ defmodule Avrora.Codec.Plain do
 
     {:ok, decoded}
   rescue
-    MatchError -> {:error, :schema_mismatch}
-    error -> {:error, error}
+    error in MatchError -> {:error, Codec.Error.from_erlavro(error, path: schema.full_name)}
+    error -> {:error, Codec.Error.from_erlavro(error)}
   end
 
   defp do_encode(payload, schema) do

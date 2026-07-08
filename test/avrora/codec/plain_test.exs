@@ -110,7 +110,11 @@ defmodule Avrora.Codec.PlainTest do
     end
 
     test "when payload is not a valid binary and schema is usable" do
-      assert Codec.Plain.decode(<<0, 1, 2>>, schema: payment_schema()) == {:error, :schema_mismatch}
+      {:error, error} = Codec.Plain.decode(<<0, 1, 2>>, schema: payment_schema())
+
+      assert error.reason == :schema_mismatch
+      assert error.message == "payload does not match the schema"
+      assert error.path == "io.acme.Payment"
     end
 
     test "when payload is valid binary and union type must be decoded without decoding hook" do
@@ -270,7 +274,7 @@ defmodule Avrora.Codec.PlainTest do
 
   defp missing_field_error do
     %Codec.Error{
-      reason: :missing_field,
+      reason: :field_missing,
       message: "field `id` is required",
       path: "io.acme.Payment.id",
       original: {:"$avro_encode_error", :required_field_missed, [record: "io.acme.Payment", field: "id"]}

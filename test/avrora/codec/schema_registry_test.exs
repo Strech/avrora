@@ -148,7 +148,10 @@ defmodule Avrora.Codec.SchemaRegistryTest do
         {:ok, payment_schema_with_id}
       end)
 
-      assert Codec.SchemaRegistry.decode(<<0, 0, 0, 0, 42, 72, 48, 48, 48, 48, 48>>) == {:error, :schema_mismatch}
+      {:error, error} = Codec.SchemaRegistry.decode(<<0, 0, 0, 0, 42, 72, 48, 48, 48, 48, 48>>)
+
+      assert error.reason == :schema_mismatch
+      assert error.path == "io.acme.Payment"
     end
   end
 
@@ -273,8 +276,10 @@ defmodule Avrora.Codec.SchemaRegistryTest do
     end
 
     test "when payload is not a valid binary and contains schema id" do
-      assert Codec.SchemaRegistry.decode(<<0, 0, 0, 0, 42, 72>>, schema: payment_schema_with_id()) ==
-               {:error, :schema_mismatch}
+      {:error, error} = Codec.SchemaRegistry.decode(<<0, 0, 0, 0, 42, 72>>, schema: payment_schema_with_id())
+
+      assert error.reason == :schema_mismatch
+      assert error.path == "io.acme.Payment"
     end
   end
 
@@ -373,7 +378,7 @@ defmodule Avrora.Codec.SchemaRegistryTest do
 
   defp missing_field_error do
     %Codec.Error{
-      reason: :missing_field,
+      reason: :field_missing,
       message: "field `id` is required",
       path: "io.acme.Payment.id",
       original: {:"$avro_encode_error", :required_field_missed, [record: "io.acme.Payment", field: "id"]}
