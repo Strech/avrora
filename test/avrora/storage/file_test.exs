@@ -57,7 +57,10 @@ defmodule Avrora.Storage.FileTest do
     end
 
     test "when schema file contains invalid json" do
-      assert File.get("io.acme.Wrong") == {:error, "argument error"}
+      {:error, error} = File.get("io.acme.Wrong")
+
+      assert error.reason == :malformed_json
+      assert error.message == ~S/malformed JSON at line 1, column 1 (unexpected "H")/
     end
 
     test "when schema file was not found" do

@@ -4,40 +4,28 @@ defmodule Avrora.Schema.ErrorTest do
 
   alias Avrora.Schema.Error
 
-  describe "message/1" do
-    test "when built with a message it returns the message" do
-      error = %Error{reason: :missing_attribute, message: "field `zip` is missing `type`"}
+  describe "from_jason/2" do
+    test "when a byte is unexpected it points at the line, column and character" do
+      {:error, decode_error} = Jason.decode(~s({"name": nope}))
+      error = Error.from_jason(~s({"name": nope}), decode_error)
 
-      assert Exception.message(error) == "field `zip` is missing `type`"
-    end
-  end
-
-  describe "struct" do
-    test "when built it exposes reason, message, path and original" do
-      error = %Error{
-        reason: :unknown_type,
-        message: "unknown type `strng`",
-        path: "io.acme.Payment.amount",
-        original: {:unknown_type, "strng"}
-      }
-
-      assert error.reason == :unknown_type
-      assert error.message == "unknown type `strng`"
-      assert error.path == "io.acme.Payment.amount"
-      assert error.original == {:unknown_type, "strng"}
+      assert error.reason == :malformed_json
+      assert error.message == ~S/malformed JSON at line 1, column 10 (unexpected "n")/
+      assert error.original == decode_error
     end
 
-    test "when path and original are omitted they default to nil" do
-      error = %Error{reason: :malformed_json, message: "boom"}
+    test "when the payload is multiline it counts the line and column" do
+      {:error, decode_error} = Jason.decode(~s/{\n  "a": 1,\n  bad\n}/)
+      error = Error.from_jason(~s/{\n  "a": 1,\n  bad\n}/, decode_error)
 
-      assert is_nil(error.path)
-      assert is_nil(error.original)
+      assert error.message == ~S/malformed JSON at line 3, column 3 (unexpected "b")/
     end
-  end
 
-  describe "raising" do
-    test "when raised it behaves as an exception" do
-      assert_raise Error, "boom", fn -> raise %Error{reason: :unknown, message: "boom"} end
+    test "when the payload ends early it reports end of input" do
+      {:error, decode_error} = Jason.decode(~s({"a":1))
+      error = Error.from_jason(~s({"a":1), decode_error)
+
+      assert error.message == "malformed JSON at line 1, column 7 (unexpected end of input)"
     end
   end
 end

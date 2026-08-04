@@ -161,8 +161,15 @@ defmodule Avrora.Schema.Encoder do
     {:ok, :avro_json_decoder.decode_schema(payload, allow_bad_references: true)}
   rescue
     _ in [FunctionClauseError, CaseClauseError] -> {:error, :invalid_schema}
-    error in ArgumentError -> {:error, error.message}
+    error in ArgumentError -> explain_json_error(payload, error)
     error in ErlangError -> {:error, error.original}
+  end
+
+  defp explain_json_error(payload, fallback) do
+    case Jason.decode(payload) do
+      {:error, error} -> {:error, Schema.Error.from_jason(payload, error)}
+      {:ok, _} -> {:error, fallback.message}
+    end
   end
 
   defp ets, do: Config.self().ets_lib()

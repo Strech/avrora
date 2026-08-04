@@ -119,9 +119,17 @@ defmodule Avrora.Schema.EncoderTest do
     end
 
     test "when schema is an invalid" do
-      assert Schema.Encoder.from_json("a:b") == {:error, "argument error"}
       assert Schema.Encoder.from_json("{}") == {:error, {:not_found, "type"}}
       assert Schema.Encoder.from_json("[null]") == {:error, :invalid_schema}
+    end
+
+    test "when schema json is malformed" do
+      {:error, error} = Schema.Encoder.from_json(~s({"name": nope}))
+
+      assert %Schema.Error{} = error
+      assert error.reason == :malformed_json
+      assert error.message == ~S/malformed JSON at line 1, column 10 (unexpected "n")/
+      assert is_nil(error.path)
     end
 
     test "when schema Record fields is not a list" do
