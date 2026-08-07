@@ -9,7 +9,7 @@ defmodule Avrora.Schema.ErrorTest do
       {:error, decode_error} = Jason.decode(~s({"name": nope}))
       error = Error.from_jason(~s({"name": nope}), decode_error)
 
-      assert error.reason == :malformed_json
+      assert error.reason == :json_malformed
       assert error.message == ~S/malformed JSON at line 1, column 10 (unexpected "n")/
       assert error.original == decode_error
     end

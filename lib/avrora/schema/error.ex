@@ -20,7 +20,7 @@ defmodule Avrora.Schema.Error do
       iex> {:error, decode_error} = Jason.decode(json)
       iex> error = Avrora.Schema.Error.from_jason(json, decode_error)
       iex> {error.reason, error.message}
-      {:malformed_json, ~s/malformed JSON at line 1, column 10 (unexpected "n")/}
+      {:json_malformed, ~s/malformed JSON at line 1, column 10 (unexpected "n")/}
   """
   @spec from_jason(String.t(), Jason.DecodeError.t()) :: t()
   def from_jason(payload, %Jason.DecodeError{position: position} = error) do
@@ -32,7 +32,7 @@ defmodule Avrora.Schema.Error do
         else: "end of input"
 
     %__MODULE__{
-      reason: :malformed_json,
+      reason: :json_malformed,
       message: "malformed JSON at line #{line}, column #{column} (unexpected #{unexpected})",
       original: error
     }

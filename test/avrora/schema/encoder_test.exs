@@ -127,7 +127,7 @@ defmodule Avrora.Schema.EncoderTest do
       {:error, error} = Schema.Encoder.from_json(~s({"name": nope}))
 
       assert %Schema.Error{} = error
-      assert error.reason == :malformed_json
+      assert error.reason == :json_malformed
       assert error.message == ~S/malformed JSON at line 1, column 10 (unexpected "n")/
       assert is_nil(error.path)
     end
