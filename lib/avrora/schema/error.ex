@@ -1,9 +1,6 @@
 defmodule Avrora.Schema.Error do
   @moduledoc """
-  An error describing why an Avro schema could not be parsed or loaded.
-
-  Field `reason` names the specific failure and `path` locates the offending node
-  as a dotted Avro name when known.
+  An error explaining why an Avro schema could not be used.
 
   See more: `Avrora.Error`
   """
@@ -37,6 +34,40 @@ defmodule Avrora.Schema.Error do
       original: error
     }
   end
+
+  @doc """
+  Build an error from an exception raised by `erlavro`.
+
+  ## Examples
+
+      iex> error = Avrora.Schema.Error.from_erlavro(%ErlangError{original: {:not_found, "type"}})
+      iex> {error.reason, error.message}
+      {:attribute_missing, "missing attribute `type`"}
+  """
+  @spec from_erlavro(Exception.t()) :: t()
+  def from_erlavro(%ErlangError{original: {:not_found, attribute}} = error),
+    do: %__MODULE__{reason: :attribute_missing, message: "missing attribute `#{attribute}`", original: error}
+
+  def from_erlavro(%ErlangError{original: {:invalid_name, name}} = error),
+    do: %__MODULE__{reason: :name_invalid, message: "invalid name `#{name}`", original: error}
+
+  def from_erlavro(%ErlangError{original: {:type_redefined, name}} = error),
+    do: %__MODULE__{reason: :type_duplicate, message: "duplicate type `#{name}`", original: error}
+
+  def from_erlavro(%ErlangError{original: {"duplicated union member", member}} = error),
+    do: %__MODULE__{reason: :union_member_duplicate, message: "duplicate union member `#{member}`", original: error}
+
+  def from_erlavro(%MatchError{} = error),
+    do: %__MODULE__{reason: :reference_invalid, message: "schema contains an invalid reference", original: error}
+
+  def from_erlavro(%FunctionClauseError{} = error),
+    do: %__MODULE__{reason: :schema_invalid, message: "schema is invalid", original: error}
+
+  def from_erlavro(%CaseClauseError{} = error),
+    do: %__MODULE__{reason: :schema_invalid, message: "schema is invalid", original: error}
+
+  def from_erlavro(error),
+    do: %__MODULE__{reason: :unknown, message: "unexpected schema error: #{inspect(error)}", original: error}
 
   defp calculate_line_and_column(payload, position) do
     newlines = :binary.matches(binary_part(payload, 0, position), "\n")
