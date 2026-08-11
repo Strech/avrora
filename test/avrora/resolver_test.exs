@@ -144,13 +144,13 @@ defmodule Avrora.ResolverTest do
       |> expect(:get, fn key ->
         assert key == 1
 
-        {:error, :unconfigured_registry_url}
+        {:error, :registry_url_unconfigured}
       end)
       |> expect(:put, fn key, value ->
         assert key == "io.acme.Payment"
         assert value == json_schema()
 
-        {:error, :unconfigured_registry_url}
+        {:error, :registry_url_unconfigured}
       end)
 
       Avrora.Storage.FileMock
@@ -331,7 +331,7 @@ defmodule Avrora.ResolverTest do
         assert key == "io.acme.Payment"
         assert value == json_schema()
 
-        {:error, :unconfigured_registry_url}
+        {:error, :registry_url_unconfigured}
       end)
 
       {:ok, schema} = Resolver.resolve("io.acme.Payment")
@@ -368,7 +368,7 @@ defmodule Avrora.ResolverTest do
       |> expect(:get, fn key ->
         assert key == "io.acme.Payment:3"
 
-        {:error, :unconfigured_registry_url}
+        {:error, :registry_url_unconfigured}
       end)
 
       {:ok, schema} = Resolver.resolve("io.acme.Payment:3")

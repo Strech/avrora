@@ -24,7 +24,7 @@ defmodule Avrora.Codec.Plain do
   end
 
   @impl true
-  def extract_schema(_payload), do: {:error, :schema_not_found}
+  def extract_schema(_payload), do: {:error, :schema_missing}
 
   @impl true
   def decode(_payload), do: {:error, :schema_required}
@@ -43,7 +43,7 @@ defmodule Avrora.Codec.Plain do
     cond do
       is_binary(schema.full_name) && is_reference(schema.lookup_table) -> {:ok, schema}
       is_binary(schema.full_name) -> Resolver.resolve(schema.full_name)
-      true -> {:error, :unusable_schema}
+      true -> {:error, :schema_unusable}
     end
   end
 

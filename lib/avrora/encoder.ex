@@ -163,7 +163,7 @@ defmodule Avrora.Encoder do
           Codec.Plain.encode(payload, schema: schema)
 
         _ ->
-          {:error, :unknown_format}
+          {:error, :format_unknown}
       end
     end
   end

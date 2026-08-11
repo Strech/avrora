@@ -22,7 +22,7 @@ defmodule Avrora.Codec.PlainTest do
 
   describe "extract_schema/1" do
     test "when payload is a valid binary" do
-      assert Codec.Plain.extract_schema(payment_message()) == {:error, :schema_not_found}
+      assert Codec.Plain.extract_schema(payment_message()) == {:error, :schema_missing}
     end
   end
 
@@ -62,7 +62,7 @@ defmodule Avrora.Codec.PlainTest do
         assert key == "io.acme.Payment"
         assert value == payment_json()
 
-        {:error, :unconfigured_registry_url}
+        {:error, :registry_url_unconfigured}
       end)
 
       Avrora.Storage.FileMock
@@ -106,7 +106,7 @@ defmodule Avrora.Codec.PlainTest do
     end
 
     test "when payload is a valid binary and schema is unusable" do
-      assert Codec.Plain.decode(payment_message(), schema: %Schema{}) == {:error, :unusable_schema}
+      assert Codec.Plain.decode(payment_message(), schema: %Schema{}) == {:error, :schema_unusable}
     end
 
     test "when payload is not a valid binary and schema is usable" do
@@ -154,7 +154,7 @@ defmodule Avrora.Codec.PlainTest do
     end
 
     test "when payload is matching the schema and schema is unusable" do
-      assert Codec.Plain.encode(payment_payload(), schema: %Schema{}) == {:error, :unusable_schema}
+      assert Codec.Plain.encode(payment_payload(), schema: %Schema{}) == {:error, :schema_unusable}
     end
 
     test "when payload is matching the schema and schema is usable" do
@@ -184,7 +184,7 @@ defmodule Avrora.Codec.PlainTest do
         assert key == "io.acme.Payment"
         assert value == payment_json()
 
-        {:error, :unconfigured_registry_url}
+        {:error, :registry_url_unconfigured}
       end)
 
       Avrora.Storage.FileMock
@@ -220,7 +220,7 @@ defmodule Avrora.Codec.PlainTest do
         assert key == "io.acme.CardType"
         assert value == enum_json()
 
-        {:error, :unconfigured_registry_url}
+        {:error, :registry_url_unconfigured}
       end)
 
       Avrora.Storage.FileMock
@@ -256,7 +256,7 @@ defmodule Avrora.Codec.PlainTest do
         assert key == "io.acme.CRC32"
         assert value == fixed_json()
 
-        {:error, :unconfigured_registry_url}
+        {:error, :registry_url_unconfigured}
       end)
 
       Avrora.Storage.FileMock

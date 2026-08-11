@@ -106,7 +106,7 @@ defmodule Avrora.Storage.Registry do
 
     {:ok, references}
   catch
-    :unknown_subject -> {:error, :unknown_reference_subject}
+    :unknown_subject -> {:error, :reference_subject_unknown}
     error -> {:error, error}
   end
 
@@ -119,7 +119,7 @@ defmodule Avrora.Storage.Registry do
   defp http_client_get(path) do
     if configured?(),
       do: path |> to_url() |> http_client().get(options()) |> handle(),
-      else: {:error, :unconfigured_registry_url}
+      else: {:error, :registry_url_unconfigured}
   end
 
   defp http_client_post(path, payload) do
@@ -127,7 +127,7 @@ defmodule Avrora.Storage.Registry do
       options = [{:content_type, @content_type} | options()]
       path |> to_url() |> http_client().post(payload, options) |> handle()
     else
-      {:error, :unconfigured_registry_url}
+      {:error, :registry_url_unconfigured}
     end
   end
 

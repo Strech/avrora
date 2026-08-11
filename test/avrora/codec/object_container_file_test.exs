@@ -135,7 +135,7 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
     end
 
     test "when payload is matching the schema and schema is unusable" do
-      assert Codec.ObjectContainerFile.encode(payment_payload(), schema: %Schema{}) == {:error, :unusable_schema}
+      assert Codec.ObjectContainerFile.encode(payment_payload(), schema: %Schema{}) == {:error, :schema_unusable}
     end
 
     test "when payload is matching the schema and schema is usable" do
@@ -165,7 +165,7 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
         assert key == "io.acme.Payment"
         assert value == payment_json_schema()
 
-        {:error, :unconfigured_registry_url}
+        {:error, :registry_url_unconfigured}
       end)
 
       Avrora.Storage.FileMock

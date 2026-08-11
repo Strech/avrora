@@ -25,10 +25,10 @@ defmodule Avrora.Utils.RegistrarTest do
         assert key == "io.acme.Payment"
         assert value == json_schema()
 
-        {:error, :unconfigured_registry_url}
+        {:error, :registry_url_unconfigured}
       end)
 
-      assert {:error, :unconfigured_registry_url} == Registrar.register_schema(schema_without_id_and_version())
+      assert {:error, :registry_url_unconfigured} == Registrar.register_schema(schema_without_id_and_version())
     end
 
     test "when schema was found in memory" do

@@ -82,7 +82,7 @@ defmodule Avrora.Storage.RegistryTest do
         {:error, subject_not_found_parsed_error()}
       end)
 
-      assert Registry.get("io.acme.Account") == {:error, :unknown_reference_subject}
+      assert Registry.get("io.acme.Account") == {:error, :reference_subject_unknown}
     end
 
     test "when requesting by subject name without version" do
@@ -291,7 +291,7 @@ defmodule Avrora.Storage.RegistryTest do
     test "when registry url is unconfigured" do
       stub(Avrora.ConfigMock, :registry_url, fn -> nil end)
 
-      assert Registry.get("anything") == {:error, :unconfigured_registry_url}
+      assert Registry.get("anything") == {:error, :registry_url_unconfigured}
     end
 
     @tag skip: "This test will fail because Registry creates new table on each reference"
@@ -456,7 +456,7 @@ defmodule Avrora.Storage.RegistryTest do
     test "when registry url is unconfigured" do
       stub(Avrora.ConfigMock, :registry_url, fn -> nil end)
 
-      assert Registry.put("anything", ~s({"type":"string"})) == {:error, :unconfigured_registry_url}
+      assert Registry.put("anything", ~s({"type":"string"})) == {:error, :registry_url_unconfigured}
     end
   end
 

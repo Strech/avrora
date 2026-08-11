@@ -35,7 +35,7 @@ defmodule Avrora.Codec.SchemaRegistry do
   def extract_schema(payload) when is_binary(payload) do
     case payload do
       <<@magic_bytes, <<id::size(32)>>, _::binary>> -> Resolver.resolve(id)
-      _ -> {:error, :schema_not_found}
+      _ -> {:error, :schema_missing}
     end
   end
 
@@ -47,7 +47,7 @@ defmodule Avrora.Codec.SchemaRegistry do
              do: Codec.Plain.decode(body, schema: schema)
 
       _ ->
-        {:error, :schema_not_found}
+        {:error, :schema_missing}
     end
   end
 
@@ -70,14 +70,14 @@ defmodule Avrora.Codec.SchemaRegistry do
         end
 
       _ ->
-        {:error, :schema_not_found}
+        {:error, :schema_missing}
     end
   end
 
   @impl true
   def encode(payload, schema: schema) when is_binary(payload) or is_map(payload) do
     with {:ok, schema} <- resolve(schema) do
-      schema = if is_nil(schema.id), do: {:error, :invalid_schema_id}, else: {:ok, schema}
+      schema = if is_nil(schema.id), do: {:error, :schema_id_invalid}, else: {:ok, schema}
 
       with {:ok, schema} <- schema,
            {:ok, body} <- Codec.Plain.encode(payload, schema: schema) do
@@ -103,7 +103,7 @@ defmodule Avrora.Codec.SchemaRegistry do
         Resolver.resolve(schema.full_name)
 
       true ->
-        {:error, :unusable_schema}
+        {:error, :schema_unusable}
     end
   end
 end
