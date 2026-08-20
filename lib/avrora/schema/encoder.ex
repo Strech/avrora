@@ -4,6 +4,7 @@ defmodule Avrora.Schema.Encoder do
   """
 
   alias Avrora.Config
+  alias Avrora.Errors
   alias Avrora.Schema
   alias Avrora.Schema.ReferenceCollector
 
@@ -51,7 +52,7 @@ defmodule Avrora.Schema.Encoder do
   def reference_lookup(name),
     do:
       {:error,
-       %Schema.Error{
+       %Errors.Schema{
          reason: :reference_lookup_missing,
          message: "reference lookup function is required to resolve `#{name}`"
        }}
@@ -157,7 +158,7 @@ defmodule Avrora.Schema.Encoder do
 
       _ ->
         {:error,
-         %Schema.Error{
+         %Errors.Schema{
            reason: :type_unnamed,
            message: "schema root must be a named type, got `#{:avro.get_type_name(schema)}`",
            original: schema
@@ -170,23 +171,23 @@ defmodule Avrora.Schema.Encoder do
   defp do_compile(full_name, lookup_table) do
     {:ok, :avro_util.expand_type(full_name, lookup_table)}
   rescue
-    error in MatchError -> {:error, Schema.Error.from_erlavro(error)}
-    error in ErlangError -> {:error, Schema.Error.from_erlavro(error)}
+    error in MatchError -> {:error, Errors.Schema.from_erlavro(error)}
+    error in ErlangError -> {:error, Errors.Schema.from_erlavro(error)}
   end
 
   # Parse schema to `erlavro` format, converting errors to error return
   defp do_parse(payload) do
     {:ok, :avro_json_decoder.decode_schema(payload, allow_bad_references: true)}
   rescue
-    error in [FunctionClauseError, CaseClauseError] -> {:error, Schema.Error.from_erlavro(error)}
+    error in [FunctionClauseError, CaseClauseError] -> {:error, Errors.Schema.from_erlavro(error)}
     error in ArgumentError -> explain_json_error(payload, error)
-    error in ErlangError -> {:error, Schema.Error.from_erlavro(error)}
+    error in ErlangError -> {:error, Errors.Schema.from_erlavro(error)}
   end
 
   defp explain_json_error(payload, fallback) do
     case Jason.decode(payload) do
-      {:error, error} -> {:error, Schema.Error.from_jason(payload, error)}
-      {:ok, _} -> {:error, %Schema.Error{reason: :schema_invalid, message: fallback.message, original: fallback}}
+      {:error, error} -> {:error, Errors.Schema.from_jason(payload, error)}
+      {:ok, _} -> {:error, %Errors.Schema{reason: :schema_invalid, message: fallback.message, original: fallback}}
     end
   end
 

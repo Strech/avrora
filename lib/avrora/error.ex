@@ -8,12 +8,12 @@ defmodule Avrora.Error do
 
   ## Examples
 
-      iex> error = %Avrora.Schema.Error{reason: :json_malformed, message: "invalid JSON"}
+      iex> error = %Avrora.Errors.Schema{reason: :json_malformed, message: "invalid JSON"}
       iex> Exception.message(error)
       "invalid JSON"
 
       iex> error =
-      ...>   %Avrora.Schema.Error{
+      ...>   %Avrora.Errors.Schema{
       ...>     reason: :type_unknown,
       ...>     message: "unknown type `strng`",
       ...>     path: "io.acme.Payment.amount",

@@ -1,8 +1,8 @@
-defmodule Avrora.Schema.ErrorTest do
+defmodule Avrora.Errors.SchemaTest do
   use ExUnit.Case, async: true
-  doctest Avrora.Schema.Error
+  doctest Avrora.Errors.Schema
 
-  alias Avrora.Schema.Error
+  alias Avrora.Errors.Schema, as: Error
 
   describe "from_jason/2" do
     test "when a byte is unexpected it points at the line, column and character" do

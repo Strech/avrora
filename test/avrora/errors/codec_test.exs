@@ -1,8 +1,8 @@
-defmodule Avrora.Codec.ErrorTest do
+defmodule Avrora.Errors.CodecTest do
   use ExUnit.Case, async: true
-  doctest Avrora.Codec.Error
+  doctest Avrora.Errors.Codec
 
-  alias Avrora.Codec.Error
+  alias Avrora.Errors.Codec, as: Error
 
   describe "message/1" do
     test "when built with a message it returns the message" do

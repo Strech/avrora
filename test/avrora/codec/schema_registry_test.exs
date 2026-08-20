@@ -6,7 +6,7 @@ defmodule Avrora.Codec.SchemaRegistryTest do
   import Support.Config
   import ExUnit.CaptureLog
 
-  alias Avrora.{Codec, Schema, Storage}
+  alias Avrora.{Codec, Errors, Schema, Storage}
 
   setup :verify_on_exit!
   setup :support_config
@@ -377,7 +377,7 @@ defmodule Avrora.Codec.SchemaRegistryTest do
   end
 
   defp missing_field_error do
-    %Codec.Error{
+    %Errors.Codec{
       reason: :field_missing,
       message: "field `id` is required",
       path: "io.acme.Payment.id",

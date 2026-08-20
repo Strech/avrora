@@ -3,6 +3,7 @@ defmodule Avrora.Schema.EncoderTest do
   doctest Avrora.Schema.Encoder
 
   import Support.Config
+  alias Avrora.Errors
   alias Avrora.Schema
 
   setup :support_config
@@ -134,7 +135,7 @@ defmodule Avrora.Schema.EncoderTest do
     test "when schema json is malformed" do
       {:error, error} = Schema.Encoder.from_json(~s({"name": nope}))
 
-      assert %Schema.Error{} = error
+      assert %Errors.Schema{} = error
       assert error.reason == :json_malformed
       assert error.message == ~S/malformed JSON at line 1, column 10 (unexpected "n")/
       assert is_nil(error.path)

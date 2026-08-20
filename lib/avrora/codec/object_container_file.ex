@@ -16,6 +16,7 @@ defmodule Avrora.Codec.ObjectContainerFile do
   alias Avrora.AvroDecoderOptions
   alias Avrora.Codec
   alias Avrora.Config
+  alias Avrora.Errors
   alias Avrora.Resolver
   alias Avrora.Schema.Encoder, as: SchemaEncoder
 
@@ -77,7 +78,7 @@ defmodule Avrora.Codec.ObjectContainerFile do
   defp do_decode(payload) do
     {:ok, :avro_ocf.decode_binary(payload, AvroDecoderOptions.options())}
   rescue
-    error -> {:error, Codec.Error.from_erlavro(error)}
+    error -> {:error, Errors.Codec.from_erlavro(error)}
   end
 
   defp do_encode(payload, schema) do

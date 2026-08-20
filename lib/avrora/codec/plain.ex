@@ -10,7 +10,7 @@ defmodule Avrora.Codec.Plain do
 
   require Logger
   alias Avrora.AvroDecoderOptions
-  alias Avrora.Codec
+  alias Avrora.Errors
   alias Avrora.Resolver
 
   @impl true
@@ -58,8 +58,8 @@ defmodule Avrora.Codec.Plain do
 
     {:ok, decoded}
   rescue
-    error in MatchError -> {:error, Codec.Error.from_erlavro(error, path: schema.full_name)}
-    error -> {:error, Codec.Error.from_erlavro(error)}
+    error in MatchError -> {:error, Errors.Codec.from_erlavro(error, path: schema.full_name)}
+    error -> {:error, Errors.Codec.from_erlavro(error)}
   end
 
   defp do_encode(payload, schema) do
@@ -71,6 +71,6 @@ defmodule Avrora.Codec.Plain do
 
     {:ok, encoded}
   rescue
-    error -> {:error, Codec.Error.from_erlavro(error)}
+    error -> {:error, Errors.Codec.from_erlavro(error)}
   end
 end

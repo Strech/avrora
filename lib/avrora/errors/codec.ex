@@ -1,4 +1,4 @@
-defmodule Avrora.Codec.Error do
+defmodule Avrora.Errors.Codec do
   @moduledoc """
   An error describing why an Avro message could not be encoded or decoded.
 
@@ -19,16 +19,15 @@ defmodule Avrora.Codec.Error do
   ## Examples
 
       iex> original = {:"$avro_encode_error", :required_field_missed, [record: "io.acme.Payment", field: "id"]}
-      iex> error = Avrora.Codec.Error.from_erlavro(%ErlangError{original: original})
+      iex> error = Avrora.Errors.Codec.from_erlavro(%ErlangError{original: original})
       iex> {error.reason, error.message, error.path}
       {:field_missing, "field `id` is required", "io.acme.Payment.id"}
 
-      iex> error = Avrora.Codec.Error.from_erlavro(%RuntimeError{message: "boom"}, reason: :schema_mismatch)
+      iex> error = Avrora.Errors.Codec.from_erlavro(%RuntimeError{message: "boom"}, reason: :schema_mismatch)
       iex> {error.reason, error.message}
       {:schema_mismatch, "boom"}
   """
   @spec from_erlavro(Exception.t()) :: t()
-  @spec from_erlavro(Exception.t(), keyword()) :: t()
   def from_erlavro(%ErlangError{original: {:"$avro_encode_error", detail, [record: record, field: field]} = original}),
     do: %{encode_error(detail, field, "#{record}.#{field}") | original: original}
 
@@ -38,6 +37,7 @@ defmodule Avrora.Codec.Error do
   def from_erlavro(error),
     do: %__MODULE__{reason: :unknown, message: Exception.message(error), original: error}
 
+  @spec from_erlavro(Exception.t(), keyword()) :: t()
   def from_erlavro(error, attributes), do: struct!(from_erlavro(error), attributes)
 
   defp encode_error(:required_field_missed, field, path),

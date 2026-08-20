@@ -1,4 +1,4 @@
-defmodule Avrora.Schema.Error do
+defmodule Avrora.Errors.Schema do
   @moduledoc """
   An error explaining why an Avro schema could not be used.
 
@@ -15,7 +15,7 @@ defmodule Avrora.Schema.Error do
 
       iex> json = ~s({"name": nope})
       iex> {:error, decode_error} = Jason.decode(json)
-      iex> error = Avrora.Schema.Error.from_jason(json, decode_error)
+      iex> error = Avrora.Errors.Schema.from_jason(json, decode_error)
       iex> {error.reason, error.message}
       {:json_malformed, ~s/malformed JSON at line 1, column 10 (unexpected "n")/}
   """
@@ -40,7 +40,7 @@ defmodule Avrora.Schema.Error do
 
   ## Examples
 
-      iex> error = Avrora.Schema.Error.from_erlavro(%ErlangError{original: {:not_found, "type"}})
+      iex> error = Avrora.Errors.Schema.from_erlavro(%ErlangError{original: {:not_found, "type"}})
       iex> {error.reason, error.message}
       {:attribute_missing, "missing attribute `type`"}
   """

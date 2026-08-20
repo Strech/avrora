@@ -5,7 +5,7 @@ defmodule Avrora.Codec.PlainTest do
   import Mox
   import Support.Config
 
-  alias Avrora.{Codec, Schema}
+  alias Avrora.{Codec, Errors, Schema}
 
   setup :verify_on_exit!
   setup :support_config
@@ -273,7 +273,7 @@ defmodule Avrora.Codec.PlainTest do
   end
 
   defp missing_field_error do
-    %Codec.Error{
+    %Errors.Codec{
       reason: :field_missing,
       message: "field `id` is required",
       path: "io.acme.Payment.id",
@@ -282,7 +282,7 @@ defmodule Avrora.Codec.PlainTest do
   end
 
   defp type_mismatch_error do
-    %Codec.Error{
+    %Errors.Codec{
       reason: :type_mismatch,
       message: "field `amount` expected `double`, got `\"lots\"`",
       path: "io.acme.Payment.amount",
