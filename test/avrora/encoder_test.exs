@@ -65,7 +65,10 @@ defmodule Avrora.EncoderTest do
     end
 
     test "when payload was encoded with no magic bytes" do
-      assert Encoder.extract_schema(messenger_plain_message()) == {:error, :schema_missing}
+      {:error, error} = Encoder.extract_schema(messenger_plain_message())
+
+      assert error.reason == :schema_missing
+      assert error.message == "no schema is available for this message"
     end
   end
 
@@ -103,7 +106,10 @@ defmodule Avrora.EncoderTest do
     end
 
     test "when payload was encoded with no magic bytes" do
-      assert Encoder.decode(payment_plain_message()) == {:error, :schema_required}
+      {:error, error} = Encoder.decode(payment_plain_message())
+
+      assert error.reason == :schema_required
+      assert error.message == "schema is required to decode this message"
     end
   end
 
@@ -444,9 +450,10 @@ defmodule Avrora.EncoderTest do
         {:ok, payment_schema}
       end)
 
-      encoded = Encoder.encode(payment_payload(), schema_name: "io.acme.Payment", format: :registry)
+      {:error, error} = Encoder.encode(payment_payload(), schema_name: "io.acme.Payment", format: :registry)
 
-      assert encoded == {:error, :schema_id_invalid}
+      assert error.reason == :schema_id_invalid
+      assert error.message == "given schema id is nil, expected an integer"
     end
 
     test "when registry is configured and schema is found, but format is given explicitly" do

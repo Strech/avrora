@@ -24,10 +24,12 @@ defmodule Avrora.Codec.Plain do
   end
 
   @impl true
-  def extract_schema(_payload), do: {:error, :schema_missing}
+  def extract_schema(_payload),
+    do: {:error, %Errors.Codec{reason: :schema_missing, message: "no schema is available for this message"}}
 
   @impl true
-  def decode(_payload), do: {:error, :schema_required}
+  def decode(_payload),
+    do: {:error, %Errors.Codec{reason: :schema_required, message: "schema is required to decode this message"}}
 
   @impl true
   def decode(payload, schema: schema) when is_binary(payload) do
@@ -43,7 +45,7 @@ defmodule Avrora.Codec.Plain do
     cond do
       is_binary(schema.full_name) && is_reference(schema.lookup_table) -> {:ok, schema}
       is_binary(schema.full_name) -> Resolver.resolve(schema.full_name)
-      true -> {:error, :schema_unusable}
+      true -> {:error, %Errors.Codec{reason: :schema_unusable, message: "given schema cannot be used"}}
     end
   end
 

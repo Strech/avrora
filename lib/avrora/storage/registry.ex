@@ -10,6 +10,7 @@ defmodule Avrora.Storage.Registry do
   require Logger
 
   alias Avrora.Config
+  alias Avrora.Errors
   alias Avrora.Schema.Encoder, as: SchemaEncoder
   alias Avrora.Schema.Name
 
@@ -106,8 +107,12 @@ defmodule Avrora.Storage.Registry do
 
     {:ok, references}
   catch
-    :unknown_subject -> {:error, :reference_subject_unknown}
-    error -> {:error, error}
+    :unknown_subject ->
+      {:error,
+       %Errors.Schema{reason: :reference_subject_unknown, message: "referenced schema was not found in the registry"}}
+
+    error ->
+      {:error, error}
   end
 
   defp make_reference_lookup_fun(map) when map_size(map) == 0,

@@ -22,17 +22,26 @@ defmodule Avrora.Codec.PlainTest do
 
   describe "extract_schema/1" do
     test "when payload is a valid binary" do
-      assert Codec.Plain.extract_schema(payment_message()) == {:error, :schema_missing}
+      {:error, error} = Codec.Plain.extract_schema(payment_message())
+
+      assert error.reason == :schema_missing
+      assert error.message == "no schema is available for this message"
     end
   end
 
   describe "decode/2" do
     test "when payload is a valid binary and schema is not given" do
-      assert Codec.Plain.decode(payment_message()) == {:error, :schema_required}
+      {:error, error} = Codec.Plain.decode(payment_message())
+
+      assert error.reason == :schema_required
+      assert error.message == "schema is required to decode this message"
     end
 
     test "when payload is not a valid binary and schema is not given" do
-      assert Codec.Plain.decode(<<0, 1, 2>>) == {:error, :schema_required}
+      {:error, error} = Codec.Plain.decode(<<0, 1, 2>>)
+
+      assert error.reason == :schema_required
+      assert error.message == "schema is required to decode this message"
     end
 
     test "when payload is a valid binary and schema is usable" do
@@ -106,7 +115,10 @@ defmodule Avrora.Codec.PlainTest do
     end
 
     test "when payload is a valid binary and schema is unusable" do
-      assert Codec.Plain.decode(payment_message(), schema: %Schema{}) == {:error, :schema_unusable}
+      {:error, error} = Codec.Plain.decode(payment_message(), schema: %Schema{})
+
+      assert error.reason == :schema_unusable
+      assert error.message == "given schema cannot be used"
     end
 
     test "when payload is not a valid binary and schema is usable" do
@@ -154,7 +166,10 @@ defmodule Avrora.Codec.PlainTest do
     end
 
     test "when payload is matching the schema and schema is unusable" do
-      assert Codec.Plain.encode(payment_payload(), schema: %Schema{}) == {:error, :schema_unusable}
+      {:error, error} = Codec.Plain.encode(payment_payload(), schema: %Schema{})
+
+      assert error.reason == :schema_unusable
+      assert error.message == "given schema cannot be used"
     end
 
     test "when payload is matching the schema and schema is usable" do

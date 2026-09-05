@@ -82,7 +82,10 @@ defmodule Avrora.Storage.RegistryTest do
         {:error, subject_not_found_parsed_error()}
       end)
 
-      assert Registry.get("io.acme.Account") == {:error, :reference_subject_unknown}
+      {:error, error} = Registry.get("io.acme.Account")
+
+      assert error.reason == :reference_subject_unknown
+      assert error.message == "referenced schema was not found in the registry"
     end
 
     test "when requesting by subject name without version" do

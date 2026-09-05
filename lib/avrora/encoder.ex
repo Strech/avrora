@@ -5,6 +5,7 @@ defmodule Avrora.Encoder do
 
   require Logger
   alias Avrora.Codec
+  alias Avrora.Errors
   alias Avrora.Schema
   alias Avrora.Schema.Name
 
@@ -163,7 +164,7 @@ defmodule Avrora.Encoder do
           Codec.Plain.encode(payload, schema: schema)
 
         _ ->
-          {:error, :format_unknown}
+          {:error, %Errors.Codec{reason: :format_unknown, message: "format #{inspect(format)} is unknown"}}
       end
     end
   end

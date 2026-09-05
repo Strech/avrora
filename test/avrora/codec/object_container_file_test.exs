@@ -135,7 +135,10 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
     end
 
     test "when payload is matching the schema and schema is unusable" do
-      assert Codec.ObjectContainerFile.encode(payment_payload(), schema: %Schema{}) == {:error, :schema_unusable}
+      {:error, error} = Codec.ObjectContainerFile.encode(payment_payload(), schema: %Schema{})
+
+      assert error.reason == :schema_unusable
+      assert error.message == "given schema cannot be used"
     end
 
     test "when payload is matching the schema and schema is usable" do
