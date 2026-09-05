@@ -6,7 +6,7 @@ defmodule Avrora.Codec.SchemaRegistryTest do
   import Support.Config
   import ExUnit.CaptureLog
 
-  alias Avrora.{Codec, Schema, Storage}
+  alias Avrora.{Codec, Errors, Schema, Storage}
 
   setup :verify_on_exit!
   setup :support_config
@@ -34,10 +34,10 @@ defmodule Avrora.Codec.SchemaRegistryTest do
       |> expect(:get, fn key ->
         assert key == 42
 
-        {:error, :unconfigured_registry_url}
+        {:error, :registry_url_unconfigured}
       end)
 
-      assert Codec.SchemaRegistry.extract_schema(payment_message()) == {:error, :unconfigured_registry_url}
+      assert Codec.SchemaRegistry.extract_schema(payment_message()) == {:error, :registry_url_unconfigured}
     end
 
     test "when payload is valid and registry is configured" do
@@ -71,7 +71,10 @@ defmodule Avrora.Codec.SchemaRegistryTest do
     end
 
     test "when payload is invalid" do
-      assert Codec.SchemaRegistry.extract_schema(<<79, 98, 106, 1, 0, 1, 2>>) == {:error, :schema_not_found}
+      {:error, error} = Codec.SchemaRegistry.extract_schema(<<79, 98, 106, 1, 0, 1, 2>>)
+
+      assert error.reason == :schema_missing
+      assert error.message == "no schema is available for this message"
     end
   end
 
@@ -115,14 +118,17 @@ defmodule Avrora.Codec.SchemaRegistryTest do
       |> expect(:get, fn key ->
         assert key == 42
 
-        {:error, :unconfigured_registry_url}
+        {:error, :registry_url_unconfigured}
       end)
 
-      assert Codec.SchemaRegistry.decode(payment_message()) == {:error, :unconfigured_registry_url}
+      assert Codec.SchemaRegistry.decode(payment_message()) == {:error, :registry_url_unconfigured}
     end
 
     test "when payload is not a valid binary" do
-      assert Codec.SchemaRegistry.decode(<<0, 1, 2>>) == {:error, :schema_not_found}
+      {:error, error} = Codec.SchemaRegistry.decode(<<0, 1, 2>>)
+
+      assert error.reason == :schema_missing
+      assert error.message == "no schema is available for this message"
     end
 
     test "when payload is not a valid binary and contains schema id" do
@@ -148,7 +154,10 @@ defmodule Avrora.Codec.SchemaRegistryTest do
         {:ok, payment_schema_with_id}
       end)
 
-      assert Codec.SchemaRegistry.decode(<<0, 0, 0, 0, 42, 72, 48, 48, 48, 48, 48>>) == {:error, :schema_mismatch}
+      {:error, error} = Codec.SchemaRegistry.decode(<<0, 0, 0, 0, 42, 72, 48, 48, 48, 48, 48>>)
+
+      assert error.reason == :schema_mismatch
+      assert error.path == "io.acme.Payment"
     end
   end
 
@@ -269,12 +278,17 @@ defmodule Avrora.Codec.SchemaRegistryTest do
     end
 
     test "when payload is not a valid binary" do
-      assert Codec.SchemaRegistry.decode(<<0, 1, 2>>, schema: payment_schema_with_id()) == {:error, :schema_not_found}
+      {:error, error} = Codec.SchemaRegistry.decode(<<0, 1, 2>>, schema: payment_schema_with_id())
+
+      assert error.reason == :schema_missing
+      assert error.message == "no schema is available for this message"
     end
 
     test "when payload is not a valid binary and contains schema id" do
-      assert Codec.SchemaRegistry.decode(<<0, 0, 0, 0, 42, 72>>, schema: payment_schema_with_id()) ==
-               {:error, :schema_mismatch}
+      {:error, error} = Codec.SchemaRegistry.decode(<<0, 0, 0, 0, 42, 72>>, schema: payment_schema_with_id())
+
+      assert error.reason == :schema_mismatch
+      assert error.path == "io.acme.Payment"
     end
   end
 
@@ -305,7 +319,7 @@ defmodule Avrora.Codec.SchemaRegistryTest do
         assert key == "io.acme.Payment"
         assert value == payment_json_schema()
 
-        {:error, :unconfigured_registry_url}
+        {:error, :registry_url_unconfigured}
       end)
 
       Storage.FileMock
@@ -315,7 +329,10 @@ defmodule Avrora.Codec.SchemaRegistryTest do
         {:ok, payment_schema}
       end)
 
-      assert Codec.SchemaRegistry.encode(payment_payload(), schema: payment_schema) == {:error, :invalid_schema_id}
+      {:error, error} = Codec.SchemaRegistry.encode(payment_payload(), schema: payment_schema)
+
+      assert error.reason == :schema_id_invalid
+      assert error.message == "given schema id is nil, expected an integer"
     end
 
     test "when resolvable schema without id is given" do
@@ -372,7 +389,10 @@ defmodule Avrora.Codec.SchemaRegistryTest do
   end
 
   defp missing_field_error do
-    %ErlangError{
+    %Errors.Codec{
+      reason: :field_missing,
+      message: "field `id` is required",
+      path: "io.acme.Payment.id",
       original: {:"$avro_encode_error", :required_field_missed, [record: "io.acme.Payment", field: "id"]}
     }
   end

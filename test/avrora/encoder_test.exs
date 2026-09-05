@@ -65,7 +65,10 @@ defmodule Avrora.EncoderTest do
     end
 
     test "when payload was encoded with no magic bytes" do
-      assert Encoder.extract_schema(messenger_plain_message()) == {:error, :schema_not_found}
+      {:error, error} = Encoder.extract_schema(messenger_plain_message())
+
+      assert error.reason == :schema_missing
+      assert error.message == "no schema is available for this message"
     end
   end
 
@@ -103,7 +106,10 @@ defmodule Avrora.EncoderTest do
     end
 
     test "when payload was encoded with no magic bytes" do
-      assert Encoder.decode(payment_plain_message()) == {:error, :schema_required}
+      {:error, error} = Encoder.decode(payment_plain_message())
+
+      assert error.reason == :schema_required
+      assert error.message == "schema is required to decode this message"
     end
   end
 
@@ -129,7 +135,7 @@ defmodule Avrora.EncoderTest do
         assert key == "io.acme.Payment"
         assert value == payment_json_schema()
 
-        {:error, :unconfigured_registry_url}
+        {:error, :registry_url_unconfigured}
       end)
 
       Avrora.Storage.FileMock
@@ -217,13 +223,13 @@ defmodule Avrora.EncoderTest do
       |> expect(:get, fn key ->
         assert key == 42
 
-        {:error, :unconfigured_registry_url}
+        {:error, :registry_url_unconfigured}
       end)
       |> expect(:put, fn key, value ->
         assert key == "io.acme.Payment"
         assert value == payment_json_schema()
 
-        {:error, :unconfigured_registry_url}
+        {:error, :registry_url_unconfigured}
       end)
 
       Avrora.Storage.FileMock
@@ -259,7 +265,7 @@ defmodule Avrora.EncoderTest do
         assert key == "io.acme.Payment"
         assert value == payment_json_schema()
 
-        {:error, :unconfigured_registry_url}
+        {:error, :registry_url_unconfigured}
       end)
 
       Avrora.Storage.FileMock
@@ -311,7 +317,7 @@ defmodule Avrora.EncoderTest do
         assert key == "io.acme.Messenger"
         assert value == messenger_json_schema_with_local_reference()
 
-        {:error, :unconfigured_registry_url}
+        {:error, :registry_url_unconfigured}
       end)
 
       Avrora.Storage.FileMock
@@ -352,7 +358,7 @@ defmodule Avrora.EncoderTest do
         assert key == "io.acme.NumericTransfer"
         assert value == numeric_transfer_json_schema()
 
-        {:error, :unconfigured_registry_url}
+        {:error, :registry_url_unconfigured}
       end)
 
       Avrora.Storage.FileMock
@@ -399,7 +405,7 @@ defmodule Avrora.EncoderTest do
         assert key == "io.acme.Payment"
         assert value == payment_json_schema()
 
-        {:error, :unconfigured_registry_url}
+        {:error, :registry_url_unconfigured}
       end)
 
       Avrora.Storage.FileMock
@@ -434,7 +440,7 @@ defmodule Avrora.EncoderTest do
         assert key == "io.acme.Payment"
         assert value == payment_json_schema()
 
-        {:error, :unconfigured_registry_url}
+        {:error, :registry_url_unconfigured}
       end)
 
       Avrora.Storage.FileMock
@@ -444,9 +450,10 @@ defmodule Avrora.EncoderTest do
         {:ok, payment_schema}
       end)
 
-      encoded = Encoder.encode(payment_payload(), schema_name: "io.acme.Payment", format: :registry)
+      {:error, error} = Encoder.encode(payment_payload(), schema_name: "io.acme.Payment", format: :registry)
 
-      assert encoded == {:error, :invalid_schema_id}
+      assert error.reason == :schema_id_invalid
+      assert error.message == "given schema id is nil, expected an integer"
     end
 
     test "when registry is configured and schema is found, but format is given explicitly" do
@@ -565,7 +572,7 @@ defmodule Avrora.EncoderTest do
         assert key == "io.acme.Payment"
         assert value == payment_json_schema()
 
-        {:error, :unconfigured_registry_url}
+        {:error, :registry_url_unconfigured}
       end)
 
       Avrora.Storage.FileMock
@@ -611,7 +618,7 @@ defmodule Avrora.EncoderTest do
         assert key == "io.acme.Messenger"
         assert value == messenger_json_schema_with_local_reference()
 
-        {:error, :unconfigured_registry_url}
+        {:error, :registry_url_unconfigured}
       end)
 
       Avrora.Storage.FileMock
@@ -647,7 +654,7 @@ defmodule Avrora.EncoderTest do
         assert key == "io.acme.Messenger"
         assert value == messenger_json_schema_with_local_reference()
 
-        {:error, :unconfigured_registry_url}
+        {:error, :registry_url_unconfigured}
       end)
 
       Avrora.Storage.FileMock
@@ -685,7 +692,7 @@ defmodule Avrora.EncoderTest do
         assert key == "io.acme.NumericTransfer"
         assert value == numeric_transfer_json_schema()
 
-        {:error, :unconfigured_registry_url}
+        {:error, :registry_url_unconfigured}
       end)
 
       Avrora.Storage.FileMock

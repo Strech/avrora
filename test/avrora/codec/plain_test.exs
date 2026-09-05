@@ -5,7 +5,7 @@ defmodule Avrora.Codec.PlainTest do
   import Mox
   import Support.Config
 
-  alias Avrora.{Codec, Schema}
+  alias Avrora.{Codec, Errors, Schema}
 
   setup :verify_on_exit!
   setup :support_config
@@ -22,17 +22,26 @@ defmodule Avrora.Codec.PlainTest do
 
   describe "extract_schema/1" do
     test "when payload is a valid binary" do
-      assert Codec.Plain.extract_schema(payment_message()) == {:error, :schema_not_found}
+      {:error, error} = Codec.Plain.extract_schema(payment_message())
+
+      assert error.reason == :schema_missing
+      assert error.message == "no schema is available for this message"
     end
   end
 
   describe "decode/2" do
     test "when payload is a valid binary and schema is not given" do
-      assert Codec.Plain.decode(payment_message()) == {:error, :schema_required}
+      {:error, error} = Codec.Plain.decode(payment_message())
+
+      assert error.reason == :schema_required
+      assert error.message == "schema is required to decode this message"
     end
 
     test "when payload is not a valid binary and schema is not given" do
-      assert Codec.Plain.decode(<<0, 1, 2>>) == {:error, :schema_required}
+      {:error, error} = Codec.Plain.decode(<<0, 1, 2>>)
+
+      assert error.reason == :schema_required
+      assert error.message == "schema is required to decode this message"
     end
 
     test "when payload is a valid binary and schema is usable" do
@@ -62,7 +71,7 @@ defmodule Avrora.Codec.PlainTest do
         assert key == "io.acme.Payment"
         assert value == payment_json()
 
-        {:error, :unconfigured_registry_url}
+        {:error, :registry_url_unconfigured}
       end)
 
       Avrora.Storage.FileMock
@@ -106,11 +115,18 @@ defmodule Avrora.Codec.PlainTest do
     end
 
     test "when payload is a valid binary and schema is unusable" do
-      assert Codec.Plain.decode(payment_message(), schema: %Schema{}) == {:error, :unusable_schema}
+      {:error, error} = Codec.Plain.decode(payment_message(), schema: %Schema{})
+
+      assert error.reason == :schema_unusable
+      assert error.message == "given schema cannot be used"
     end
 
     test "when payload is not a valid binary and schema is usable" do
-      assert Codec.Plain.decode(<<0, 1, 2>>, schema: payment_schema()) == {:error, :schema_mismatch}
+      {:error, error} = Codec.Plain.decode(<<0, 1, 2>>, schema: payment_schema())
+
+      assert error.reason == :schema_mismatch
+      assert error.message == "payload does not match the schema"
+      assert error.path == "io.acme.Payment"
     end
 
     test "when payload is valid binary and union type must be decoded without decoding hook" do
@@ -138,12 +154,22 @@ defmodule Avrora.Codec.PlainTest do
   end
 
   describe "encode/2" do
-    test "when payload is not matching the schema" do
-      assert Codec.Plain.encode(%{"hello" => "world"}, schema: payment_schema()) == {:error, missing_field_error()}
+    test "when payload is missing a required field" do
+      assert Codec.Plain.encode(%{"hello" => "world"}, schema: payment_schema()) ==
+               {:error, missing_field_error()}
+    end
+
+    test "when payload has a field of the wrong type" do
+      payload = %{"id" => "00000000-0000-0000-0000-000000000000", "amount" => "lots"}
+
+      assert Codec.Plain.encode(payload, schema: payment_schema()) == {:error, type_mismatch_error()}
     end
 
     test "when payload is matching the schema and schema is unusable" do
-      assert Codec.Plain.encode(payment_payload(), schema: %Schema{}) == {:error, :unusable_schema}
+      {:error, error} = Codec.Plain.encode(payment_payload(), schema: %Schema{})
+
+      assert error.reason == :schema_unusable
+      assert error.message == "given schema cannot be used"
     end
 
     test "when payload is matching the schema and schema is usable" do
@@ -173,7 +199,7 @@ defmodule Avrora.Codec.PlainTest do
         assert key == "io.acme.Payment"
         assert value == payment_json()
 
-        {:error, :unconfigured_registry_url}
+        {:error, :registry_url_unconfigured}
       end)
 
       Avrora.Storage.FileMock
@@ -209,7 +235,7 @@ defmodule Avrora.Codec.PlainTest do
         assert key == "io.acme.CardType"
         assert value == enum_json()
 
-        {:error, :unconfigured_registry_url}
+        {:error, :registry_url_unconfigured}
       end)
 
       Avrora.Storage.FileMock
@@ -245,7 +271,7 @@ defmodule Avrora.Codec.PlainTest do
         assert key == "io.acme.CRC32"
         assert value == fixed_json()
 
-        {:error, :unconfigured_registry_url}
+        {:error, :registry_url_unconfigured}
       end)
 
       Avrora.Storage.FileMock
@@ -262,8 +288,22 @@ defmodule Avrora.Codec.PlainTest do
   end
 
   defp missing_field_error do
-    %ErlangError{
+    %Errors.Codec{
+      reason: :field_missing,
+      message: "field `id` is required",
+      path: "io.acme.Payment.id",
       original: {:"$avro_encode_error", :required_field_missed, [record: "io.acme.Payment", field: "id"]}
+    }
+  end
+
+  defp type_mismatch_error do
+    %Errors.Codec{
+      reason: :type_mismatch,
+      message: "field `amount` expected `double`, got `\"lots\"`",
+      path: "io.acme.Payment.amount",
+      original:
+        {:"$avro_encode_error", {:badmatch, {:error, {:type_mismatch, {:avro_primitive_type, "double", []}, "lots"}}},
+         [record: "io.acme.Payment", field: "amount"]}
     }
   end
 

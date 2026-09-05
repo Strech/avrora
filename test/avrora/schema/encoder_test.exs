@@ -3,6 +3,7 @@ defmodule Avrora.Schema.EncoderTest do
   doctest Avrora.Schema.Encoder
 
   import Support.Config
+  alias Avrora.Errors
   alias Avrora.Schema
 
   setup :support_config
@@ -94,13 +95,14 @@ defmodule Avrora.Schema.EncoderTest do
     end
 
     test "when schema is Record type with type ref of invalid schema" do
-      result =
+      {:error, error} =
         Schema.Encoder.from_json(message_with_reference_json(), fn name ->
           assert name == "io.acme.Attachment"
           {:ok, ~s({})}
         end)
 
-      assert {:error, {:not_found, "type"}} == result
+      assert error.reason == :attribute_missing
+      assert error.message == "missing attribute `type`"
     end
 
     test "when schema is Record type with type ref and resolution failed" do
@@ -113,15 +115,37 @@ defmodule Avrora.Schema.EncoderTest do
       assert {:error, :bad_thing_happen} == result
     end
 
-    test "when schema is Record type with type ref and lookup function given" do
-      assert {:error, :undefined_reference_lookup_function} ==
-               Schema.Encoder.from_json(message_with_reference_json())
+    test "when schema is Record type with type ref and no lookup function given" do
+      {:error, error} = Schema.Encoder.from_json(message_with_reference_json())
+
+      assert error.reason == :reference_lookup_missing
+      assert error.message == "reference lookup function is required to resolve `io.acme.Attachment`"
     end
 
     test "when schema is an invalid" do
-      assert Schema.Encoder.from_json("a:b") == {:error, "argument error"}
-      assert Schema.Encoder.from_json("{}") == {:error, {:not_found, "type"}}
-      assert Schema.Encoder.from_json("[null]") == {:error, :invalid_schema}
+      {:error, error} = Schema.Encoder.from_json("{}")
+      assert error.reason == :attribute_missing
+      assert error.message == "missing attribute `type`"
+
+      {:error, error} = Schema.Encoder.from_json("[null]")
+      assert error.reason == :schema_invalid
+      assert error.message == "schema is invalid"
+    end
+
+    test "when schema json is malformed" do
+      {:error, error} = Schema.Encoder.from_json(~s({"name": nope}))
+
+      assert %Errors.Schema{} = error
+      assert error.reason == :json_malformed
+      assert error.message == ~S/malformed JSON at line 1, column 10 (unexpected "n")/
+      assert is_nil(error.path)
+    end
+
+    test "when schema Record fields is not a list" do
+      {:error, error} = Schema.Encoder.from_json(~s({"type":"record","name":"R","fields":"nope"}))
+
+      assert error.reason == :schema_invalid
+      assert error.message == "schema is invalid"
     end
   end
 
@@ -158,7 +182,10 @@ defmodule Avrora.Schema.EncoderTest do
     end
 
     test "when payload is not a named type schema" do
-      assert Schema.Encoder.from_erlavro(unnamed_erlavro()) == {:error, :unnamed_type}
+      {:error, error} = Schema.Encoder.from_erlavro(unnamed_erlavro())
+
+      assert error.reason == :type_unnamed
+      assert error.message == "schema root must be a named type, got `array`"
     end
   end
 

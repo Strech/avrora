@@ -10,6 +10,7 @@ defmodule Avrora.Storage.Registry do
   require Logger
 
   alias Avrora.Config
+  alias Avrora.Errors
   alias Avrora.Schema.Encoder, as: SchemaEncoder
   alias Avrora.Schema.Name
 
@@ -106,8 +107,12 @@ defmodule Avrora.Storage.Registry do
 
     {:ok, references}
   catch
-    :unknown_subject -> {:error, :unknown_reference_subject}
-    error -> {:error, error}
+    :unknown_subject ->
+      {:error,
+       %Errors.Schema{reason: :reference_subject_unknown, message: "referenced schema was not found in the registry"}}
+
+    error ->
+      {:error, error}
   end
 
   defp make_reference_lookup_fun(map) when map_size(map) == 0,
@@ -119,7 +124,7 @@ defmodule Avrora.Storage.Registry do
   defp http_client_get(path) do
     if configured?(),
       do: path |> to_url() |> http_client().get(options()) |> handle(),
-      else: {:error, :unconfigured_registry_url}
+      else: {:error, :registry_url_unconfigured}
   end
 
   defp http_client_post(path, payload) do
@@ -127,7 +132,7 @@ defmodule Avrora.Storage.Registry do
       options = [{:content_type, @content_type} | options()]
       path |> to_url() |> http_client().post(payload, options) |> handle()
     else
-      {:error, :unconfigured_registry_url}
+      {:error, :registry_url_unconfigured}
     end
   end
 

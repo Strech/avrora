@@ -4,6 +4,7 @@ defmodule Avrora.Schema.Encoder do
   """
 
   alias Avrora.Config
+  alias Avrora.Errors
   alias Avrora.Schema
   alias Avrora.Schema.ReferenceCollector
 
@@ -48,7 +49,13 @@ defmodule Avrora.Schema.Encoder do
   An example of a reference lookup which returns empty JSON body
   """
   @spec reference_lookup(String.t()) :: {:ok, String.t()} | {:error, term()}
-  def reference_lookup(_), do: {:error, :undefined_reference_lookup_function}
+  def reference_lookup(name),
+    do:
+      {:error,
+       %Errors.Schema{
+         reason: :reference_lookup_missing,
+         message: "reference lookup function is required to resolve `#{name}`"
+       }}
 
   @doc """
   Convert `erlavro` format to the Schema struct.
@@ -140,10 +147,22 @@ defmodule Avrora.Schema.Encoder do
 
   defp extract_full_name(schema) do
     case schema do
-      {:avro_fixed_type, _, _, _, _, full_name, _} -> {:ok, full_name}
-      {:avro_enum_type, _, _, _, _, _, full_name, _} -> {:ok, full_name}
-      {:avro_record_type, _, _, _, _, _, full_name, _} -> {:ok, full_name}
-      _ -> {:error, :unnamed_type}
+      {:avro_fixed_type, _, _, _, _, full_name, _} ->
+        {:ok, full_name}
+
+      {:avro_enum_type, _, _, _, _, _, full_name, _} ->
+        {:ok, full_name}
+
+      {:avro_record_type, _, _, _, _, _, full_name, _} ->
+        {:ok, full_name}
+
+      _ ->
+        {:error,
+         %Errors.Schema{
+           reason: :type_unnamed,
+           message: "schema root must be a named type, got `#{:avro.get_type_name(schema)}`",
+           original: schema
+         }}
     end
   end
 
@@ -152,17 +171,24 @@ defmodule Avrora.Schema.Encoder do
   defp do_compile(full_name, lookup_table) do
     {:ok, :avro_util.expand_type(full_name, lookup_table)}
   rescue
-    _ in MatchError -> {:error, :bad_reference}
-    error in ErlangError -> {:error, error.original}
+    error in MatchError -> {:error, Errors.Schema.from_erlavro(error)}
+    error in ErlangError -> {:error, Errors.Schema.from_erlavro(error)}
   end
 
   # Parse schema to `erlavro` format, converting errors to error return
   defp do_parse(payload) do
     {:ok, :avro_json_decoder.decode_schema(payload, allow_bad_references: true)}
   rescue
-    _ in FunctionClauseError -> {:error, :invalid_schema}
-    error in ArgumentError -> {:error, error.message}
-    error in ErlangError -> {:error, error.original}
+    error in [FunctionClauseError, CaseClauseError] -> {:error, Errors.Schema.from_erlavro(error)}
+    error in ArgumentError -> explain_json_error(payload, error)
+    error in ErlangError -> {:error, Errors.Schema.from_erlavro(error)}
+  end
+
+  defp explain_json_error(payload, fallback) do
+    case Jason.decode(payload) do
+      {:error, error} -> {:error, Errors.Schema.from_jason(payload, error)}
+      {:ok, _} -> {:error, %Errors.Schema{reason: :schema_invalid, message: fallback.message, original: fallback}}
+    end
   end
 
   defp ets, do: Config.self().ets_lib()

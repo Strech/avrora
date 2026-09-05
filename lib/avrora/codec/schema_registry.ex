@@ -11,6 +11,7 @@ defmodule Avrora.Codec.SchemaRegistry do
 
   require Logger
   alias Avrora.Codec
+  alias Avrora.Errors
   alias Avrora.Resolver
   alias Avrora.Schema
 
@@ -35,7 +36,7 @@ defmodule Avrora.Codec.SchemaRegistry do
   def extract_schema(payload) when is_binary(payload) do
     case payload do
       <<@magic_bytes, <<id::size(32)>>, _::binary>> -> Resolver.resolve(id)
-      _ -> {:error, :schema_not_found}
+      _ -> {:error, %Errors.Codec{reason: :schema_missing, message: "no schema is available for this message"}}
     end
   end
 
@@ -47,7 +48,7 @@ defmodule Avrora.Codec.SchemaRegistry do
              do: Codec.Plain.decode(body, schema: schema)
 
       _ ->
-        {:error, :schema_not_found}
+        {:error, %Errors.Codec{reason: :schema_missing, message: "no schema is available for this message"}}
     end
   end
 
@@ -70,21 +71,18 @@ defmodule Avrora.Codec.SchemaRegistry do
         end
 
       _ ->
-        {:error, :schema_not_found}
+        {:error, %Errors.Codec{reason: :schema_missing, message: "no schema is available for this message"}}
     end
   end
 
   @impl true
   def encode(payload, schema: schema) when is_binary(payload) or is_map(payload) do
-    with {:ok, schema} <- resolve(schema) do
-      schema = if is_nil(schema.id), do: {:error, :invalid_schema_id}, else: {:ok, schema}
+    with {:ok, schema} <- resolve(schema),
+         {:ok, schema} <- ensure_id(schema),
+         {:ok, body} <- Codec.Plain.encode(payload, schema: schema) do
+      encoded = <<@magic_bytes, <<schema.id::size(32)>>, body::binary>>
 
-      with {:ok, schema} <- schema,
-           {:ok, body} <- Codec.Plain.encode(payload, schema: schema) do
-        encoded = <<@magic_bytes, <<schema.id::size(32)>>, body::binary>>
-
-        {:ok, encoded}
-      end
+      {:ok, encoded}
     end
   end
 
@@ -103,7 +101,12 @@ defmodule Avrora.Codec.SchemaRegistry do
         Resolver.resolve(schema.full_name)
 
       true ->
-        {:error, :unusable_schema}
+        {:error, %Errors.Codec{reason: :schema_unusable, message: "given schema cannot be used"}}
     end
   end
+
+  defp ensure_id(%{id: nil}),
+    do: {:error, %Errors.Codec{reason: :schema_id_invalid, message: "given schema id is nil, expected an integer"}}
+
+  defp ensure_id(schema), do: {:ok, schema}
 end

@@ -6,7 +6,7 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
   import Support.Config
   import ExUnit.CaptureLog
 
-  alias Avrora.{Codec, Schema, Storage}
+  alias Avrora.{Codec, Errors, Schema, Storage}
 
   setup :verify_on_exit!
   setup :support_config
@@ -65,7 +65,11 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
     end
 
     test "when payload is invalid" do
-      assert Codec.ObjectContainerFile.extract_schema(<<79, 98, 106, 1, 0, 1, 2>>) == {:error, :schema_mismatch}
+      {:error, error} = Codec.ObjectContainerFile.extract_schema(<<79, 98, 106, 1, 0, 1, 2>>)
+
+      assert error.reason == :schema_mismatch
+      assert error.message == "payload does not match the schema"
+      assert is_nil(error.path)
     end
   end
 
@@ -105,7 +109,11 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
     end
 
     test "when payload is not a valid binary and schema is not given" do
-      assert Codec.ObjectContainerFile.decode(<<79, 98, 106, 1, 0, 1, 2>>) == {:error, :schema_mismatch}
+      {:error, error} = Codec.ObjectContainerFile.decode(<<79, 98, 106, 1, 0, 1, 2>>)
+
+      assert error.reason == :schema_mismatch
+      assert error.message == "payload does not match the schema"
+      assert is_nil(error.path)
     end
 
     test "when payload is a valid binary and schema is given" do
@@ -127,7 +135,10 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
     end
 
     test "when payload is matching the schema and schema is unusable" do
-      assert Codec.ObjectContainerFile.encode(payment_payload(), schema: %Schema{}) == {:error, :unusable_schema}
+      {:error, error} = Codec.ObjectContainerFile.encode(payment_payload(), schema: %Schema{})
+
+      assert error.reason == :schema_unusable
+      assert error.message == "given schema cannot be used"
     end
 
     test "when payload is matching the schema and schema is usable" do
@@ -157,7 +168,7 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
         assert key == "io.acme.Payment"
         assert value == payment_json_schema()
 
-        {:error, :unconfigured_registry_url}
+        {:error, :registry_url_unconfigured}
       end)
 
       Avrora.Storage.FileMock
@@ -178,7 +189,10 @@ defmodule Avrora.Codec.ObjectContainerFileTest do
   end
 
   defp missing_field_error do
-    %ErlangError{
+    %Errors.Codec{
+      reason: :field_missing,
+      message: "field `id` is required",
+      path: "io.acme.Payment.id",
       original: {:"$avro_encode_error", :required_field_missed, [record: "io.acme.Payment", field: "id"]}
     }
   end

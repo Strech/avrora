@@ -27,5 +27,11 @@ avrora-*.tar
 /priv/plts/*.plt
 /priv/plts/*.plt.hash
 
+# Local development
+.planning
 .tool-versions
+.graphifyignore
+graphify-out/
+
+# Misc
 TODO.org

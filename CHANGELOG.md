@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.31.0] - 2026-08-11
+
+- Replace raw error atoms, tuples and strings with structured `Avrora.Schema.Error` and `Avrora.Codec.Error` (#149 @strech)
+
 ## [0.30.2] - 2025-09-03
 
 - Change deprecated struct update syntax (#144 @rockneurotiko)

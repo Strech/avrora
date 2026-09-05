@@ -10,6 +10,7 @@ defmodule Avrora.Codec.Plain do
 
   require Logger
   alias Avrora.AvroDecoderOptions
+  alias Avrora.Errors
   alias Avrora.Resolver
 
   @impl true
@@ -23,10 +24,12 @@ defmodule Avrora.Codec.Plain do
   end
 
   @impl true
-  def extract_schema(_payload), do: {:error, :schema_not_found}
+  def extract_schema(_payload),
+    do: {:error, %Errors.Codec{reason: :schema_missing, message: "no schema is available for this message"}}
 
   @impl true
-  def decode(_payload), do: {:error, :schema_required}
+  def decode(_payload),
+    do: {:error, %Errors.Codec{reason: :schema_required, message: "schema is required to decode this message"}}
 
   @impl true
   def decode(payload, schema: schema) when is_binary(payload) do
@@ -42,7 +45,7 @@ defmodule Avrora.Codec.Plain do
     cond do
       is_binary(schema.full_name) && is_reference(schema.lookup_table) -> {:ok, schema}
       is_binary(schema.full_name) -> Resolver.resolve(schema.full_name)
-      true -> {:error, :unusable_schema}
+      true -> {:error, %Errors.Codec{reason: :schema_unusable, message: "given schema cannot be used"}}
     end
   end
 
@@ -57,8 +60,8 @@ defmodule Avrora.Codec.Plain do
 
     {:ok, decoded}
   rescue
-    MatchError -> {:error, :schema_mismatch}
-    error -> {:error, error}
+    error in MatchError -> {:error, Errors.Codec.from_erlavro(error, path: schema.full_name)}
+    error -> {:error, Errors.Codec.from_erlavro(error)}
   end
 
   defp do_encode(payload, schema) do
@@ -70,6 +73,6 @@ defmodule Avrora.Codec.Plain do
 
     {:ok, encoded}
   rescue
-    error -> {:error, error}
+    error -> {:error, Errors.Codec.from_erlavro(error)}
   end
 end

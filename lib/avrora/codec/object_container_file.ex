@@ -16,6 +16,7 @@ defmodule Avrora.Codec.ObjectContainerFile do
   alias Avrora.AvroDecoderOptions
   alias Avrora.Codec
   alias Avrora.Config
+  alias Avrora.Errors
   alias Avrora.Resolver
   alias Avrora.Schema.Encoder, as: SchemaEncoder
 
@@ -70,15 +71,14 @@ defmodule Avrora.Codec.ObjectContainerFile do
     cond do
       is_binary(schema.full_name) && is_reference(schema.lookup_table) -> {:ok, schema}
       is_binary(schema.full_name) -> Resolver.resolve(schema.full_name)
-      true -> {:error, :unusable_schema}
+      true -> {:error, %Errors.Codec{reason: :schema_unusable, message: "given schema cannot be used"}}
     end
   end
 
   defp do_decode(payload) do
     {:ok, :avro_ocf.decode_binary(payload, AvroDecoderOptions.options())}
   rescue
-    MatchError -> {:error, :schema_mismatch}
-    error -> {:error, error}
+    error -> {:error, Errors.Codec.from_erlavro(error)}
   end
 
   defp do_encode(payload, schema) do
